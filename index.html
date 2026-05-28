@@ -3146,7 +3146,8 @@ async function doLogin(){
     }
     
     MY_GRADE = gradeOf(LOGIN_USER);
-    if(LOGIN_USER.title!=='대표이사'){ CUR_EMP = LOGIN_USER; }
+    // 진짜 로그인 — 본인이 CUR_EMP (대표·총괄도 본인으로 시작)
+    CUR_EMP = LOGIN_USER;
     
     // 4) 진짜 비번이 lihai2026이면 비번 변경 화면, 아니면 바로 입장
     if(pw==='lihai2026'){
@@ -3384,7 +3385,8 @@ async function loadGrantsFromDB(){
           hire: DB_USER.hire_date, birth: DB_USER.birth_date, mode: DB_USER.mode||'목표형'
         };
         MY_GRADE = gradeOf(LOGIN_USER);
-        if(LOGIN_USER.title!=='대표이사'){ CUR_EMP = LOGIN_USER; }
+        // 진짜 로그인 — 본인이 CUR_EMP (대표·총괄도 본인으로 시작)
+        CUR_EMP = LOGIN_USER;
         enterApp();
       }
     }
