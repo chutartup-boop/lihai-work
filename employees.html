@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리하이 직원 명단 — DB 연결 테스트</title>
+<style>
+  :root{
+    --navy:#1F3A5F;--blue:#378ADD;--lblue:#E6F1FB;
+    --ink:#1a2230;--muted:#5F6B7A;--hint:#94A2B2;
+    --line:#E3E8EF;--bg:#EEF2F6;--card:#fff;--soft:#F7F9FC;
+    --green:#1D9E75;--green-bg:#E1F5EE;--green-t:#0F6E56;
+    --red:#D8453E;--red-bg:#FBE9E8;--red-t:#9A2C28;
+    --emp:#6B7B8E;--lead:#378ADD;--exec:#7A5AF0;--mgr:#1D9E75;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+  .hero{background:linear-gradient(135deg,var(--navy),#283E5C);color:#fff;padding:30px 24px;text-align:center}
+  .hero .logo{width:42px;height:42px;border-radius:11px;background:#fff;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:10px}
+  .hero h1{font-size:20px;font-weight:700}
+  .hero p{font-size:12.5px;color:#cdd9e8;margin-top:6px}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 18px 60px}
+  .status{background:#fff;border-radius:11px;padding:16px 18px;margin-bottom:18px;border:1px solid var(--line)}
+  .status.loading{background:var(--lblue);border-color:var(--blue);color:var(--navy)}
+  .status.success{background:var(--green-bg);border-color:var(--green);color:var(--green-t)}
+  .status.error{background:var(--red-bg);border-color:var(--red);color:var(--red-t)}
+  .status b{font-weight:600;font-size:14px}
+  .status .desc{font-size:12px;opacity:.85;margin-top:3px}
+  h2{font-size:16px;color:var(--navy);margin:18px 0 10px}
+  .dept-group{margin-bottom:18px;background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .dept-head{padding:11px 16px;background:var(--soft);font-size:13px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--line)}
+  .dept-head .count{font-size:11px;font-weight:400;color:var(--hint);margin-left:6px}
+  .emp-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);transition:.15s}
+  .emp-row:last-child{border-bottom:none}
+  .emp-row:hover{background:var(--soft)}
+  .av{width:34px;height:34px;border-radius:9px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0}
+  .emp-info{flex:1;min-width:0}
+  .emp-name{font-size:13.5px;font-weight:600;color:var(--ink)}
+  .emp-meta{font-size:11px;color:var(--hint);margin-top:1px}
+  .badges{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+  .badge{font-size:10px;font-weight:600;padding:2.5px 8px;border-radius:5px;color:#fff;letter-spacing:.03em}
+  .b-emp{background:var(--emp)}
+  .b-lead{background:var(--lead)}
+  .b-exec{background:var(--exec)}
+  .b-mgr{background:var(--mgr)}
+  .b-admin{background:#D98A0E;color:#fff}
+  .b-lead2{background:#F0EAFA;color:#5E44C4;border:1px solid #D6C9F0}
+  .footer{text-align:center;font-size:11px;color:var(--hint);margin-top:24px;line-height:1.7}
+  .footer a{color:var(--blue);text-decoration:none}
+  .footer a:hover{text-decoration:underline}
+  .footer code{background:var(--soft);padding:1px 6px;border-radius:4px;font-size:10.5px}
+  .test-info{background:#FFFBF0;border:1px solid #F0D48A;border-radius:9px;padding:13px 15px;margin-bottom:18px;font-size:12px;color:#7A4D08;line-height:1.6}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px;text-align:center}
+  .stat .lab{font-size:10.5px;color:var(--hint);font-weight:600;margin-bottom:3px}
+  .stat .val{font-size:18px;font-weight:700;color:var(--navy)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo">L</div>
+  <h1>리하이 직원 명단</h1>
+  <p>Supabase 데이터베이스 연결 테스트 — 진짜 DB에서 실시간으로 불러옵니다</p>
+</div>
+
+<div class="wrap">
+
+  <div class="test-info">
+    💡 <b>이 페이지는 Supabase 데이터베이스에 직접 연결</b>되어 19명 직원 정보를 실시간으로 불러옵니다.<br>
+    화면이 정상적으로 뜨면 → <b>Vercel ↔ Supabase 연결이 작동 중</b>이라는 증거입니다.
+  </div>
+
+  <div id="status" class="status loading">
+    <b>⏳ 데이터베이스에 연결 중...</b>
+    <div class="desc">Supabase에서 직원 명단을 불러오고 있습니다.</div>
+  </div>
+
+  <div id="stats-area" style="display:none">
+    <div class="stats" id="stats-grid"></div>
+  </div>
+
+  <div id="employee-list"></div>
+
+  <div class="footer">
+    리하이 업무 시스템 · DB 연결 테스트<br>
+    데이터 소스: <code>Supabase</code> · 호스팅: <code>Vercel</code><br>
+    <a href="/">← 메인 시스템으로 돌아가기</a>
+  </div>
+
+</div>
+
+<!-- Supabase 클라이언트 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// ====================================
+// Supabase 연결 설정
+// ====================================
+// Vercel 환경변수 또는 직접 입력
+// 이 페이지는 클라이언트 사이드에서 작동하므로
+// publishable key만 사용 (절대 secret key 넣지 마세요)
+const SUPABASE_URL = 'https://whhmymjijieuqiqvjszh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ekN8wEjTor413zTwy0YHVw_8e6eNUea';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ====================================
+// 직원 명단 불러오기
+// ====================================
+async function loadEmployees(){
+  const statusEl = document.getElementById('status');
+  const listEl = document.getElementById('employee-list');
+  const statsArea = document.getElementById('stats-area');
+  
+  try {
+    // Supabase에서 employees 테이블 데이터 가져오기
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*')
+      .eq('is_active', true)
+      .order('id', { ascending: true });
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      statusEl.className = 'status error';
+      statusEl.innerHTML = '<b>⚠ 데이터가 비어있습니다</b><div class="desc">테이블은 연결되었으나 직원 데이터가 없습니다.</div>';
+      return;
+    }
+    
+    // 성공!
+    statusEl.className = 'status success';
+    statusEl.innerHTML = `<b>✅ DB 연결 성공!</b><div class="desc">Supabase에서 <b>${data.length}명</b>의 직원 데이터를 실시간으로 불러왔습니다.</div>`;
+    
+    // 통계 계산
+    const stats = {emp:0, lead:0, exec:0, mgr:0, admin:0};
+    data.forEach(e => {
+      stats[e.grade] = (stats[e.grade] || 0) + 1;
+      if (e.is_admin) stats.admin++;
+    });
+    
+    statsArea.style.display = 'block';
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat"><div class="lab">전체</div><div class="val">${data.length}명</div></div>
+      <div class="stat"><div class="lab">팀장</div><div class="val">${stats.lead}명</div></div>
+      <div class="stat"><div class="lab">임원·총괄</div><div class="val">${stats.exec + stats.mgr}명</div></div>
+      <div class="stat"><div class="lab">관리자</div><div class="val">${stats.admin}명</div></div>
+    `;
+    
+    // 부서별 그룹화
+    const byDept = {};
+    data.forEach(e => {
+      if (!byDept[e.dept]) byDept[e.dept] = [];
+      byDept[e.dept].push(e);
+    });
+    
+    // 부서 순서
+    const deptOrder = ['경영기획실', '총괄이사', '사업기획팀', 'SW팀', 'HW팀', '군집드론팀', '전기이륜차사업팀'];
+    
+    let html = '<h2>부서별 명단</h2>';
+    
+    deptOrder.forEach(dept => {
+      const list = byDept[dept];
+      if (!list || list.length === 0) return;
+      
+      html += `<div class="dept-group">
+        <div class="dept-head">${dept}<span class="count">· ${list.length}명</span></div>`;
+      
+      list.forEach(e => {
+        const gradeName = {emp:'직원', lead:'팀장', exec:'임원', mgr:'총괄·대표'}[e.grade] || e.grade;
+        const gradeClass = {emp:'b-emp', lead:'b-lead', exec:'b-exec', mgr:'b-mgr'}[e.grade] || 'b-emp';
+        const hireDate = e.hire_date ? new Date(e.hire_date) : null;
+        const today = new Date('2026-05-28');
+        const days = hireDate ? Math.floor((today - hireDate) / (1000*60*60*24)) + 1 : 0;
+        
+        html += `<div class="emp-row">
+          <div class="av">${e.name.charAt(0)}</div>
+          <div class="emp-info">
+            <div class="emp-name">${e.name}</div>
+            <div class="emp-meta">${e.title} · ${e.mode} · ${e.hire_date || ''} (${days.toLocaleString()}일째)</div>
+          </div>
+          <div class="badges">
+            <span class="badge ${gradeClass}">${gradeName}</span>
+            ${e.is_team_lead ? '<span class="badge b-lead2">🎖 팀장</span>' : ''}
+            ${e.is_admin ? '<span class="badge b-admin">🔧 관리자</span>' : ''}
+          </div>
+        </div>`;
+      });
+      
+      html += `</div>`;
+    });
+    
+    listEl.innerHTML = html;
+    
+  } catch (err) {
+    console.error('DB 연결 오류:', err);
+    statusEl.className = 'status error';
+    statusEl.innerHTML = `<b>❌ DB 연결 실패</b>
+      <div class="desc">${err.message || err}</div>
+      <div class="desc" style="margin-top:6px;font-size:11px;opacity:.7">
+        가능한 원인: 1) SUPABASE_URL/KEY 잘못 입력 &nbsp; 2) RLS 정책 설정 미스 &nbsp; 3) 네트워크 문제
+      </div>`;
+  }
+}
+
+// 페이지 로드 시 실행
+loadEmployees();
+</script>
+
+</body>
+</html>
