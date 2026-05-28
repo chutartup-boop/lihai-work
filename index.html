@@ -1194,19 +1194,60 @@ function toggleMonth(idx){
 }
 function exportMonth(m){ toast(m+' 일지를 엑셀로 내보냅니다 (견본 시연)'); }
 
-function openHistoryDay(date, idx){
+async function openHistoryDay(date, idx){
   var emp=CUR_EMP;
   var hints=gh(emp);
   var d=document.getElementById('history-detail');
   if(!d) return;
   var isToday=(date==='5/28');
-  var todayWork = hints.today.map(function(t){return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+t.p+'</span> '+t.t+' <span style="font-size:10px;color:var(--green-t);float:right">'+t.st+'</span></div>';}).join('');
-  d.innerHTML=
-    '<div class="flex" style="margin-bottom:10px"><span style="font-size:14px;font-weight:600">2026-'+date+' 일지</span><span class="pill '+(isToday?'p-blue':'p-gray')+'" style="margin-left:auto">'+(isToday?'당일 (수정 가능)':'과거 (읽기 전용) 🔒')+'</span></div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px"><b>오늘 업무</b></div>'
-    +'<div style="font-size:12px;color:var(--ink)">'+todayWork+'</div>'
-    +(hints.carry?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">↓ 어제에서 이어옴 — '+hints.carry.t+'</div>':'')
-    +(isToday?'<button class="btn btn-pri" style="margin-top:11px;width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무로 이동해서 수정 →</button>':'<div style="font-size:11px;color:var(--hint);margin-top:11px;text-align:center">⚠ 과거 일지는 수정할 수 없습니다 (감사 추적 보장)</div>');
+  
+  // 날짜를 YYYY-MM-DD로 변환 (5/28 → 2026-05-28)
+  var dateParts = date.split('/');
+  var ymd = '2026-' + dateParts[0].padStart(2,'0') + '-' + dateParts[1].padStart(2,'0');
+  
+  // DB에서 본인의 그 날짜 일지 조회
+  var dbLog = null;
+  if(DB_USER){
+    try {
+      var result = await db.from('daily_logs')
+        .select('*')
+        .eq('employee_id', DB_USER.id)
+        .eq('work_date', ymd)
+        .maybeSingle();
+      if(result.data) dbLog = result.data;
+    } catch(e){ console.log('일지 조회 오류:', e); }
+  }
+  
+  var headerBadge = isToday ? '<span class="pill p-blue" style="margin-left:auto">당일 (수정 가능)</span>' : '<span class="pill p-gray" style="margin-left:auto">과거 (읽기 전용) 🔒</span>';
+  var dbBadge = dbLog ? ' <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC;margin-left:5px">🟢 DB</span>' : '';
+  
+  if(dbLog && dbLog.today_tasks && dbLog.today_tasks.length>0){
+    // 진짜 DB 일지가 있으면 그것 표시
+    var todayWork = dbLog.today_tasks.map(function(t){
+      var pj = t.project || '';
+      var tk = t.task || '';
+      var st = t.status || '진행중';
+      return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+pj+'</span> '+tk+' <span style="font-size:10px;color:var(--green-t);float:right">'+st+'</span></div>';
+    }).join('');
+    d.innerHTML=
+      '<div class="flex" style="margin-bottom:10px;align-items:center"><span style="font-size:14px;font-weight:600">2026-'+date+' 일지'+dbBadge+'</span>'+headerBadge+'</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px"><b>오늘 업무</b></div>'
+      +'<div style="font-size:12px;color:var(--ink)">'+(todayWork||'<div style="color:var(--hint);padding:8px 0">업무 항목 없음</div>')+'</div>'
+      +(dbLog.help_needed?'<div style="font-size:12px;color:var(--muted);margin-top:9px"><b>도움 요청</b><br>'+dbLog.help_needed.replace(/\n/g,'<br>')+'</div>':'')
+      +(dbLog.work_status?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">근무 상태: '+({office:'🏢 사무실', home:'🏠 재택', field:'🚗 외근', trip:'✈️ 출장'}[dbLog.work_status]||dbLog.work_status)+'</div>':'')
+      +(dbLog.submitted_at?'<div style="font-size:10.5px;color:var(--hint);margin-top:4px">제출: '+new Date(dbLog.submitted_at).toLocaleString('ko-KR')+'</div>':'')
+      +(isToday?'<button class="btn btn-pri" style="margin-top:11px;width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무로 이동해서 수정 →</button>':'<div style="font-size:11px;color:var(--hint);margin-top:11px;text-align:center">⚠ 과거 일지는 수정할 수 없습니다 (감사 추적 보장)</div>');
+  } else {
+    // DB 일지 없으면 시연용 데이터 표시 (옛 방식)
+    var todayWork = hints.today.map(function(t){return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+t.p+'</span> '+t.t+' <span style="font-size:10px;color:var(--green-t);float:right">'+t.st+'</span></div>';}).join('');
+    d.innerHTML=
+      '<div class="flex" style="margin-bottom:10px;align-items:center"><span style="font-size:14px;font-weight:600">2026-'+date+' 일지</span>'+headerBadge+'</div>'
+      +(isToday && DB_USER?'<div style="font-size:11.5px;color:var(--hint);padding:7px 10px;background:#FFFBF0;border:1px solid #F0D48A;color:#7A4D08;border-radius:7px;margin-bottom:9px">💡 오늘 일지를 아직 제출하지 않았습니다. 일일업무 탭에서 제출하면 여기에 표시됩니다.</div>':'')
+      +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px"><b>오늘 업무</b> <span style="font-size:10.5px;color:var(--hint)">(시연 데이터)</span></div>'
+      +'<div style="font-size:12px;color:var(--ink)">'+todayWork+'</div>'
+      +(hints.carry?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">↓ 어제에서 이어옴 — '+hints.carry.t+'</div>':'')
+      +(isToday?'<button class="btn btn-pri" style="margin-top:11px;width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무로 이동해서 수정 →</button>':'<div style="font-size:11px;color:var(--hint);margin-top:11px;text-align:center">⚠ 과거 일지는 수정할 수 없습니다 (감사 추적 보장)</div>');
+  }
 }
 
 // ===== 내 정보 =====
@@ -1798,11 +1839,196 @@ function empTab(t){
   if(t==='history'){ renderHistory(); }
   if(t==='profile'){ renderProfile(); }
 }
-function submitDay(){
+async function submitDay(){
+  // ============================================
+  // 일일업무 → DB(daily_logs)에 저장
+  // ============================================
+  if(!DB_USER){
+    // DB 로그인 안 된 시연 상태 — 화면만 진행
+    document.querySelector('#e-daily > .card').style.display='none';
+    document.getElementById('e-aftersubmit').classList.remove('hidden');
+    renderCompany();
+    document.getElementById('e-aftersubmit').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  
+  try {
+    // 1) 화면에서 데이터 수집
+    var logData = collectDailyLogData();
+    
+    // 2) 같은 날짜 이미 있으면 update, 없으면 insert
+    var existResult = await db.from('daily_logs')
+      .select('id')
+      .eq('employee_id', DB_USER.id)
+      .eq('work_date', TODAY)
+      .maybeSingle();
+    
+    var payload = {
+      employee_id: DB_USER.id,
+      work_date: TODAY,
+      weekly_goals: logData.weekly_goals,
+      work_status: logData.work_status,
+      carry_over: logData.carry_over,
+      today_tasks: logData.today_tasks,
+      help_needed: logData.help_needed,
+      meetings: logData.meetings,
+      flight_plan: logData.flight_plan,
+      is_submitted: true,
+      submitted_at: new Date().toISOString()
+    };
+    
+    var saveResult;
+    if(existResult.data && existResult.data.id){
+      saveResult = await db.from('daily_logs').update(payload).eq('id', existResult.data.id);
+    } else {
+      saveResult = await db.from('daily_logs').insert(payload);
+    }
+    
+    if(saveResult.error) throw saveResult.error;
+    
+    toast('일일업무가 저장되었습니다 🟢');
+  } catch(err) {
+    console.error('일지 저장 오류:', err);
+    toast('⚠ 저장 실패: ' + (err.message||err) + ' (화면 진행은 유지)');
+  }
+  
+  // 3) 화면은 어느 쪽이든 진행 (오늘의 리하이 표시)
   document.querySelector('#e-daily > .card').style.display='none';
   document.getElementById('e-aftersubmit').classList.remove('hidden');
   renderCompany();
   document.getElementById('e-aftersubmit').scrollIntoView({behavior:'smooth'});
+}
+
+// ============================================
+// 마법사 입력칸에서 데이터 수집 (DB 저장용)
+// ============================================
+function collectDailyLogData(){
+  var result = {
+    weekly_goals: [],
+    work_status: 'office',
+    carry_over: '',
+    today_tasks: [],
+    help_needed: '',
+    meetings: [],
+    flight_plan: []
+  };
+  
+  // 주간 목표
+  try {
+    var goals = document.querySelectorAll('#goal-list input[type="text"]');
+    goals.forEach(function(inp){
+      var v = inp.value.trim();
+      if(v) result.weekly_goals.push(v);
+    });
+  } catch(e){}
+  
+  // 근무 상태 (선택된 chip)
+  try {
+    var activeChip = document.querySelector('#status-chips .stchip.on');
+    if(activeChip) result.work_status = activeChip.dataset.s || 'office';
+    // 외근·출장 행선지·면담·기간
+    var sdWhere = document.getElementById('sd-where');
+    var sdWho = document.getElementById('sd-who');
+    var sdWhen = document.getElementById('sd-when');
+    if(sdWhere && sdWhere.value.trim()){
+      result.work_status_detail = {
+        where: sdWhere.value.trim(),
+        who: sdWho ? sdWho.value.trim() : '',
+        when: sdWhen ? sdWhen.value.trim() : ''
+      };
+    }
+  } catch(e){}
+  
+  // 오늘 업무 (today-list 안의 각 행)
+  try {
+    var rows = document.querySelectorAll('#today-list .today-row');
+    rows.forEach(function(row){
+      var proj = row.querySelector('.proj-name');
+      var task = row.querySelector('.task-input');
+      var status = row.querySelector('.task-status');
+      var hours = row.querySelector('.task-hours');
+      if(proj && task && task.value.trim()){
+        result.today_tasks.push({
+          project: proj.textContent || '',
+          task: task.value.trim(),
+          status: status ? status.value : '진행중',
+          hours: hours ? hours.value : ''
+        });
+      }
+    });
+  } catch(e){}
+  
+  // 도움 요청
+  try {
+    var helps = document.querySelectorAll('#help-list input[type="text"]');
+    var helpTexts = [];
+    helps.forEach(function(inp){
+      var v = inp.value.trim();
+      if(v) helpTexts.push(v);
+    });
+    result.help_needed = helpTexts.join('\n');
+  } catch(e){}
+  
+  // 회의
+  try {
+    var meets = document.querySelectorAll('#meeting-list .meeting-row');
+    meets.forEach(function(row){
+      var topic = row.querySelector('input[type="text"]');
+      if(topic && topic.value.trim()){
+        result.meetings.push({topic: topic.value.trim()});
+      }
+    });
+  } catch(e){}
+  
+  // 비행 계획
+  try {
+    var flights = document.querySelectorAll('#flight-input .flight-row');
+    flights.forEach(function(row){
+      var inputs = row.querySelectorAll('input,select');
+      var f = {};
+      inputs.forEach(function(inp, i){
+        if(inp.value) f['f'+i] = inp.value;
+      });
+      if(Object.keys(f).length>0) result.flight_plan.push(f);
+    });
+  } catch(e){}
+  
+  return result;
+}
+
+// ============================================
+// 오늘 일지가 이미 저장되어 있으면 불러와서 채우기
+// (마법사 진입 시 호출)
+// ============================================
+async function loadTodayLogIfAny(){
+  if(!DB_USER) return;
+  try {
+    var result = await db.from('daily_logs')
+      .select('*')
+      .eq('employee_id', DB_USER.id)
+      .eq('work_date', TODAY)
+      .maybeSingle();
+    if(result.data){
+      console.log('오늘 일지 이미 제출됨:', result.data.submitted_at);
+      // 제출 완료 상태면 "이미 제출됨" 안내
+      if(result.data.is_submitted){
+        // 화면 한 곳에 표시 (도배 안 되게 한 번만)
+        var notice = document.getElementById('today-already-submitted');
+        if(!notice){
+          var wizCard = document.querySelector('#e-daily > .card');
+          if(wizCard){
+            var n = document.createElement('div');
+            n.id = 'today-already-submitted';
+            n.style.cssText = 'background:#E1F5EE;border:1px solid #B8DFCC;color:#0F6E56;padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:12.5px';
+            n.innerHTML = '✅ 오늘 일일업무는 이미 제출되었습니다. 다시 제출하면 덮어씁니다.';
+            wizCard.insertBefore(n, wizCard.firstChild.nextSibling);
+          }
+        }
+      }
+    }
+  } catch(e) {
+    console.log('일지 조회 오류:', e);
+  }
 }
 function renderCompany(){
   var icons={code:'M16 18l6-6-6-6M8 6l-6 6 6 6',tool:'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-2.4z',drone:'M3 3l5 5M21 3l-5 5M3 21l5-5M21 21l-5-5M9 9h6v6H9z',bike:'M5 18a3 3 0 100-6 3 3 0 000 6zM19 18a3 3 0 100-6 3 3 0 000 6zM9 18h6l-2-7h4',brief:'M3 8h18v12H3zM8 8V5h8v3',clip:'M9 4h6v2H9zM7 6h10v14H7z',star:'M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z','user-check':'M9 11a4 4 0 100-8 4 4 0 000 8zM3 20a6 6 0 0112 0M16 11l2 2 4-4'};
@@ -3000,6 +3226,8 @@ function enterApp(){
       try { renderKanban('m-grant', true); } catch(e){}
     }
   });
+  // 오늘 이미 제출한 일지 있는지 체크
+  loadTodayLogIfAny();
 }
 function applyGrade(){
   // 권한별 토글 노출:
