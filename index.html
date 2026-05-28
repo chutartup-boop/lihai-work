@@ -157,21 +157,28 @@
       </div>
       <div style="background:#fff;border-radius:14px;padding:24px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:5px">아이디 (회사 이메일 앞부분)</div>
-        <input type="text" id="login-id" value="hs.chu" style="width:100%;margin-bottom:14px;height:42px">
+        <input type="text" id="login-id" value="hs.chu" style="width:100%;margin-bottom:14px;height:42px" placeholder="hs.chu">
         <div style="font-size:12px;color:var(--muted);margin-bottom:5px">비밀번호</div>
-        <input type="password" id="login-pw" value="0000" style="width:100%;margin-bottom:8px;height:42px">
-        <div style="font-size:11px;color:var(--hint);margin-bottom:16px">처음 로그인하시나요? 초기 비밀번호는 <b style="color:var(--blue)">0000</b> 입니다.</div>
-        <button class="btn btn-pri" style="width:100%;height:44px;font-size:15px" onclick="doLogin()">로그인</button>
+        <input type="password" id="login-pw" value="lihai2026" style="width:100%;margin-bottom:8px;height:42px" placeholder="lihai2026">
+        <div style="font-size:11px;color:var(--hint);margin-bottom:16px">초기 비밀번호는 <b style="color:var(--blue)">lihai2026</b> 입니다. 로그인 후 변경하세요.</div>
+        <div id="login-err" style="display:none;font-size:11.5px;color:#D8453E;background:#FBE9E8;border:1px solid #F2C2BF;padding:8px 11px;border-radius:7px;margin-bottom:12px"></div>
+        <button class="btn btn-pri" id="login-btn" style="width:100%;height:44px;font-size:15px" onclick="doLogin()">로그인</button>
         <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:13px">비밀번호를 잊으셨나요? 관리자(경영기획실)에게 초기화를 요청하세요.</div>
         <div style="border-top:1px dashed var(--line2);margin-top:16px;padding-top:14px">
-          <div style="font-size:11px;color:var(--hint);margin-bottom:7px">🔧 견본 시연용 — 다른 권한으로 로그인해보기</div>
+          <div style="font-size:11px;color:var(--hint);margin-bottom:7px">🔧 빠른 로그인 — 시연용 계정 선택</div>
           <select id="login-demo" style="width:100%;height:38px;font-size:12.5px" onchange="pickDemoAccount()">
-            <option value="추혜성">추혜성 (대표이사) — 대표 권한</option>
-            <option value="황원준">황원준 (총괄이사) — 임원 권한</option>
-            <option value="백석호">백석호 (영업이사) — 임원 권한</option>
-            <option value="차현창">차현창 (전기이륜차 팀장) — 직원 권한</option>
-            <option value="박동훈">박동훈 (HW 팀장) — 직원 권한</option>
-            <option value="성종은">성종은 (사업기획 팀원) — 직원 권한 · 오늘 연차</option>
+            <option value="">— 직접 입력 —</option>
+            <option value="추혜성">추혜성 (대표이사)</option>
+            <option value="황원준">황원준 (총괄이사)</option>
+            <option value="백석호">백석호 (영업이사)</option>
+            <option value="박병석">박병석 (기술고문)</option>
+            <option value="김세진">김세진 (SW 팀장)</option>
+            <option value="박동훈">박동훈 (HW 팀장)</option>
+            <option value="백재우">백재우 (사업기획 팀장)</option>
+            <option value="차현창">차현창 (전기이륜차 팀장)</option>
+            <option value="최철곤">최철곤 (군집드론 팀장)</option>
+            <option value="성종은">성종은 (사업기획 팀원)</option>
+            <option value="정다영">정다영 (경영기획실 — 관리자)</option>
           </select>
         </div>
       </div>
@@ -549,7 +556,20 @@
 </div>
 </div>
 
+<!-- Supabase 클라이언트 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+// ============================================
+// Supabase 연결 설정
+// ============================================
+const SUPABASE_URL = 'https://whhmymjijieuqiqvjszh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ekN8wEjTor413zTwy0YHVw_8e6eNUea';
+var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 현재 로그인된 Supabase 사용자 정보 (employees 테이블에서 조회한 것)
+var DB_USER = null;
+
 var ROSTER = [
   {name:'추혜성', dept:'경영기획실', title:'대표이사', hire:'2018-10-15', birth:'1993-11-01', mode:'운영형'},
   {name:'황원준', dept:'경영기획실', title:'총괄이사', hire:'2019-11-01', birth:'1994-08-11', mode:'운영형'},
@@ -1193,38 +1213,48 @@ function openHistoryDay(date, idx){
 function renderProfile(){
   var el=document.getElementById('e-profile'); if(!el) return;
   var emp=CUR_EMP;
-  var d=daysBetween(emp.hire,TODAY)+1;
+  // DB_USER가 있으면 (로그인된 본인) DB의 최신 정보 우선 사용
+  var fromDb = (DB_USER && DB_USER.name===emp.name) ? DB_USER : null;
+  var dispDept = fromDb ? fromDb.dept : emp.dept;
+  var dispTitle = fromDb ? fromDb.title : emp.title;
+  var dispHire = fromDb ? (fromDb.hire_date||emp.hire) : emp.hire;
+  var dispBirth = fromDb ? (fromDb.birth_date||emp.birth) : emp.birth;
+  var dispMode = fromDb ? (fromDb.mode||emp.mode) : emp.mode;
+  var dispEmail = fromDb ? fromDb.email : ((DEMO_ID[emp.name]||'name')+'@lihai.co.kr');
+  var dispPhone = fromDb ? (fromDb.phone||'') : '';
+  
+  var d=daysBetween(dispHire,TODAY)+1;
   var grade=gradeOf(emp);
   var gradeName={emp:'직원',lead:'팀장',exec:'임원',mgr:'총괄·대표'}[grade];
   var adminBadge = isAdmin(emp.name) ? '<span style="margin-left:5px;font-size:10.5px;background:#FFF8E6;color:var(--amber-t);padding:2px 8px;border-radius:9px;font-weight:600;border:1px solid #F0D48A">🔧 관리자 모드 가능</span>' : '';
+  var dbBadge = fromDb ? '<span style="margin-left:5px;font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC">🟢 DB 연결</span>' : '';
 
   var h='<div class="card"><div class="sec-h"><div><h2>내 정보</h2><div class="sub">내 연락처·비밀번호·알림 설정을 관리합니다</div></div></div>';
 
   // 프로필 카드
   h+='<div style="display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--lblue);border-radius:11px;margin-bottom:18px">'
     +'<div style="width:56px;height:56px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">'+emp.name.substring(0,1)+'</div>'
-    +'<div style="flex:1"><div style="font-size:16px;font-weight:700">'+emp.name+adminBadge+'</div>'
-    +'<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+emp.dept+' · '+emp.title+' · '+gradeName+'</div>'
+    +'<div style="flex:1"><div style="font-size:16px;font-weight:700">'+emp.name+adminBadge+dbBadge+'</div>'
+    +'<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+dispDept+' · '+dispTitle+' · '+gradeName+'</div>'
     +'<div style="font-size:11.5px;color:var(--hint);margin-top:2px">리하이와 함께한 지 <b style="color:var(--navy)">'+d.toLocaleString()+'일째</b></div>'
     +'</div></div>';
 
   // 기본 정보 (읽기 전용)
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">기본 정보 <span style="font-size:10.5px;color:var(--hint);font-weight:400;margin-left:5px">🔒 관리자만 변경 가능</span></div>';
   h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:18px">';
-  var em = (DEMO_ID[emp.name]||'name')+'@lihai.co.kr';
-  h+=profileRow('이메일 (아이디)',em,true);
-  h+=profileRow('부서',emp.dept,true);
-  h+=profileRow('직책',emp.title,true);
-  h+=profileRow('입사일',emp.hire,true);
-  h+=profileRow('생년월일',emp.birth||'-',true);
+  h+=profileRow('이메일 (아이디)',dispEmail,true);
+  h+=profileRow('부서',dispDept,true);
+  h+=profileRow('직책',dispTitle,true);
+  h+=profileRow('입사일',dispHire,true);
+  h+=profileRow('생년월일',dispBirth||'-',true);
   h+='</div>';
 
   // 수정 가능 항목
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">연락처 · 업무모드</div>';
   h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
-  h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">휴대폰</label><input type="text" placeholder="010-0000-0000" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
+  h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">휴대폰</label><input type="text" value="'+dispPhone+'" placeholder="010-0000-0000" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
   h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">업무 모드 <span style="font-size:10.5px;color:var(--hint);font-weight:400">목표형(개발·기획) / 운영형(영업·운영)</span></label>';
-  h+='<select style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"><option'+(emp.mode==='목표형'?' selected':'')+'>목표형 — 주간목표 중심</option><option'+(emp.mode==='운영형'?' selected':'')+'>운영형 — 일일업무 중심</option></select></div>';
+  h+='<select style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"><option'+(dispMode==='목표형'?' selected':'')+'>목표형 — 주간목표 중심</option><option'+(dispMode==='운영형'?' selected':'')+'>운영형 — 일일업무 중심</option></select></div>';
   h+='<button class="btn btn-pri" onclick="saveProfile()" style="width:100%;font-size:13px;height:40px">변경사항 저장</button>';
   h+='</div>';
 
@@ -1273,21 +1303,36 @@ function toggleSwitch(btn){
   if(dot){ dot.style.left = on?'3px':''; dot.style.right = on?'':'3px'; }
 }
 function saveProfile(){ toast('변경사항이 저장되었습니다 (견본 시연용)'); }
-function changePassword(){
+async function changePassword(){
   var o=document.getElementById('pw-old'), n1=document.getElementById('pw-n1'), n2=document.getElementById('pw-n2');
   if(!o.value || !n1.value || !n2.value){ alert('모든 칸을 채워주세요.'); return; }
+  if(n1.value.length<6){ alert('새 비밀번호는 6자 이상이어야 합니다.'); return; }
   if(n1.value!==n2.value){ alert('새 비밀번호가 일치하지 않습니다.'); return; }
-  o.value=n1.value=n2.value='';
-  toast('비밀번호가 변경되었습니다');
+  
+  try {
+    var result = await db.auth.updateUser({ password: n1.value });
+    if(result.error) throw result.error;
+    o.value=n1.value=n2.value='';
+    toast('비밀번호가 변경되었습니다');
+  } catch(err) {
+    alert('비밀번호 변경 실패: ' + (err.message||err));
+  }
 }
-function logout(){
+async function logout(){
   if(!confirm('로그아웃 하시겠습니까?')) return;
+  // Supabase Auth 로그아웃
+  try { await db.auth.signOut(); } catch(e){}
   // 로그인 화면으로 복귀
+  DB_USER = null;
+  LOGIN_USER = null;
   document.getElementById('app-screen').classList.add('hidden');
   document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('auth-login').classList.remove('hidden');
   document.getElementById('auth-pwchange').classList.add('hidden');
   document.getElementById('auth-tutorial').classList.add('hidden');
+  // 비번 칸 초기화
+  var pwEl = document.getElementById('login-pw');
+  if(pwEl) pwEl.value = '';
   NOTIFS=[]; refreshNotifBadge();
   toast('로그아웃되었습니다');
   window.scrollTo(0,0);
@@ -2818,31 +2863,104 @@ function myTeamMembers(empName){
     return e.dept === teamName && e.name !== empName;
   });
 }
-var DEMO_ID = {추혜성:'hs.chu', 황원준:'wj.hwang', 백석호:'sh.baek', 차현창:'hc.cha', 박동훈:'dh.park', 성종은:'je.sung', 정다영:'dy.jung', 김세진:'sj.kim', 최철곤:'cg.choi'};
+var DEMO_ID = {추혜성:'hs.chu', 황원준:'wj.hwang', 백석호:'sh.baek', 박병석:'bs.park', 권종하:'jh.kwon', 차현창:'hc.cha', 박동훈:'dh.park', 성종은:'je.sung', 정다영:'dy.jung', 김세진:'sj.kim', 최철곤:'cg.choi', 백재우:'jw.baek', 유수빈:'sb.yoo', 박건희:'gh.park', 이정현:'jh.lee', 김다현:'dh.kim', 정연직:'yj.jung', 안지호:'jh.an', 이수연:'sy.lee'};
 function pickDemoAccount(){
   var name=document.getElementById('login-demo').value;
+  if(!name){ return; }
   document.getElementById('login-id').value = DEMO_ID[name] || 'hs.chu';
-  document.getElementById('login-pw').value = '0000';
+  document.getElementById('login-pw').value = 'lihai2026';
 }
-function doLogin(){
-  var name=document.getElementById('login-demo').value;
-  var pw=document.getElementById('login-pw').value;
-  LOGIN_USER = ROSTER.find(function(e){ return e.name===name; }) || CUR_EMP;
-  MY_GRADE = gradeOf(LOGIN_USER);
-  if(LOGIN_USER.title!=='대표이사'){ CUR_EMP = LOGIN_USER; }
-  if(pw==='0000'){
-    document.getElementById('auth-login').classList.add('hidden');
-    document.getElementById('auth-pwchange').classList.remove('hidden');
-  } else {
-    enterApp();
+
+async function doLogin(){
+  var loginId = document.getElementById('login-id').value.trim();
+  var pw = document.getElementById('login-pw').value;
+  var errEl = document.getElementById('login-err');
+  var btn = document.getElementById('login-btn');
+  errEl.style.display='none';
+  
+  if(!loginId || !pw){
+    errEl.textContent = '아이디와 비밀번호를 입력하세요.';
+    errEl.style.display='block';
+    return;
+  }
+  
+  // 이메일 만들기: hs.chu → hs.chu@lihai.co.kr
+  var email = loginId.includes('@') ? loginId : (loginId + '@lihai.co.kr');
+  
+  btn.textContent = '로그인 중...';
+  btn.disabled = true;
+  
+  try {
+    // 1) Supabase Auth로 로그인
+    var authResult = await db.auth.signInWithPassword({ email: email, password: pw });
+    if(authResult.error) throw authResult.error;
+    
+    // 2) employees 테이블에서 본인 정보 조회
+    var empResult = await db.from('employees').select('*').eq('email', email).single();
+    if(empResult.error || !empResult.data){
+      throw new Error('직원 정보를 찾을 수 없습니다. 관리자에게 문의하세요.');
+    }
+    
+    DB_USER = empResult.data;
+    
+    // 3) ROSTER 형식으로 변환해서 기존 코드와 호환
+    var rosterMatch = ROSTER.find(function(e){ return e.name===DB_USER.name; });
+    if(rosterMatch){
+      LOGIN_USER = rosterMatch;
+    } else {
+      // ROSTER에 없으면 DB 데이터로 임시 객체 생성
+      LOGIN_USER = {
+        name: DB_USER.name,
+        dept: DB_USER.dept,
+        title: DB_USER.title,
+        hire: DB_USER.hire_date,
+        birth: DB_USER.birth_date,
+        mode: DB_USER.mode || '목표형'
+      };
+    }
+    
+    MY_GRADE = gradeOf(LOGIN_USER);
+    if(LOGIN_USER.title!=='대표이사'){ CUR_EMP = LOGIN_USER; }
+    
+    // 4) 진짜 비번이 lihai2026이면 비번 변경 화면, 아니면 바로 입장
+    if(pw==='lihai2026'){
+      document.getElementById('auth-login').classList.add('hidden');
+      document.getElementById('auth-pwchange').classList.remove('hidden');
+    } else {
+      enterApp();
+    }
+    
+  } catch(err) {
+    console.error('로그인 오류:', err);
+    var msg = err.message || String(err);
+    if(msg.indexOf('Invalid login')>=0 || msg.indexOf('credentials')>=0){
+      errEl.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    } else if(msg.indexOf('Email not confirmed')>=0){
+      errEl.textContent = '이메일 인증이 필요합니다. 관리자에게 문의하세요.';
+    } else {
+      errEl.textContent = '로그인 실패: ' + msg;
+    }
+    errEl.style.display='block';
+    btn.textContent = '로그인';
+    btn.disabled = false;
   }
 }
-function doPwChange(){
+
+async function doPwChange(){
   var a=document.getElementById('pw-new1').value, b=document.getElementById('pw-new2').value;
   if(!a){ alert('새 비밀번호를 입력하세요.'); return; }
+  if(a.length<6){ alert('비밀번호는 6자 이상이어야 합니다.'); return; }
   if(a!==b){ alert('두 비밀번호가 일치하지 않습니다.'); return; }
-  document.getElementById('auth-pwchange').classList.add('hidden');
-  startTutorial();
+  
+  // Supabase Auth에서 비밀번호 변경
+  try {
+    var result = await db.auth.updateUser({ password: a });
+    if(result.error) throw result.error;
+    document.getElementById('auth-pwchange').classList.add('hidden');
+    startTutorial();
+  } catch(err) {
+    alert('비밀번호 변경 실패: ' + (err.message||err));
+  }
 }
 var TUT_STEP=0;
 var TUT_PAGES=[
@@ -2875,6 +2993,13 @@ function enterApp(){
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
   applyGrade();
+  // DB에서 grants 다시 한 번 로드 (로그인 직후 최신 데이터)
+  loadGrantsFromDB().then(function(ok){
+    if(ok){
+      try { renderKanban('e-grant', false); } catch(e){}
+      try { renderKanban('m-grant', true); } catch(e){}
+    }
+  });
 }
 function applyGrade(){
   // 권한별 토글 노출:
@@ -2908,6 +3033,137 @@ fillEmpSelect();
 renderTenure();
 mgrSub('dept');
 initWizard();
+
+// ============================================
+// DB에서 grants(과제) 데이터 불러와서 칸반 채우기
+// ============================================
+async function loadGrantsFromDB(){
+  try {
+    var result = await db.from('grants').select('*').order('no', { ascending: true });
+    if(result.error){ console.warn('grants 로드 실패 (시연 데이터 유지):', result.error); return false; }
+    if(!result.data || result.data.length===0){ return false; }
+    
+    var TODAY_D = new Date(TODAY+'T00:00:00');
+    
+    // 단계 매핑 (DB stage 숫자 → 칸반 키)
+    var STAGE_MAP = {'0':'review', '1':'apply', '2':'doc', '3':'present', '4':'wait', '5':'won', '6':'lost'};
+    
+    // DB에서 PM ID로 이름 조회용 (employees 한 번에 가져옴)
+    var empMap = {};
+    var empResult = await db.from('employees').select('id, name');
+    if(empResult.data){ empResult.data.forEach(function(e){ empMap[e.id]=e.name; }); }
+    
+    // 칸반 카드 형식으로 변환
+    var newKanban = [
+      {key:'review', t:'0 추진검토', lock:false, cards:[]},
+      {key:'apply', t:'① 신청기간', lock:false, cards:[]},
+      {key:'doc', t:'② 서류평가', lock:false, cards:[]},
+      {key:'present', t:'③ 발표평가', lock:false, cards:[]},
+      {key:'wait', t:'④ 선정대기', lock:false, cards:[]},
+      {key:'won', t:'⑤ 선정', lock:true, cards:[]},
+      {key:'lost', t:'⑥ 탈락', lock:true, cards:[]}
+    ];
+    var keyToIdx = {'review':0, 'apply':1, 'doc':2, 'present':3, 'wait':4, 'won':5, 'lost':6};
+    
+    result.data.forEach(function(g){
+      var stageKey = STAGE_MAP[String(g.stage)] || 'review';
+      var colIdx = keyToIdx[stageKey];
+      
+      // 담당자 표시 (PM + 참여 실무직원 일부)
+      var pmName = g.pm_id ? (empMap[g.pm_id]||'') : '';
+      var members = [];
+      try {
+        if(g.members){
+          var arr = Array.isArray(g.members) ? g.members : JSON.parse(g.members);
+          members = arr.slice(0,2); // 처음 2명만 표시
+        }
+      } catch(e){}
+      var workers = pmName;
+      if(members.length>0) workers += '·' + members.join('·');
+      if(!workers) workers = '(미지정)';
+      
+      // 카드 형식
+      var card = {
+        n: g.name,
+        o: g.org || '(기관 미기재)',
+        w: workers,
+        _dbId: g.id  // DB 원본 ID (나중에 업데이트용)
+      };
+      
+      // 단계별 추가 정보
+      if(stageKey==='apply' && g.apply_deadline){
+        var dl = new Date(g.apply_deadline+'T00:00:00');
+        var dd = Math.ceil((dl - TODAY_D)/(1000*60*60*24));
+        card.deadline = g.apply_deadline;
+        card.dd = dd;
+      } else if(stageKey==='present' && g.presentation_date){
+        var pd = new Date(g.presentation_date+'T00:00:00');
+        var dd2 = Math.ceil((pd - TODAY_D)/(1000*60*60*24));
+        card.deadline = g.presentation_date + ' 발표';
+        card.dd = dd2;
+      } else if(stageKey==='doc'){
+        card.due = '심사중';
+      } else if(stageKey==='wait'){
+        card.due = '결과 대기';
+      } else if(stageKey==='won' && g.just_won){
+        card.justWon = true;
+        card.wonAt = g.won_at;
+      }
+      
+      // 협업 여부
+      if(g.collab_status==='협업') card.collab = true;
+      
+      // 사업 규모·키워드·메모 등 부가정보
+      if(g.budget){
+        var bMan = Math.round(g.budget/10000);
+        if(bMan>=100000){ card.budget = (bMan/10000).toFixed(1)+'억원'; }
+        else if(bMan>=10000){ card.budget = (bMan/10000).toFixed(2).replace(/\.?0+$/,'')+'억원'; }
+        else if(bMan>0){ card.budget = bMan.toLocaleString()+'만원'; }
+      }
+      if(g.notes) card.reason = g.notes;
+      
+      newKanban[colIdx].cards.push(card);
+    });
+    
+    // DATA.kanban 통째 교체
+    DATA.kanban = newKanban;
+    console.log('✅ grants DB 로드 완료:', result.data.length+'건');
+    return true;
+  } catch(err) {
+    console.warn('grants 로드 오류 (시연 데이터 유지):', err);
+    return false;
+  }
+}
+
+// ============================================
+// 페이지 로드 시 Supabase 세션 자동 복구
+// ============================================
+(async function checkSession(){
+  // 1) grants 데이터 먼저 로드 (로그인 안 했어도 시연용 칸반에 진짜 데이터 보이게)
+  await loadGrantsFromDB();
+  
+  // 2) 세션 확인
+  try {
+    var sessionResult = await db.auth.getSession();
+    if(sessionResult.data && sessionResult.data.session){
+      var userEmail = sessionResult.data.session.user.email;
+      var empResult = await db.from('employees').select('*').eq('email', userEmail).single();
+      if(empResult.data){
+        DB_USER = empResult.data;
+        var rosterMatch = ROSTER.find(function(e){ return e.name===DB_USER.name; });
+        LOGIN_USER = rosterMatch || {
+          name: DB_USER.name, dept: DB_USER.dept, title: DB_USER.title,
+          hire: DB_USER.hire_date, birth: DB_USER.birth_date, mode: DB_USER.mode||'목표형'
+        };
+        MY_GRADE = gradeOf(LOGIN_USER);
+        if(LOGIN_USER.title!=='대표이사'){ CUR_EMP = LOGIN_USER; }
+        enterApp();
+      }
+    }
+  } catch(e) {
+    console.log('세션 자동 복구 실패 (정상 — 로그인 안 한 상태):', e);
+  }
+})();
 
 var WIZ_STEP = 1;
 var WIZ_TOTAL = 4;
