@@ -103,7 +103,8 @@
 const SUPABASE_URL = 'https://whhmymjijieuqiqvjszh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_ekN8wEjTor413zTwy0YHVw_8e6eNUea';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 변수명을 'db'로 (window.supabase와 충돌 방지)
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ====================================
 // 직원 명단 불러오기
@@ -115,7 +116,7 @@ async function loadEmployees(){
   
   try {
     // Supabase에서 employees 테이블 데이터 가져오기
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('employees')
       .select('*')
       .eq('is_active', true)
