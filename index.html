@@ -139,6 +139,8 @@
   .chip-pick:hover{background:var(--lblue);border-color:var(--blue)}
   .stchip{font-size:12.5px;padding:6px 13px;border:1px solid var(--line2);background:#fff;border-radius:20px;color:var(--muted)}
   .stchip.on{background:var(--lblue);color:var(--navy);border-color:var(--blue);font-weight:500}
+  @keyframes hlFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .hl-dot:hover{background:var(--blue)!important;transform:scale(1.3)}
   @media(max-width:600px){.metrics,.wgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -2030,6 +2032,77 @@ async function loadTodayLogIfAny(){
     console.log('일지 조회 오류:', e);
   }
 }
+// ============================================
+// 오늘의 리하이 — 팀별 슬라이드 컨트롤
+// ============================================
+var HL_SLIDE_TIMER = null;
+function hlShowSlide(slideId, idx){
+  var track = document.getElementById(slideId);
+  if(!track) return;
+  var len = parseInt(track.dataset.len);
+  if(idx<0) idx = len-1;
+  if(idx>=len) idx = 0;
+  track.dataset.idx = idx;
+  // 슬라이드 아이템 표시 전환
+  var items = track.querySelectorAll('.hl-slide-item');
+  items.forEach(function(el, i){
+    if(i===idx){
+      el.style.display='flex';
+      el.style.animation = 'none';
+      // 강제 reflow → 다시 애니메이션
+      void el.offsetWidth;
+      el.style.animation = 'hlFadeIn .35s ease';
+    } else {
+      el.style.display='none';
+    }
+  });
+  // 점 인디케이터
+  var parent = track.parentElement;
+  if(parent){
+    parent.querySelectorAll('.hl-dot').forEach(function(d, i){
+      d.style.background = i===idx ? 'var(--navy)' : '#cfd6df';
+    });
+    // 카운터
+    var counter = document.getElementById(slideId+'-counter');
+    if(counter){
+      var cur = counter.querySelector('.cur');
+      if(cur) cur.textContent = (idx+1);
+    }
+  }
+}
+function hlSlideNext(slideId){
+  var track = document.getElementById(slideId);
+  if(!track) return;
+  hlShowSlide(slideId, parseInt(track.dataset.idx)+1);
+  restartHighlightAutoSlide();
+}
+function hlSlidePrev(slideId){
+  var track = document.getElementById(slideId);
+  if(!track) return;
+  hlShowSlide(slideId, parseInt(track.dataset.idx)-1);
+  restartHighlightAutoSlide();
+}
+function hlSlideTo(slideId, idx){
+  hlShowSlide(slideId, idx);
+  restartHighlightAutoSlide();
+}
+function startHighlightAutoSlide(){
+  // 기존 타이머 정리
+  if(HL_SLIDE_TIMER){ clearInterval(HL_SLIDE_TIMER); }
+  HL_SLIDE_TIMER = setInterval(function(){
+    var tracks = document.querySelectorAll('.hl-slide-track');
+    tracks.forEach(function(track){
+      if(parseInt(track.dataset.len) > 1){
+        hlShowSlide(track.id, parseInt(track.dataset.idx)+1);
+      }
+    });
+  }, 4500); // 4.5초마다 자동 전환
+}
+function restartHighlightAutoSlide(){
+  // 사용자가 수동 조작 시 타이머 재시작 (바로 다음 자동 전환 방지)
+  startHighlightAutoSlide();
+}
+
 function renderCompany(){
   var icons={code:'M16 18l6-6-6-6M8 6l-6 6 6 6',tool:'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-2.4z',drone:'M3 3l5 5M21 3l-5 5M3 21l5-5M21 21l-5-5M9 9h6v6H9z',bike:'M5 18a3 3 0 100-6 3 3 0 000 6zM19 18a3 3 0 100-6 3 3 0 000 6zM9 18h6l-2-7h4',brief:'M3 8h18v12H3zM8 8V5h8v3',clip:'M9 4h6v2H9zM7 6h10v14H7z',star:'M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z','user-check':'M9 11a4 4 0 100-8 4 4 0 000 8zM3 20a6 6 0 0112 0M16 11l2 2 4-4'};
 
@@ -2069,19 +2142,82 @@ function renderCompany(){
     if(items.length===0){
       items.push({emoji:'☀️', team:'리하이', text:'오늘도 모두 화이팅입니다.', cheer:false});
     }
-    var hh='';
-    items.forEach(function(x){
-      var bg = x.ceo ? 'linear-gradient(120deg,#FFC85C,#FFE399)' : (x.big ? 'linear-gradient(90deg,#FFE9A8,#FFF7E0)' : (x.special ? 'linear-gradient(90deg,#FFF1D6,#fff)' : 'linear-gradient(90deg,var(--lblue),#fff)'));
-      var border = x.ceo ? '2px solid #C77A0E' : (x.big ? '1.5px solid #E5A22A' : '1px solid var(--line)');
-      var pad = x.big ? '13px 14px' : '10px 13px';
-      var byInfo = x.ceo && x.by ? '<div style="font-size:10.5px;color:#7A4D08;margin-top:4px;font-weight:600">— '+x.by+' · '+x.when+' 작성</div>' : '';
-      hh+='<div style="display:flex;align-items:center;gap:10px;background:'+bg+';border:'+border+';border-radius:var(--r-s);padding:'+pad+';margin-bottom:7px">'
-        +'<span style="font-size:'+(x.big?'24px':'19px')+';flex-shrink:0">'+x.emoji+'</span>'
-        +'<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:'+(x.ceo?'700':'600')+';color:'+(x.ceo?'#7A4D08':'var(--navy)')+';background:#fff;padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:'+(x.big?'14px':'13px')+'">'+x.text+'</span>'+byInfo+'</div>'
-        +'<button class="btn" onclick="cheer(this)" style="font-size:11.5px;padding:4px 11px;flex-shrink:0">'+(x.special?'🎈 축하':'👏 응원')+'</button>'
-        +'</div>';
+    
+    // === 팀별로 그룹화 (대표 한마디는 별도) ===
+    var ceoItems = items.filter(function(x){ return x.ceo; });
+    var teamItems = items.filter(function(x){ return !x.ceo; });
+    var grouped = {};
+    teamItems.forEach(function(x){
+      var key = x.team;
+      if(!grouped[key]) grouped[key] = [];
+      grouped[key].push(x);
     });
+    // 우선순위: 리하이 → 나머지 알파벳
+    var teamOrder = Object.keys(grouped).sort(function(a,b){
+      if(a==='리하이') return -1;
+      if(b==='리하이') return 1;
+      return a.localeCompare(b,'ko');
+    });
+    
+    // === HTML 생성 — 대표 한마디는 그대로 큰 카드, 나머지는 팀별 슬라이드 카드 ===
+    var hh = '';
+    
+    // 대표 한마디 — 기존처럼 큰 카드로
+    ceoItems.forEach(function(x){
+      var byInfo = x.by ? '<div style="font-size:10.5px;color:#7A4D08;margin-top:4px;font-weight:600">— '+x.by+' · '+x.when+' 작성</div>' : '';
+      hh += '<div style="display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,#FFC85C,#FFE399);border:2px solid #C77A0E;border-radius:var(--r-s);padding:13px 14px;margin-bottom:7px">'
+        + '<span style="font-size:24px;flex-shrink:0">'+x.emoji+'</span>'
+        + '<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:#7A4D08;background:#fff;padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:14px">'+x.text+'</span>'+byInfo+'</div>'
+        + '<button class="btn" onclick="cheer(this)" style="font-size:11.5px;padding:4px 11px;flex-shrink:0">🎈 축하</button>'
+        + '</div>';
+    });
+    
+    // 팀별 — 슬라이드 카드 (하나만 보이고 자동 전환 + 수동 넘김)
+    teamOrder.forEach(function(team, teamIdx){
+      var list = grouped[team];
+      var slideId = 'hl-slide-'+teamIdx;
+      var hasBig = list.some(function(x){ return x.big; });
+      
+      // 팀 카드 외곽
+      var bgGrad = hasBig ? 'linear-gradient(90deg,#FFE9A8,#FFF7E0)' : 'linear-gradient(90deg,var(--lblue),#fff)';
+      var borderC = hasBig ? '1.5px solid #E5A22A' : '1px solid var(--line)';
+      
+      hh += '<div style="background:'+bgGrad+';border:'+borderC+';border-radius:var(--r-s);padding:11px 13px;margin-bottom:7px;position:relative;overflow:hidden">';
+      
+      // 헤더: 팀명 + 카운터 + 컨트롤
+      hh += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:'+(list.length>1?'8px':'0')+'">';
+      hh += '<span style="font-size:11px;font-weight:600;color:var(--navy);background:#fff;padding:2px 9px;border-radius:5px">'+team+'</span>';
+      if(list.length>1){
+        hh += '<span id="'+slideId+'-counter" style="font-size:10.5px;color:var(--hint);font-weight:500"><span class="cur">1</span>/'+list.length+'</span>';
+        hh += '<div style="margin-left:auto;display:flex;align-items:center;gap:4px">';
+        // 점 인디케이터
+        for(var di=0; di<list.length; di++){
+          hh += '<span class="hl-dot" data-idx="'+di+'" onclick="hlSlideTo(\''+slideId+'\','+di+')" style="width:6px;height:6px;border-radius:50%;background:'+(di===0?'var(--navy)':'#cfd6df')+';cursor:pointer;transition:.2s"></span>';
+        }
+        // 화살표
+        hh += '<button onclick="hlSlidePrev(\''+slideId+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;line-height:1">‹</button>';
+        hh += '<button onclick="hlSlideNext(\''+slideId+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px;line-height:1">›</button>';
+        hh += '</div>';
+      }
+      hh += '</div>';
+      
+      // 슬라이드 본문 (한 번에 1개만 보이는 영역)
+      hh += '<div id="'+slideId+'" class="hl-slide-track" data-len="'+list.length+'" data-idx="0" style="position:relative;min-height:38px">';
+      list.forEach(function(x, slideI){
+        var visible = slideI===0;
+        hh += '<div class="hl-slide-item" data-i="'+slideI+'" style="display:'+(visible?'flex':'none')+';align-items:center;gap:9px;animation:hlFadeIn .35s ease">'
+          + '<span style="font-size:'+(x.big?'22px':'18px')+';flex-shrink:0">'+x.emoji+'</span>'
+          + '<div style="flex:1;min-width:0;font-size:'+(x.big?'13.5px':'12.5px')+';line-height:1.5">'+x.text+'</div>'
+          + '<button class="btn" onclick="cheer(this)" style="font-size:11px;padding:3px 10px;flex-shrink:0">'+(x.special?'🎈':'👏')+'</button>'
+          + '</div>';
+      });
+      hh += '</div></div>';
+    });
+    
     hl.innerHTML=hh;
+    
+    // 자동 슬라이드 타이머 시작
+    startHighlightAutoSlide();
   }
 
   // 2) 팀별 활력 카드 (줄 기반 배치)
