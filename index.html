@@ -990,7 +990,98 @@ function submitHelpReply(id){
   closeHelpReply();
   renderMgrHelps();
 }
-function renderTeam(){
+async function renderTeam(){
+  var el=document.getElementById('e-team'); if(!el) return;
+  var me=CUR_EMP;
+  // 팀장 권한 체크
+  if(!me || !TEAM_LEADS[me.name]){
+    el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--hint);font-size:13px">팀장 권한이 없습니다.</div></div>';
+    return;
+  }
+  // DB 미연결(순수 시연) 상태면 기존 시연 화면
+  if(!DB_USER){ renderTeamDemo(); return; }
+
+  var teamName = DB_USER.dept || TEAM_LEADS[me.name];
+  var members = myTeamMembers(me.name);  // 우리 팀원 이름 목록(본인 제외)
+
+  // 로딩 표시
+  el.innerHTML='<div class="card"><div style="padding:30px;text-align:center;color:var(--hint);font-size:13px">팀원 일지를 불러오는 중…</div></div>';
+
+  // DB에서 우리 팀 오늘 일지 조회 (employees 조인 → 같은 부서만)
+  var logs=[];
+  try {
+    var res = await db.from('daily_logs')
+      .select('id, employee_id, work_date, today_tasks, help_needed, work_status, weekly_goals, submitted_at, employees!inner(name, dept, title)')
+      .eq('employees.dept', teamName)
+      .eq('work_date', TODAY);
+    if(res.error) throw res.error;
+    logs = res.data || [];
+  } catch(e){
+    console.error('팀 일지 조회 오류:', e);
+    el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--red-t);font-size:13px">⚠ 팀원 일지를 불러오지 못했습니다.<br><span style="font-size:11px;color:var(--hint)">'+escH(e.message||e)+'</span></div></div>';
+    return;
+  }
+
+  // 이름 → 로그 매핑 (팀장 본인 제외)
+  var logByName={};
+  logs.forEach(function(l){
+    if(l.employee_id===DB_USER.id) return;
+    var nm = l.employees ? l.employees.name : '';
+    if(nm) logByName[nm]=l;
+  });
+
+  var statusLabel={office:'🏢 사무실', home:'🏠 재택', field:'🚗 외근', trip:'✈️ 출장'};
+  var submittedN = members.filter(function(m){return logByName[m.name];}).length;
+  var pendingN = members.length - submittedN;
+  var todayDisp = TODAY.slice(5).replace('-','/');
+
+  var h='<div class="card"><div class="sec-h"><div><h2>🧑‍🤝‍🧑 우리 '+escH(teamName)+'</h2><div class="sub">팀장 권한 · 오늘('+todayDisp+') 팀원 '+members.length+'명의 일일업무 <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div></div><span class="pill p-blue">'+escH(me.name)+' 팀장</span></div>';
+
+  // 통계
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">';
+  h+='<div style="background:var(--green-bg);border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--green-t);font-weight:600">팀원</div><div style="font-size:18px;font-weight:700;color:var(--green-t);margin-top:3px">'+members.length+'명</div></div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--navy);font-weight:600">오늘 제출</div><div style="font-size:18px;font-weight:700;color:var(--navy);margin-top:3px">'+submittedN+'명</div></div>';
+  h+='<div style="background:'+(pendingN>0?'var(--amber-bg)':'var(--soft)')+';border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:'+(pendingN>0?'var(--amber-t)':'var(--hint)')+';font-weight:600">미제출</div><div style="font-size:18px;font-weight:700;color:'+(pendingN>0?'var(--amber-t)':'var(--hint)')+';margin-top:3px">'+pendingN+'명</div></div>';
+  h+='</div>';
+
+  // 팀원별 카드
+  h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">팀원 오늘 업무</div>';
+  if(members.length===0){
+    h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:18px;text-align:center;font-size:12px;color:var(--hint)">등록된 팀원이 없습니다.</div>';
+  }
+  members.forEach(function(m){
+    var log=logByName[m.name];
+    if(log){
+      var tasks = Array.isArray(log.today_tasks)?log.today_tasks:[];
+      var taskHtml = tasks.length
+        ? tasks.map(function(t){
+            var st=t.status||'진행중';
+            var stColor = st==='완료'?'var(--green-t)':((st==='막힘'||st==='지연')?'var(--red-t)':'var(--amber-t)');
+            return '<div style="padding:5px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+escH(t.project||'')+'</span> '+escH(t.task||'')+' <span style="font-size:10px;color:'+stColor+';float:right">'+escH(st)+'</span></div>';
+          }).join('')
+        : '<div style="font-size:11.5px;color:var(--hint);padding:4px 0">작성된 업무 항목 없음</div>';
+      var helpHtml = log.help_needed
+        ? '<div style="margin-top:8px;background:var(--amber-bg);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--amber-t)">🙋 도움 필요: '+escH(log.help_needed).replace(/\n/g,'<br>')+'</div>'
+        : '';
+      var subTime = log.submitted_at ? new Date(log.submitted_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
+      h+='<div style="border:1px solid var(--line);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:#fff">'
+        +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><b style="font-size:13px">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
+        +(log.work_status?'<span style="font-size:10.5px;color:var(--hint)">· '+(statusLabel[log.work_status]||'')+'</span>':'')
+        +'<span style="font-size:10px;color:var(--green-t);background:var(--green-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">✓ '+subTime+' 제출</span></div>'
+        +taskHtml+helpHtml+'</div>';
+    } else {
+      h+='<div style="border:1px dashed var(--line2);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:var(--soft)">'
+        +'<div style="display:flex;align-items:center;gap:7px"><b style="font-size:13px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
+        +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">아직 미제출</span></div></div>';
+    }
+  });
+
+  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--navy);line-height:1.6">💡 팀장 권한 — 팀원이 오늘 제출한 일일업무가 실시간으로 표시됩니다. (도움요청·휴가 연동은 다음 단계)</div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+function renderTeamDemo(){
   var el=document.getElementById('e-team'); if(!el) return;
   var me=CUR_EMP;
   var teamName=TEAM_LEADS[me.name];
@@ -1901,6 +1992,13 @@ async function submitDay(){
   document.getElementById('e-aftersubmit').scrollIntoView({behavior:'smooth'});
 }
 
+// 문자열 안전 이스케이프 (HTML 본문·속성 공용)
+function escH(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ============================================
 // 마법사 입력칸에서 데이터 수집 (DB 저장용)
 // ============================================
@@ -1915,12 +2013,14 @@ function collectDailyLogData(){
     flight_plan: []
   };
   
-  // 주간 목표
+  // 주간 목표 — goal-list 안의 각 행(프로젝트 input + 목표 input)
   try {
-    var goals = document.querySelectorAll('#goal-list input[type="text"]');
-    goals.forEach(function(inp){
-      var v = inp.value.trim();
-      if(v) result.weekly_goals.push(v);
+    var goalRows = document.querySelectorAll('#goal-list .flex');
+    goalRows.forEach(function(row){
+      var ins = row.querySelectorAll('input[type="text"]');
+      var proj = ins[0] ? ins[0].value.trim() : '';
+      var goal = ins[1] ? ins[1].value.trim() : '';
+      if(proj || goal) result.weekly_goals.push({project: proj, goal: goal});
     });
   } catch(e){}
   
@@ -1941,21 +2041,27 @@ function collectDailyLogData(){
     }
   } catch(e){}
   
-  // 오늘 업무 (today-list 안의 각 행)
+  // 오늘 업무 — today-list 안의 각 .input-block
   try {
-    var rows = document.querySelectorAll('#today-list .today-row');
-    rows.forEach(function(row){
-      var proj = row.querySelector('.proj-name');
-      var task = row.querySelector('.task-input');
-      var status = row.querySelector('.task-status');
-      var hours = row.querySelector('.task-hours');
-      if(proj && task && task.value.trim()){
-        result.today_tasks.push({
-          project: proj.textContent || '',
-          task: task.value.trim(),
-          status: status ? status.value : '진행중',
-          hours: hours ? hours.value : ''
-        });
+    var blocks = document.querySelectorAll('#today-list .input-block');
+    blocks.forEach(function(block){
+      var firstFlex = block.querySelector('.flex');
+      if(!firstFlex) return;
+      var projSpan = firstFlex.querySelector('.proj');
+      var texts = firstFlex.querySelectorAll('input[type="text"]');
+      var project='', task='';
+      if(projSpan){
+        project = projSpan.textContent.trim();
+        task = texts[0] ? texts[0].value.trim() : '';
+      } else {
+        project = texts[0] ? texts[0].value.trim() : '';
+        task = texts[1] ? texts[1].value.trim() : '';
+      }
+      var selects = block.querySelectorAll('select');
+      var status = selects[0] ? selects[0].value : '진행중';
+      var hours = selects[1] ? selects[1].value : '';
+      if(task){
+        result.today_tasks.push({project: project, task: task, status: status, hours: hours});
       }
     });
   } catch(e){}
@@ -1971,27 +2077,36 @@ function collectDailyLogData(){
     result.help_needed = helpTexts.join('\n');
   } catch(e){}
   
-  // 회의
+  // 회의 — meeting-list 안의 각 .input-block (첫 input = 안건)
   try {
-    var meets = document.querySelectorAll('#meeting-list .meeting-row');
-    meets.forEach(function(row){
-      var topic = row.querySelector('input[type="text"]');
-      if(topic && topic.value.trim()){
-        result.meetings.push({topic: topic.value.trim()});
+    var meets = document.querySelectorAll('#meeting-list .input-block');
+    meets.forEach(function(block){
+      var ins = block.querySelectorAll('input[type="text"]');
+      var topic = ins[0] ? ins[0].value.trim() : '';
+      if(topic){
+        result.meetings.push({
+          topic: topic,
+          when: ins[1] ? ins[1].value.trim() : '',
+          who: ins[2] ? ins[2].value.trim() : '',
+          where: ins[3] ? ins[3].value.trim() : ''
+        });
       }
     });
   } catch(e){}
   
-  // 비행 계획
+  // 비행 계획 — flight-input 안의 각 .input-block (첫 input = 목적)
   try {
-    var flights = document.querySelectorAll('#flight-input .flight-row');
-    flights.forEach(function(row){
-      var inputs = row.querySelectorAll('input,select');
-      var f = {};
-      inputs.forEach(function(inp, i){
-        if(inp.value) f['f'+i] = inp.value;
-      });
-      if(Object.keys(f).length>0) result.flight_plan.push(f);
+    var fls = document.querySelectorAll('#flight-input .input-block');
+    fls.forEach(function(block){
+      var ins = block.querySelectorAll('input[type="text"]');
+      var purpose = ins[0] ? ins[0].value.trim() : '';
+      if(purpose){
+        result.flight_plan.push({
+          purpose: purpose,
+          time: ins[1] ? ins[1].value.trim() : '',
+          place: ins[2] ? ins[2].value.trim() : ''
+        });
+      }
     });
   } catch(e){}
   
@@ -2012,7 +2127,7 @@ async function loadTodayLogIfAny(){
       .maybeSingle();
     if(result.data){
       console.log('오늘 일지 이미 제출됨:', result.data.submitted_at);
-      // 제출 완료 상태면 "이미 제출됨" 안내
+      // 제출 완료 상태면 "이미 제출됨" 안내 + 입력칸 복원
       if(result.data.is_submitted){
         // 화면 한 곳에 표시 (도배 안 되게 한 번만)
         var notice = document.getElementById('today-already-submitted');
@@ -2022,16 +2137,95 @@ async function loadTodayLogIfAny(){
             var n = document.createElement('div');
             n.id = 'today-already-submitted';
             n.style.cssText = 'background:#E1F5EE;border:1px solid #B8DFCC;color:#0F6E56;padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:12.5px';
-            n.innerHTML = '✅ 오늘 일일업무는 이미 제출되었습니다. 다시 제출하면 덮어씁니다.';
+            n.innerHTML = '✅ 오늘 일일업무는 이미 제출되었습니다. 아래 내용을 수정하고 다시 제출하면 덮어쓰기 됩니다.';
             wizCard.insertBefore(n, wizCard.firstChild.nextSibling);
           }
         }
+        // 저장된 일지로 마법사 입력칸 복원 (A)
+        fillWizardFromLog(result.data);
       }
     }
   } catch(e) {
     console.log('일지 조회 오류:', e);
   }
 }
+
+// ============================================
+// 저장된 일지로 마법사 입력칸 복원 (A)
+// ============================================
+function buildTodayRowHtml(proj, task, status, hours){
+  var statuses=['진행중','완료','지연','막힘'];
+  var hoursOpts=['2h','4h','0.5h','종일'];
+  if(status && statuses.indexOf(status)<0) statuses.unshift(status);
+  if(hours && hoursOpts.indexOf(hours)<0) hoursOpts.unshift(hours);
+  function opts(arr, sel){ return arr.map(function(o){ return '<option'+(o===sel?' selected':'')+'>'+escH(o)+'</option>'; }).join(''); }
+  var delBtn='<button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;line-height:1;padding:2px 5px">×</button>';
+  var projField = proj
+    ? '<span class="proj">'+escH(proj)+'</span>'
+    : '<input type="text" value="" placeholder="새 프로젝트명" style="width:130px;font-size:12px">';
+  return '<div class="input-block" style="margin-bottom:8px;position:relative">'
+    + delBtn
+    + '<div class="flex" style="margin-bottom:7px;padding-right:20px">'+projField+'<input type="text" value="'+escH(task)+'" placeholder="무슨 일을 했나요?"></div>'
+    + '<div class="flex" style="flex-wrap:wrap"><select>'+opts(statuses,status)+'</select><span style="font-size:11.5px;color:var(--hint)">소요</span><select>'+opts(hoursOpts,hours)+'</select></div>'
+    + '</div>';
+}
+
+function fillWizardFromLog(log){
+  if(!log) return;
+  // 1) 주간 목표
+  try {
+    var gl=document.getElementById('goal-list');
+    if(gl && Array.isArray(log.weekly_goals) && log.weekly_goals.length){
+      var gh1='';
+      log.weekly_goals.forEach(function(g){
+        var proj = (g && typeof g==='object') ? (g.project||'') : '';
+        var goal = (g && typeof g==='object') ? (g.goal||'') : (g||'');
+        gh1+='<div class="flex" style="margin-bottom:6px">'
+          +'<input type="text" value="'+escH(proj)+'" placeholder="프로젝트" style="width:130px;font-size:12px">'
+          +'<input type="text" value="'+escH(goal)+'" placeholder="이번 주 목표">'
+          +'</div>';
+      });
+      gl.innerHTML=gh1;
+    }
+  } catch(e){ console.log('목표 복원 오류', e); }
+
+  // 2) 근무 상태
+  try {
+    if(log.work_status){
+      document.querySelectorAll('#status-chips .stchip').forEach(function(b){
+        b.classList.toggle('on', b.dataset.s===log.work_status);
+      });
+    }
+  } catch(e){}
+
+  // 3) 오늘 업무
+  try {
+    var tl=document.getElementById('today-list');
+    if(tl && Array.isArray(log.today_tasks) && log.today_tasks.length){
+      var th='';
+      log.today_tasks.forEach(function(t){
+        th+=buildTodayRowHtml(t.project||'', t.task||'', t.status||'진행중', t.hours||'');
+      });
+      tl.innerHTML=th;
+    }
+  } catch(e){ console.log('업무 복원 오류', e); }
+
+  // 4) 도움 요청
+  try {
+    var hl=document.getElementById('help-list');
+    if(hl && log.help_needed){
+      var lines = String(log.help_needed).split('\n').filter(function(s){return s.trim();});
+      if(lines.length){
+        var hh='';
+        lines.forEach(function(line){
+          hh+='<div class="flex" style="margin-bottom:8px"><input type="text" value="'+escH(line)+'" placeholder="막힌 것이나 도움이 필요한 내용을 적으세요"></div>';
+        });
+        hl.innerHTML=hh;
+      }
+    }
+  } catch(e){}
+}
+
 // ============================================
 // 오늘의 리하이 — 팀별 슬라이드 컨트롤
 // ============================================
