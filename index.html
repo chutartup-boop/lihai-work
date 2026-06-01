@@ -475,15 +475,8 @@
       </div>
 
       <div class="card" style="margin-top:14px">
-        <div class="sec-h"><div><h3>오늘 회의 레이더 (1)</h3><div class="sub">직원들이 잡은 회의 — 안건 보고 참석·관심 표시</div></div><span class="pill p-blue">2026-05-28</span></div>
-        <div style="border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px;margin-bottom:9px">
-          <div style="font-size:13.5px;font-weight:600">LGES 미팅 (출장)</div>
-          <div style="font-size:11.5px;color:var(--muted);margin-top:2px">종일 · 차현창 · LG에너지솔루션 · <b>큐모터스 정리사항 확인</b></div>
-          <div class="flex" style="gap:6px;margin-top:9px"><button class="btn" style="font-size:11.5px;padding:4px 11px" onclick="meetingAttend(this,'차현창','LGES 미팅 출장')">참석하겠음</button><button class="btn" style="font-size:11.5px;padding:4px 11px" onclick="meetingInterest(this,'차현창','LGES 미팅 출장')">★ 관심 표시</button></div>
-        </div>
-        <div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:13px;text-align:center;font-size:12px;color:var(--hint)">
-          그 외 오늘 잡힌 사내 회의는 없습니다. 직원이 회의 일정을 등록하면 여기에 자동으로 올라옵니다.
-        </div>
+        <div class="sec-h"><div><h3>오늘 회의 레이더</h3><div class="sub">직원들이 잡은 회의 — 안건 보고 참석·관심 표시</div></div><span class="pill p-blue" id="m-meet-count">0건</span></div>
+        <div id="m-meeting-list"></div>
       </div>
 
       <div class="card" style="margin-top:14px">
@@ -711,18 +704,53 @@ function setRole(r){
   }
 }
 
-// 댓글 저장소: COMMENTS[execIdx] = [ {author, text, ts, replies:[{author,text,ts}]} ]
+// 댓글 저장소: COMMENTS[execIdx] = [ {author, text, ts, replies:[...]} ] — 비로그인 시연용
 var COMMENTS = [[],[],[]];
+// DB 임원댓글 캐시: execId(대상 임원 employee id) → [{id, author_id, text, comment_type, parent_id, created_at}]
+var EXEC_CMT_CACHE = {};
+// execs 인덱스 ↔ employee id 양방향 (loadEmpMap 이후 채워짐)
+function execNameToId(name){
+  if(!EMP_MAP) return null;
+  var hit=null;
+  Object.keys(EMP_MAP).forEach(function(k){ if(EMP_MAP[k].name===name) hit=EMP_MAP[k].id; });
+  return hit;
+}
+
+async function loadExecComments(){
+  var empMap = await loadEmpMap();
+  // 대상 임원 id 목록
+  var execIds = DATA.execs.map(function(e){ return execNameToId(e.name); }).filter(Boolean);
+  EXEC_CMT_CACHE = {};
+  if(!execIds.length) return;
+  try {
+    var res = await db.from('exec_comments')
+      .select('id, exec_id, author_id, text, comment_type, parent_id, created_at')
+      .in('exec_id', execIds)
+      .order('created_at', {ascending:true});
+    if(res.error) throw res.error;
+    (res.data||[]).forEach(function(c){
+      (EXEC_CMT_CACHE[c.exec_id] = EXEC_CMT_CACHE[c.exec_id] || []).push(c);
+    });
+  } catch(e){ console.log('임원댓글 로드 오류:', e); }
+}
+
 function renderExec(){
+  var el=document.getElementById('m-exec'); if(!el) return;
+  if(!DB_USER){ return renderExecDemo(); }
+  el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--hint);font-size:13px">임원 보고·댓글 불러오는 중…</div></div>';
+  loadExecComments().then(function(){ renderExecBody(true); }).catch(function(){ renderExecBody(true); });
+}
+
+function renderExecBody(isDB){
   var el=document.getElementById('m-exec'); if(!el) return;
   var canDirect = IS_MGR && LOGIN_USER && LOGIN_USER.title==='대표이사';
   var iAmExecOrUp = LOGIN_USER && (gradeOf(LOGIN_USER)==='exec' || gradeOf(LOGIN_USER)==='mgr');
   var meName = LOGIN_USER ? LOGIN_USER.name : '추혜성';
-  var meTitleShort = LOGIN_USER ? (LOGIN_USER.title==='대표이사'?'대표':LOGIN_USER.title) : '대표';
   var headerNote = canDirect
     ? '대표님이 지시·의견을 남기고, 임원이 답글을 달 수 있습니다'
     : (iAmExecOrUp ? '임원들끼리 서로의 보고에 의견·답글을 달 수 있습니다' : '임원진 보고 열람만 가능합니다');
-  var h='<div class="card"><div class="sec-h"><div><h2>임원진 일일 보고</h2><div class="sub">'+headerNote+'</div></div><span class="pill '+(canDirect?'p-blue':'p-gray')+'">'+(canDirect?'대표 권한':'임원 권한')+'</span></div>';
+  var dbBadge = isDB ? ' <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span>' : '';
+  var h='<div class="card"><div class="sec-h"><div><h2>임원진 일일 보고'+dbBadge+'</h2><div class="sub">'+headerNote+'</div></div><span class="pill '+(canDirect?'p-blue':'p-gray')+'">'+(canDirect?'대표 권한':'임원 권한')+'</span></div>';
 
   DATA.execs.forEach(function(e,idx){
     var isMyCard = LOGIN_USER && LOGIN_USER.name===e.name;
@@ -732,15 +760,12 @@ function renderExec(){
     h+='<div style="'+bgHi+';border:'+borderHi+';border-radius:var(--r-s);padding:14px;margin-bottom:14px">'
       +'<div class="flex" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600">'+e.name+'</span><span class="pill p-gray">'+e.title+'</span>'+myBadge+'<span style="font-size:11px;color:var(--hint);margin-left:auto">오늘 보고</span></div>'
       +'<div style="font-size:13px;color:var(--ink);line-height:1.6;background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-bottom:10px">'+e.work+'</div>'
-      +'<div id="exec-cmt-'+idx+'">'+renderExecComments(idx, meName)+'</div>';
+      +'<div id="exec-cmt-'+idx+'">'+(isDB?renderExecCommentsDB(idx):renderExecComments(idx, meName))+'</div>';
 
-    // 댓글 입력 권한 분기
     if(canDirect){
-      // 대표: 모든 임원 카드에 지시·의견 가능
       h+='<div style="font-size:11.5px;color:var(--hint);margin:6px 0 6px">💬 '+e.name+' 님에게 대표 지시·의견 남기기</div>'
         +'<div class="flex" style="gap:6px"><input type="text" id="exec-in-'+idx+'" placeholder="'+e.name+' 님 보고에 대한 지시·의견을 적어주세요" style="flex:1"><button class="btn btn-pri" onclick="execComment('+idx+')">남기기</button></div>';
     } else if(iAmExecOrUp){
-      // 임원·총괄: 본인 카드 + 다른 임원 카드에도 의견 가능
       var label = isMyCard ? '✍ 본인 보고 보강 코멘트' : '💬 '+e.name+' 님 보고에 의견 남기기';
       var ph = isMyCard ? '본인 보고에 추가 설명·보강 내용' : e.name+' 님 보고에 의견·동조·질문을 남기세요';
       h+='<div style="font-size:11.5px;color:var(--hint);margin:6px 0 6px">'+label+'</div>'
@@ -750,6 +775,77 @@ function renderExec(){
   });
   h+='</div>';
   el.innerHTML=h;
+}
+
+// DB 댓글 렌더 (parent_id로 답글 트리 구성)
+function renderExecCommentsDB(idx){
+  var e = DATA.execs[idx];
+  var execId = execNameToId(e.name);
+  var list = (EXEC_CMT_CACHE[execId] || []);
+  var roots = list.filter(function(c){ return !c.parent_id; });
+  if(roots.length===0) return '';
+  var h='';
+  roots.forEach(function(c){
+    var author = (EMP_MAP[c.author_id]||{}).name || '';
+    var atitle = (EMP_MAP[c.author_id]||{}).title || '';
+    var authorDisp = author + (atitle?' '+atitle:'');
+    var bg, badge;
+    if(c.comment_type==='mgr'){ bg='background:var(--lblue);color:var(--navy);border-left:3px solid var(--blue)'; badge='<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>'; }
+    else if(c.comment_type==='self'){ bg='background:#FFF8E6;color:var(--amber-t);border-left:3px solid var(--amber)'; badge='<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'; }
+    else { bg='background:#F0EAFA;color:#5E44C4;border-left:3px solid #7A5AF0'; badge='<span style="font-size:9.5px;background:#7A5AF0;color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>'; }
+    h+='<div style="font-size:12.5px;border-radius:var(--r-s);padding:9px 12px;margin-bottom:7px;'+bg+'">'
+      +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+escH(authorDisp)+'</b><span style="font-size:10.5px;color:var(--hint)">· '+timeAgo(c.created_at)+'</span>'+badge+'</div>'
+      +'<div style="line-height:1.5">'+escH(c.text)+'</div>';
+    var replies = list.filter(function(r){ return r.parent_id===c.id; });
+    if(replies.length){
+      var lineColor = c.comment_type==='mgr'?'var(--blue)':(c.comment_type==='self'?'var(--amber)':'#7A5AF0');
+      h+='<div style="margin-top:7px;padding-left:11px;border-left:2px solid '+lineColor+'">';
+      replies.forEach(function(r){
+        var ra=(EMP_MAP[r.author_id]||{}); var raDisp=(ra.name||'')+(ra.title?' '+ra.title:'');
+        h+='<div style="font-size:12px;background:#fff;border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
+          +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:2px"><b style="font-weight:600">'+escH(raDisp)+'</b><span style="font-size:10px;color:var(--hint)">· '+timeAgo(r.created_at)+'</span></div>'
+          +'<div style="line-height:1.5">'+escH(r.text)+'</div></div>';
+      });
+      h+='</div>';
+    }
+    h+='<div style="margin-top:6px"><button class="btn" style="font-size:10.5px;padding:3px 9px" onclick="toggleReplyDB('+idx+',\''+c.id+'\')">↩ 답글</button>'
+      +'<div id="reply-box-'+idx+'-'+c.id+'" style="display:none;margin-top:6px"><div class="flex" style="gap:5px"><input type="text" id="reply-in-'+idx+'-'+c.id+'" placeholder="답글을 입력하세요" style="flex:1;font-size:12px;height:30px"><button class="btn btn-pri" style="font-size:11.5px;padding:5px 11px" onclick="submitReplyDB('+idx+',\''+c.id+'\')">전송</button></div></div>'
+      +'</div></div>';
+  });
+  return h;
+}
+
+function toggleReplyDB(idx, cid){
+  var box=document.getElementById('reply-box-'+idx+'-'+cid);
+  if(!box) return;
+  box.style.display = box.style.display==='none' ? '' : 'none';
+  if(box.style.display===''){ var inp=document.getElementById('reply-in-'+idx+'-'+cid); if(inp) inp.focus(); }
+}
+
+async function submitReplyDB(idx, cid){
+  var inp=document.getElementById('reply-in-'+idx+'-'+cid);
+  if(!inp || !inp.value.trim()) return;
+  var txt=inp.value.trim();
+  var execId=execNameToId(DATA.execs[idx].name);
+  try {
+    var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'peer', parent_id:cid });
+    if(ins.error) throw ins.error;
+    // 원 댓글 작성자에게 알림
+    var parent=(EXEC_CMT_CACHE[execId]||[]).find(function(c){return String(c.id)===String(cid);});
+    if(parent && parent.author_id!==DB_USER.id){
+      var pa=(EMP_MAP[parent.author_id]||{}).name;
+      if(pa) notify(pa, '↩ '+(LOGIN_USER?LOGIN_USER.name:'')+' 님이 회원님의 댓글에 답글을 남겼습니다: "'+txt+'"');
+    }
+    toast('답글이 등록되었습니다 🟢');
+    await loadExecComments(); renderExecBody(true);
+  } catch(e){
+    alert('답글 저장 실패: '+(e.message||e)+'\n(임원 권한 정책 문제일 수 있어요)');
+  }
+}
+
+function renderExecDemo(){
+  var el=document.getElementById('m-exec'); if(!el) return;
+  renderExecBody(false);
 }
 
 function renderExecComments(idx, meName){
@@ -785,12 +881,25 @@ function renderExecComments(idx, meName){
   return h;
 }
 
-function execComment(idx){
+async function execComment(idx){
   var inp=document.getElementById('exec-in-'+idx);
   if(!inp || !inp.value.trim()) return;
-  COMMENTS[idx].push({author:'추혜성 대표', text:inp.value, ts:'방금', fromMgr:true, replies:[]});
+  var txt=inp.value.trim();
   var execName=DATA.execs[idx].name;
-  notify(execName, '💬 추혜성 대표님이 회원님의 업무 보고에 의견을 남겼습니다: "'+inp.value+'"');
+  if(DB_USER){
+    var execId=execNameToId(execName);
+    try {
+      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'mgr' });
+      if(ins.error) throw ins.error;
+      notify(execName, '💬 '+(LOGIN_USER?LOGIN_USER.name:'대표')+'님이 회원님의 업무 보고에 의견을 남겼습니다: "'+txt+'"');
+      toast(execName+' 님에게 피드백이 전달되었습니다 🟢');
+      inp.value='';
+      await loadExecComments(); renderExecBody(true);
+    } catch(e){ alert('저장 실패: '+(e.message||e)); }
+    return;
+  }
+  COMMENTS[idx].push({author:'추혜성 대표', text:txt, ts:'방금', fromMgr:true, replies:[]});
+  notify(execName, '💬 추혜성 대표님이 회원님의 업무 보고에 의견을 남겼습니다: "'+txt+'"');
   toast(execName+' 님에게 피드백이 전달되었습니다');
   inp.value='';
   renderExec();
@@ -804,29 +913,29 @@ function execSelfComment(idx){
   renderExec();
 }
 
-function execExecComment(idx){
-  // 임원이 자기/타 임원 카드에 의견 남기기
+async function execExecComment(idx){
   var inp=document.getElementById('exec-in-'+idx);
   if(!inp || !inp.value.trim()) return;
+  var txt=inp.value.trim();
   var meName = LOGIN_USER ? LOGIN_USER.name : '임원';
   var meTitle = LOGIN_USER ? LOGIN_USER.title : '';
   var execName = DATA.execs[idx].name;
   var isMyCard = (meName===execName);
-  COMMENTS[idx].push({
-    author: meName + (meTitle?' '+meTitle:''),
-    text: inp.value,
-    ts:'방금',
-    fromMgr:false,
-    fromPeer: !isMyCard,
-    replies:[]
-  });
-  // 카드 주인에게 알림 (본인 카드가 아닐 때)
-  if(!isMyCard){
-    notify(execName, '💬 '+meName+' '+meTitle+'님이 회원님의 보고에 의견을 남겼습니다: "'+inp.value+'"');
-    toast(execName+' 님에게 의견이 전달되었습니다');
-  } else {
-    toast('본인 보고에 보강 코멘트를 추가했습니다');
+  if(DB_USER){
+    var execId=execNameToId(execName);
+    try {
+      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:(isMyCard?'self':'peer') });
+      if(ins.error) throw ins.error;
+      if(!isMyCard){ notify(execName, '💬 '+meName+' '+meTitle+'님이 회원님의 보고에 의견을 남겼습니다: "'+txt+'"'); toast(execName+' 님에게 의견이 전달되었습니다 🟢'); }
+      else { toast('본인 보고에 보강 코멘트를 추가했습니다 🟢'); }
+      inp.value='';
+      await loadExecComments(); renderExecBody(true);
+    } catch(e){ alert('저장 실패: '+(e.message||e)+'\n(임원 권한 정책 문제일 수 있어요)'); }
+    return;
   }
+  COMMENTS[idx].push({ author: meName + (meTitle?' '+meTitle:''), text: txt, ts:'방금', fromMgr:false, fromPeer: !isMyCard, replies:[] });
+  if(!isMyCard){ notify(execName, '💬 '+meName+' '+meTitle+'님이 회원님의 보고에 의견을 남겼습니다: "'+txt+'"'); toast(execName+' 님에게 의견이 전달되었습니다'); }
+  else { toast('본인 보고에 보강 코멘트를 추가했습니다'); }
   inp.value='';
   renderExec();
 }
@@ -859,23 +968,59 @@ function submitReply(idx, cIdx){
 // ===== 대표 회사 하이라이트 (1주일 노출) =====
 // 직원 오늘의 리하이 맨 위에 황금카드로 자동 노출
 var CEO_HIGHLIGHTS = [
-  // 시연용 예시 (5/26 작성 — 5/28 기준 2일째)
+  // 시연용 예시 (비로그인 시에만 사용)
   {text:'리하이가 \'2026 K-Defense Official Partner\'로 선정되었습니다. 6월 코엑스 전시 함께 준비합시다.', by:'추혜성 대표', when:'5/26', daysLeft:5}
 ];
 
-function postCeoHighlight(){
+// DB에서 활성 하이라이트 로드 → CEO_HIGHLIGHTS 채움
+async function loadCeoHighlights(){
+  if(!DB_USER) return;
+  try {
+    var res = await db.from('ceo_highlights')
+      .select('id, text, author_id, expires_at, is_active, created_at')
+      .eq('is_active', true)
+      .order('created_at', {ascending:false});
+    if(res.error) throw res.error;
+    var map = await loadEmpMap();
+    var now = Date.now();
+    CEO_HIGHLIGHTS = (res.data||[])
+      .filter(function(c){ return !c.expires_at || new Date(c.expires_at).getTime() > now; })
+      .map(function(c){
+        var by=(map[c.author_id]||{}).name || '추혜성';
+        var daysLeft = c.expires_at ? Math.max(0, Math.ceil((new Date(c.expires_at).getTime()-now)/86400000)) : 7;
+        return {
+          id: c.id, text: c.text, by: by+' 대표',
+          when: c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}) : '',
+          daysLeft: daysLeft
+        };
+      });
+  } catch(e){ console.log('하이라이트 로드 오류:', e); }
+}
+
+async function postCeoHighlight(){
   var inp=document.getElementById('ceo-hl-input');
   var days=document.getElementById('ceo-hl-days');
   if(!inp || !inp.value.trim()){ alert('내용을 입력해주세요.'); return; }
-  CEO_HIGHLIGHTS.unshift({
-    text: inp.value.trim(),
-    by: (LOGIN_USER && LOGIN_USER.name ? LOGIN_USER.name : '추혜성')+' 대표',
-    when: TODAY.replace('2026-','').replace('-','/'),
-    daysLeft: parseInt(days.value)||7
-  });
+  var txt=inp.value.trim();
+  var nDays=parseInt(days.value)||7;
+  if(DB_USER){
+    try {
+      var expires = new Date(Date.now()+nDays*86400000).toISOString();
+      var ins=await db.from('ceo_highlights').insert({ text:txt, author_id:DB_USER.id, days_active:nDays, expires_at:expires, is_active:true });
+      if(ins.error) throw ins.error;
+      inp.value='';
+      notify('all', '⭐ 대표님이 회사 하이라이트를 공유했습니다: "'+txt.substring(0,40)+(txt.length>40?'...':'')+'"');
+      toast('전직원에게 회사 하이라이트를 공유했습니다 ('+nDays+'일간 노출) 🟢');
+      await loadCeoHighlights();
+      renderCeoHighlightList();
+      try { renderCompany(); } catch(e){}
+    } catch(e){ alert('저장 실패: '+(e.message||e)+'\n(대표 권한 정책 문제일 수 있어요)'); }
+    return;
+  }
+  CEO_HIGHLIGHTS.unshift({ text:txt, by:(LOGIN_USER&&LOGIN_USER.name?LOGIN_USER.name:'추혜성')+' 대표', when:TODAY.replace('2026-','').replace('-','/'), daysLeft:nDays });
   inp.value='';
-  notify('all', '⭐ 대표님이 회사 하이라이트를 공유했습니다: "'+CEO_HIGHLIGHTS[0].text.substring(0,40)+(CEO_HIGHLIGHTS[0].text.length>40?'...':'')+'"');
-  toast('전직원에게 회사 하이라이트를 공유했습니다 ('+CEO_HIGHLIGHTS[0].daysLeft+'일간 노출)');
+  notify('all', '⭐ 대표님이 회사 하이라이트를 공유했습니다: "'+CEO_HIGHLIGHTS[0].text.substring(0,40)+'"');
+  toast('전직원에게 회사 하이라이트를 공유했습니다');
   renderCeoHighlightList();
 }
 function renderCeoHighlightList(){
@@ -887,13 +1032,25 @@ function renderCeoHighlightList(){
   }
   var h='<div style="font-size:11.5px;color:#7A4D08;font-weight:600;margin-bottom:7px">현재 공유 중 ('+CEO_HIGHLIGHTS.length+'건)</div>';
   CEO_HIGHLIGHTS.forEach(function(c, idx){
-    h+='<div style="background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;border-radius:9px;padding:11px 13px;margin-bottom:6px"><div style="font-size:12.5px;color:var(--ink);line-height:1.55">'+c.text+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:#7A4D08;font-weight:600"><span>'+c.by+' · '+c.when+'</span><span style="background:#fff;color:#7A4D08;padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+idx+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:#fff;color:#7A4D08;border-color:#C77A0E">조기 종료</button></div></div>';
+    var rmArg = (c.id!=null) ? "'"+c.id+"'" : idx;
+    h+='<div style="background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;border-radius:9px;padding:11px 13px;margin-bottom:6px"><div style="font-size:12.5px;color:var(--ink);line-height:1.55">'+escH(c.text)+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:#7A4D08;font-weight:600"><span>'+escH(c.by)+' · '+c.when+'</span><span style="background:#fff;color:#7A4D08;padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+rmArg+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:#fff;color:#7A4D08;border-color:#C77A0E">조기 종료</button></div></div>';
   });
   box.innerHTML=h;
 }
-function removeCeoHighlight(idx){
+async function removeCeoHighlight(idxOrId){
   if(!confirm('이 하이라이트를 즉시 종료하시겠습니까?')) return;
-  CEO_HIGHLIGHTS.splice(idx,1);
+  if(DB_USER && typeof idxOrId==='string'){
+    try {
+      var up=await db.from('ceo_highlights').update({is_active:false}).eq('id', idxOrId);
+      if(up.error) throw up.error;
+      toast('하이라이트를 종료했습니다 🟢');
+      await loadCeoHighlights();
+      renderCeoHighlightList();
+      try { renderCompany(); } catch(e){}
+    } catch(e){ alert('종료 실패: '+(e.message||e)); }
+    return;
+  }
+  CEO_HIGHLIGHTS.splice(idxOrId,1);
   toast('하이라이트를 종료했습니다');
   renderCeoHighlightList();
 }
@@ -907,7 +1064,109 @@ var HELPS = [
   {id:4, who:'최철곤', dept:'군집드론팀', when:'5/27', text:'7·8월 시민참여형 드론쇼 주제 — 팀 회의 결과 도출 필요', status:'open', replies:[]}
 ];
 
+// ============================================
+// 도움요청 DB 연동 — 공용 로더·렌더 헬퍼
+// ============================================
+var EMP_MAP = null;
+async function loadEmpMap(force){
+  if(EMP_MAP && !force) return EMP_MAP;
+  try {
+    var res = await db.from('employees').select('id, name, dept, title');
+    EMP_MAP = {};
+    (res.data||[]).forEach(function(e){ EMP_MAP[e.id]=e; });
+  } catch(e){ EMP_MAP = EMP_MAP || {}; }
+  return EMP_MAP;
+}
+
+var HELP_CACHE = {};
+async function loadHelpRequests(){
+  var empMap = await loadEmpMap();
+  var reqRes = await db.from('help_requests')
+    .select('id, requester_id, text, status, created_at, resolved_at')
+    .order('created_at', {ascending:false});
+  if(reqRes.error) throw reqRes.error;
+  var reqs = reqRes.data||[];
+  var ids = reqs.map(function(r){return r.id;});
+  if(ids.length){
+    var repRes = await db.from('help_replies')
+      .select('id, request_id, replier_id, text, created_at')
+      .in('request_id', ids)
+      .order('created_at', {ascending:true});
+    var byReq={};
+    if(!repRes.error){ (repRes.data||[]).forEach(function(rp){ (byReq[rp.request_id]=byReq[rp.request_id]||[]).push(rp); }); }
+    reqs.forEach(function(r){ r.replies = byReq[r.id]||[]; });
+  } else {
+    reqs.forEach(function(r){ r.replies=[]; });
+  }
+  HELP_CACHE={}; reqs.forEach(function(r){ HELP_CACHE[r.id]=r; });
+  return {reqs:reqs, empMap:empMap};
+}
+
+// 도움요청 1건 카드 HTML (DB 모드)
+function helpCardHtmlDB(hp, empMap){
+  var e = empMap[hp.requester_id] || {};
+  var who = e.name || '직원';
+  var dept = e.dept || '';
+  var when = hp.created_at ? new Date(hp.created_at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}) : '';
+  var replies = hp.replies || [];
+  var hasReplies = replies.length>0;
+  var replyBadge = hasReplies ? '<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1.5px 7px;border-radius:5px;margin-left:5px;font-weight:600">💬 답변 '+replies.length+'</span>' : '';
+  var h='<div class="help-card" id="help-'+hp.id+'"><div class="q">'+escH(hp.text)+replyBadge+'</div><div class="help-meta">'+escH(who)+' · '+escH(dept)+' · '+when+'<button class="btn btn-pri" style="margin-left:auto" onclick="openHelpReply('+hp.id+')">'+(hasReplies?'추가 답변':'답변하기')+'</button></div>';
+  if(hasReplies){
+    h+='<div style="margin-top:9px"><div style="font-size:10.5px;color:var(--navy);font-weight:600;margin-bottom:4px">💬 답변 이력 ('+replies.length+'건)</div><div style="padding-left:11px;border-left:3px solid var(--blue)">';
+    replies.forEach(function(r,ri){
+      var re = empMap[r.replier_id]||{};
+      var byName = (re.name||'') + (re.title ? ' '+re.title : '');
+      var isLatest = (ri===replies.length-1);
+      var rwhen = r.created_at ? new Date(r.created_at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      var bg = isLatest ? 'background:var(--lblue);border:1.5px solid var(--blue)' : 'background:#fff;border:1px solid var(--line)';
+      h+='<div style="'+bg+';border-radius:7px;padding:8px 11px;margin-top:5px;font-size:12px">'
+        +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><b style="color:var(--navy);font-size:12.5px">✍ '+escH(byName)+'</b>'+(isLatest?'<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:4px;font-weight:600">최신</span>':'')+'<span style="color:var(--hint);font-size:10.5px;margin-left:auto">'+rwhen+'</span></div>'
+        +'<div style="line-height:1.5;color:var(--ink)">'+escH(r.text)+'</div></div>';
+    });
+    h+='</div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+
 function renderMgrHelps(){
+  var box=document.getElementById('m-helps-card');
+  if(!box) return;
+  if(!DB_USER){ return renderMgrHelpsDemo(); }
+  box.innerHTML='<div style="padding:20px;text-align:center;color:var(--hint);font-size:12.5px">도움 요청 불러오는 중…</div>';
+  loadHelpRequests().then(function(data){
+    var reqs=data.reqs, empMap=data.empMap;
+    var open = reqs.filter(function(r){return r.status==='open';});
+    var resolved = reqs.filter(function(r){return r.status==='resolved';});
+    var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><h3 style="color:var(--red-t);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>도움 요청 — 답변 대기 ('+open.length+') <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span></h3>'+(resolved.length>0?'<span style="font-size:11px;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:9px">✓ 해결 '+resolved.length+'건</span>':'')+'</div>';
+    if(open.length===0){
+      h+='<div style="background:var(--green-bg);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 모든 도움 요청이 처리되었습니다</div>';
+    } else {
+      open.forEach(function(hp){ h+=helpCardHtmlDB(hp, empMap); });
+    }
+    if(resolved.length>0){
+      h+='<details style="margin-top:11px"><summary style="cursor:pointer;font-size:12px;color:var(--hint);padding:6px 0">✓ 해결된 도움 요청 '+resolved.length+'건 보기</summary>';
+      resolved.forEach(function(hp){
+        var e=empMap[hp.requester_id]||{};
+        h+='<div style="background:var(--green-bg);border-radius:7px;padding:9px 11px;margin-top:5px;opacity:.85"><div style="font-size:12px"><b>'+escH(e.name||'')+'</b> ('+escH(e.dept||'')+'): '+escH(hp.text)+'</div>';
+        if(hp.replies && hp.replies.length){
+          var last=hp.replies[hp.replies.length-1];
+          var re=empMap[last.replier_id]||{};
+          h+='<div style="font-size:11px;color:var(--green-t);margin-top:4px"><b>✓ '+escH(re.name||'')+'</b>이(가) 답변: '+escH(last.text)+'</div>';
+        }
+        h+='</div>';
+      });
+      h+='</details>';
+    }
+    box.innerHTML=h;
+  }).catch(function(e){
+    console.error('도움요청 조회 오류', e);
+    box.innerHTML='<div style="padding:16px;text-align:center;color:var(--red-t);font-size:12.5px">⚠ 도움 요청을 불러오지 못했습니다.<br><span style="font-size:11px;color:var(--hint)">'+escH(e.message||e)+'</span></div>';
+  });
+}
+
+function renderMgrHelpsDemo(){
   var box=document.getElementById('m-helps-card');
   if(!box) return;
   var open = HELPS.filter(function(h){return h.status==='open';});
@@ -952,20 +1211,30 @@ function renderMgrHelps(){
 }
 
 function openHelpReply(id){
-  var hp = HELPS.find(function(h){return h.id===id;});
-  if(!hp) return;
+  var who, dept, when, text;
+  var dbHp = (HELP_CACHE && HELP_CACHE[id]);
+  if(dbHp){
+    var e = (EMP_MAP && EMP_MAP[dbHp.requester_id]) || {};
+    who = e.name || '직원'; dept = e.dept || '';
+    when = dbHp.created_at ? new Date(dbHp.created_at).toLocaleDateString('ko-KR') : '';
+    text = dbHp.text;
+  } else {
+    var hp = HELPS.find(function(h){return h.id===id;});
+    if(!hp) return;
+    who = hp.who; dept = hp.dept; when = hp.when; text = hp.text;
+  }
   var bg=document.createElement('div');
   bg.id='help-reply-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML=
     '<div style="background:#fff;border-radius:13px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
-    +'<div style="padding:17px 22px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:20px">🙋</span><div><div style="font-size:14.5px;font-weight:700">도움 요청 답변</div><div style="font-size:11px;color:var(--hint);margin-top:2px">'+hp.who+' · '+hp.dept+' · '+hp.when+'</div></div></div></div>'
+    +'<div style="padding:17px 22px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:20px">🙋</span><div><div style="font-size:14.5px;font-weight:700">도움 요청 답변</div><div style="font-size:11px;color:var(--hint);margin-top:2px">'+escH(who)+' · '+escH(dept)+' · '+escH(when)+'</div></div></div></div>'
     +'<div style="padding:18px 22px">'
-    +'<div style="background:var(--soft);border-left:3px solid var(--red);border-radius:7px;padding:11px 13px;margin-bottom:14px;font-size:13px;color:var(--ink)">'+hp.text+'</div>'
+    +'<div style="background:var(--soft);border-left:3px solid var(--red);border-radius:7px;padding:11px 13px;margin-bottom:14px;font-size:13px;color:var(--ink)">'+escH(text)+'</div>'
     +'<label style="display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px">답변 내용</label>'
-    +'<textarea id="help-reply-text" placeholder="해결 방안·안내·결정사항을 적어주세요. '+hp.who+' 님에게 알림으로 즉시 전달됩니다." style="width:100%;min-height:90px;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;margin-bottom:13px"></textarea>'
+    +'<textarea id="help-reply-text" placeholder="해결 방안·안내·결정사항을 적어주세요. '+escH(who)+' 님에게 알림으로 전달됩니다." style="width:100%;min-height:90px;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;margin-bottom:13px"></textarea>'
     +'<div style="margin-bottom:13px"><label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="help-resolve-flag" checked> 답변과 함께 \'해결됨\'으로 표시</label></div>'
-    +'<div style="display:flex;gap:8px"><button class="btn" onclick="closeHelpReply()" style="flex:1">취소</button><button class="btn btn-pri" onclick="submitHelpReply('+id+')" style="flex:2">답변 전송 → '+hp.who+' 알림</button></div>'
+    +'<div style="display:flex;gap:8px"><button class="btn" onclick="closeHelpReply()" style="flex:1">취소</button><button class="btn btn-pri" id="help-reply-send" onclick="submitHelpReply('+id+')" style="flex:2">답변 전송 → '+escH(who)+' 알림</button></div>'
     +'</div></div>';
   document.body.appendChild(bg);
   setTimeout(function(){var t=document.getElementById('help-reply-text'); if(t) t.focus();},80);
@@ -974,21 +1243,56 @@ function closeHelpReply(){
   var bg=document.getElementById('help-reply-bg');
   if(bg) bg.remove();
 }
-function submitHelpReply(id){
-  var hp = HELPS.find(function(h){return h.id===id;});
-  if(!hp) return;
-  var txt = document.getElementById('help-reply-text').value.trim();
+async function submitHelpReply(id){
+  var txtEl = document.getElementById('help-reply-text');
+  var txt = txtEl ? txtEl.value.trim() : '';
   if(!txt){ alert('답변 내용을 입력해주세요.'); return; }
   var resolve = document.getElementById('help-resolve-flag').checked;
-  var me = LOGIN_USER ? LOGIN_USER.name : '대표';
-  var myTitle = LOGIN_USER ? (LOGIN_USER.title==='대표이사'?' 대표':' '+LOGIN_USER.title) : ' 대표';
-  hp.replies.push({by:me+myTitle, text:txt, when:'방금'});
-  if(resolve) hp.status='resolved';
-  // 직원에게 알림
-  notify(hp.who, '💬 '+me+myTitle+'님이 회원님의 도움 요청에 답변했습니다: "'+txt+'"'+(resolve?' (해결 완료)':''));
-  toast(hp.who+' 님에게 답변이 전달되었습니다');
-  closeHelpReply();
-  renderMgrHelps();
+  var dbHp = (HELP_CACHE && HELP_CACHE[id]);
+
+  // 시연(비로그인) 모드 — 기존 메모리 방식
+  if(!dbHp || !DB_USER){
+    var hp = HELPS.find(function(h){return h.id===id;});
+    if(!hp) { closeHelpReply(); return; }
+    var meD = LOGIN_USER ? LOGIN_USER.name : '대표';
+    var titD = LOGIN_USER ? (LOGIN_USER.title==='대표이사'?' 대표':' '+LOGIN_USER.title) : ' 대표';
+    hp.replies.push({by:meD+titD, text:txt, when:'방금'});
+    if(resolve) hp.status='resolved';
+    notify(hp.who, '💬 '+meD+titD+'님이 회원님의 도움 요청에 답변했습니다: "'+txt+'"'+(resolve?' (해결 완료)':''));
+    toast(hp.who+' 님에게 답변이 전달되었습니다');
+    closeHelpReply();
+    renderMgrHelps();
+    return;
+  }
+
+  // DB 모드
+  var sendBtn = document.getElementById('help-reply-send');
+  if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='전송 중…'; }
+  try {
+    var ins = await db.from('help_replies').insert({ request_id:id, replier_id:DB_USER.id, text:txt });
+    if(ins.error) throw ins.error;
+    if(resolve){
+      var up = await db.from('help_requests').update({ status:'resolved', resolved_at:new Date().toISOString() }).eq('id', id);
+      if(up.error) throw up.error;
+    }
+    // 요청자에게 알림 (notify가 이름→id 변환 후 DB insert)
+    try {
+      var reqEmp = (EMP_MAP && EMP_MAP[dbHp.requester_id]) || {};
+      var myName = LOGIN_USER ? LOGIN_USER.name : '';
+      if(reqEmp.name){
+        notify(reqEmp.name, '💬 '+myName+'님이 도움 요청에 답변했습니다'+(resolve?' (해결 완료)':'')+': "'+txt+'"');
+      }
+    } catch(ne){ console.log('알림 생성 생략:', ne); }
+    toast('답변이 전달되었습니다 🟢');
+    closeHelpReply();
+    // 보던 화면 새로고침
+    if(typeof curEmpTab!=='undefined' && curEmpTab==='team'){ renderTeam(); }
+    renderMgrHelps();
+  } catch(e){
+    console.error('답변 저장 오류', e);
+    if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='답변 전송'; }
+    alert('답변 저장 실패: ' + (e.message||e) + '\n(권한 정책 문제일 수 있어요)');
+  }
 }
 async function renderTeam(){
   var el=document.getElementById('e-team'); if(!el) return;
@@ -1076,7 +1380,25 @@ async function renderTeam(){
     }
   });
 
-  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--navy);line-height:1.6">💡 팀장 권한 — 팀원이 오늘 제출한 일일업무가 실시간으로 표시됩니다. (도움요청·휴가 연동은 다음 단계)</div>';
+  // 팀원 도움 요청 (DB) — 답변 가능
+  h+='<div style="font-size:13px;font-weight:600;margin-top:20px;margin-bottom:9px">🙋 팀원 도움 요청 <span style="font-size:11px;color:var(--hint);font-weight:400">· 답변하면 요청자에게 알림</span></div>';
+  try {
+    var hd = await loadHelpRequests();
+    var teamNames = members.map(function(m){return m.name;});
+    var teamOpen = hd.reqs.filter(function(r){
+      var e = hd.empMap[r.requester_id];
+      return e && teamNames.indexOf(e.name)>=0 && r.status==='open';
+    });
+    if(teamOpen.length===0){
+      h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12px;color:var(--hint)">답변 대기 중인 도움 요청이 없습니다</div>';
+    } else {
+      teamOpen.forEach(function(hp){ h+=helpCardHtmlDB(hp, hd.empMap); });
+    }
+  } catch(e){
+    h+='<div style="font-size:11.5px;color:var(--red-t);padding:10px;background:var(--red-bg);border-radius:8px">⚠ 도움 요청 조회 실패: '+escH(e.message||e)+'</div>';
+  }
+
+  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--navy);line-height:1.6">💡 팀장 권한 — 팀원 오늘 일지와 도움요청이 실시간으로 표시됩니다. 답변하면 요청자에게 알림이 전달됩니다. (휴가 연동은 다음 단계)</div>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -1467,7 +1789,9 @@ async function logout(){
   // 비번 칸 초기화
   var pwEl = document.getElementById('login-pw');
   if(pwEl) pwEl.value = '';
-  NOTIFS=[]; refreshNotifBadge();
+  NOTIFS=[]; DB_NOTIFS=[]; refreshNotifBadge();
+  if(NOTIF_POLL){ clearInterval(NOTIF_POLL); NOTIF_POLL=null; }
+  EMP_MAP=null;
   toast('로그아웃되었습니다');
   window.scrollTo(0,0);
 }
@@ -1980,6 +2304,25 @@ async function submitDay(){
     if(saveResult.error) throw saveResult.error;
     
     toast('일일업무가 저장되었습니다 🟢');
+
+    // 도움 필요 → help_requests 자동 생성 (이미 열린 동일 요청은 건너뜀)
+    try {
+      var helpLines = (logData.help_needed||'').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+      if(helpLines.length){
+        var openRes = await db.from('help_requests')
+          .select('text')
+          .eq('requester_id', DB_USER.id)
+          .eq('status','open');
+        var openTexts = (openRes.data||[]).map(function(r){return r.text;});
+        var toInsert = helpLines
+          .filter(function(l){ return openTexts.indexOf(l)<0; })
+          .map(function(l){ return { requester_id: DB_USER.id, text: l, status:'open' }; });
+        if(toInsert.length){
+          var hr = await db.from('help_requests').insert(toInsert);
+          if(hr.error) console.log('도움요청 생성 오류:', hr.error);
+        }
+      }
+    } catch(he){ console.log('도움요청 동기화 생략:', he); }
   } catch(err) {
     console.error('일지 저장 오류:', err);
     toast('⚠ 저장 실패: ' + (err.message||err) + ' (화면 진행은 유지)');
@@ -2474,11 +2817,104 @@ function mgrTab(t){
   document.getElementById('m-daily').classList.toggle('hidden', t!=='daily');
   document.getElementById('m-grant').classList.toggle('hidden', t!=='grant');
   document.getElementById('m-exec').classList.toggle('hidden', t!=='exec');
-  if(t==='daily'){ mgrSub('dept'); renderMgrFlights(); renderMgrHelps(); renderCeoHighlightList(); }
+  if(t==='daily'){ mgrSub('dept'); renderMgrMeetings(); renderMgrFlights(); renderMgrHelps(); renderCeoHighlightList(); }
   if(t==='grant'){ renderKanban('m-grant', true); }
   if(t==='exec'){ renderExec(); }
 }
+function renderMgrMeetings(){
+  var box=document.getElementById('m-meeting-list');
+  var cnt=document.getElementById('m-meet-count');
+  if(!box) return;
+  if(!DB_USER){
+    box.innerHTML='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:13px;text-align:center;font-size:12px;color:var(--hint)">직원이 회의 일정을 등록하면 여기에 자동으로 올라옵니다.</div>';
+    if(cnt) cnt.textContent='0건';
+    return;
+  }
+  box.innerHTML='<div style="padding:14px;text-align:center;color:var(--hint);font-size:12px">오늘 회의 불러오는 중…</div>';
+  (async function(){
+    try {
+      var map = await loadEmpMap();
+      var res = await db.from('daily_logs').select('employee_id, meetings, work_date').eq('work_date', TODAY);
+      if(res.error) throw res.error;
+      var meets=[];
+      (res.data||[]).forEach(function(log){
+        if(Array.isArray(log.meetings)){
+          log.meetings.forEach(function(m){
+            if(m && m.topic){
+              var e=map[log.employee_id]||{};
+              meets.push({ topic:m.topic, when:m.when||'', who:m.who||e.name||'', where:m.where||'', organizer:e.name||'' });
+            }
+          });
+        }
+      });
+      if(cnt) cnt.textContent=meets.length+'건';
+      if(meets.length===0){
+        box.innerHTML='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:13px;text-align:center;font-size:12px;color:var(--hint)">오늘 잡힌 사내 회의가 없습니다. 직원이 회의 일정을 등록하면 자동으로 올라옵니다. <span style="color:var(--green-t)">🟢</span></div>';
+        return;
+      }
+      var h='';
+      meets.forEach(function(m){
+        var org=(m.organizer||'').replace(/'/g,'');
+        var topic=(m.topic||'').replace(/'/g,'');
+        h+='<div style="border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px;margin-bottom:9px">'
+          +'<div style="font-size:13.5px;font-weight:600">'+escH(m.topic)+'</div>'
+          +'<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+[m.when,m.who,m.where].filter(Boolean).map(escH).join(' · ')+'</div>'
+          +'<div class="flex" style="gap:6px;margin-top:9px"><button class="btn" style="font-size:11.5px;padding:4px 11px" onclick="meetingAttend(this,\''+org+'\',\''+topic+'\')">참석하겠음</button><button class="btn" style="font-size:11.5px;padding:4px 11px" onclick="meetingInterest(this,\''+org+'\',\''+topic+'\')">★ 관심 표시</button></div>'
+          +'</div>';
+      });
+      box.innerHTML=h;
+    } catch(e){
+      box.innerHTML='<div style="padding:13px;text-align:center;color:var(--red-t);font-size:12px">⚠ 회의 조회 실패<br><span style="font-size:11px;color:var(--hint)">'+escH(e.message||e)+'</span></div>';
+    }
+  })();
+}
+
 function renderMgrFlights(){
+  var box=document.getElementById('m-flight-list');
+  var cnt=document.getElementById('m-fly-count');
+  if(!box) return;
+  if(!DB_USER){ return renderMgrFlightsDemo(); }
+  box.innerHTML='<div style="padding:14px;text-align:center;color:var(--hint);font-size:12px">오늘 비행 일정 불러오는 중…</div>';
+  (async function(){
+    try {
+      var map = await loadEmpMap();
+      var res = await db.from('daily_logs').select('employee_id, flight_plan, work_date').eq('work_date', TODAY);
+      if(res.error) throw res.error;
+      var flights=[];
+      (res.data||[]).forEach(function(log){
+        var fp = log.flight_plan;
+        if(Array.isArray(fp)){
+          fp.forEach(function(f){
+            if(f && (f.purpose||f.time)){
+              var e = map[log.employee_id]||{};
+              flights.push({ purpose:f.purpose||'(목적 미입력)', time:f.time||'', place:f.place||'', who:e.name||'', team:e.dept||'' });
+            }
+          });
+        }
+      });
+      if(flights.length===0){
+        box.innerHTML='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:13px;text-align:center;font-size:12px;color:var(--hint)">오늘 잡힌 비행 없음 (직원이 STEP4에서 등록하면 여기에 표시됩니다) <span style="color:var(--green-t)">🟢</span></div>';
+        if(cnt) cnt.textContent='0건';
+        return;
+      }
+      if(cnt) cnt.textContent=flights.length+'건';
+      var h='';
+      flights.forEach(function(f){
+        var teamColor = f.team==='SW팀' ? 'var(--blue)' : (f.team==='HW팀' ? 'var(--amber)' : 'var(--green)');
+        h+='<div style="border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px">'
+          +'<div style="flex-shrink:0;background:'+teamColor+';color:#fff;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:600;text-align:center;min-width:62px">✈️<div style="opacity:.85;font-size:10px;margin-top:2px">'+escH(f.time||'시간미정')+'</div></div>'
+          +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;margin-bottom:3px">'+escH(f.purpose)+'</div>'
+          +'<div style="font-size:11.5px;color:var(--muted)">'+escH(f.team)+' · '+escH(f.who)+(f.place?' · '+escH(f.place):'')+'</div></div>'
+          +'</div>';
+      });
+      box.innerHTML=h;
+    } catch(e){
+      box.innerHTML='<div style="padding:13px;text-align:center;color:var(--red-t);font-size:12px">⚠ 비행 일정 조회 실패<br><span style="font-size:11px;color:var(--hint)">'+escH(e.message||e)+'</span></div>';
+    }
+  })();
+}
+
+function renderMgrFlightsDemo(){
   var box=document.getElementById('m-flight-list');
   var cnt=document.getElementById('m-fly-count');
   if(!box) return;
@@ -3256,20 +3692,70 @@ function newProject(){
 }
 
 // ===== 알림 시스템 (양방향 흐름의 핵심) =====
-var NOTIFS = [];  // {to:'emp'|'exec'|'mgr'|이름, text, time, read}
+var NOTIFS = [];  // {to:'emp'|'exec'|'mgr'|이름, text, time, read} — 비로그인 시연용
+var DB_NOTIFS = [];  // DB에서 로드한 내 알림 행
+var NOTIF_POLL = null;
+
+// 이름 또는 권한대상(to) → 수신자 employee id 목록으로 변환
+async function resolveRecipientIds(to){
+  var map = await loadEmpMap();
+  var ids=[];
+  var byName={}, all=[];
+  Object.keys(map).forEach(function(k){ var e=map[k]; byName[e.name]=e; all.push(e); });
+  if(to==='all' || to==='emp'){ all.forEach(function(e){ ids.push(e.id); }); }
+  else if(to==='exec'){ all.forEach(function(e){ if(['exec','mgr'].indexOf(gradeOfName(e.name))>=0) ids.push(e.id); }); }
+  else if(to==='mgr'){ all.forEach(function(e){ if(gradeOfName(e.name)==='mgr') ids.push(e.id); }); }
+  else if(byName[to]){ ids.push(byName[to].id); }
+  return ids;
+}
+// 이름으로 등급 추정 (ROSTER 우선)
+function gradeOfName(name){
+  var r = ROSTER.find(function(e){return e.name===name;});
+  return r ? gradeOf(r) : 'emp';
+}
+
 function notify(to, text){
+  // DB 모드: notifications에 수신자별 행 생성
+  if(DB_USER){
+    resolveRecipientIds(to).then(function(ids){
+      if(!ids.length) return;
+      var rows = ids.map(function(rid){ return { recipient_id: rid, text: text }; });
+      db.from('notifications').insert(rows).then(function(r){
+        if(r.error) console.log('알림 생성 오류:', r.error);
+      });
+    }).catch(function(e){ console.log('알림 대상 변환 오류:', e); });
+    return;
+  }
+  // 비로그인 시연 모드
   NOTIFS.unshift({to:to, text:text, time:'방금', read:false});
   refreshNotifBadge();
 }
+
+// DB에서 내 알림 로드 → 배지 갱신
+async function loadMyNotifs(){
+  if(!DB_USER) return;
+  try {
+    var res = await db.from('notifications')
+      .select('id, text, link, is_read, created_at')
+      .eq('recipient_id', DB_USER.id)
+      .order('created_at', {ascending:false})
+      .limit(50);
+    if(res.error) throw res.error;
+    DB_NOTIFS = res.data || [];
+    refreshNotifBadge();
+  } catch(e){ console.log('알림 로드 오류:', e); }
+}
+
 function refreshNotifBadge(){
-  var unread = NOTIFS.filter(function(n){ return !n.read && notifVisible(n); }).length;
   var b=document.getElementById('notif-badge');
   if(!b) return;
-  if(unread>0){ b.textContent=unread; b.classList.remove('hidden'); }
+  var unread;
+  if(DB_USER){ unread = DB_NOTIFS.filter(function(n){ return !n.is_read; }).length; }
+  else { unread = NOTIFS.filter(function(n){ return !n.read && notifVisible(n); }).length; }
+  if(unread>0){ b.textContent=unread>99?'99+':unread; b.classList.remove('hidden'); }
   else { b.classList.add('hidden'); }
 }
 function notifVisible(n){
-  // 내 권한/이름에 맞는 알림만
   if(n.to==='all') return true;
   if(n.to==='emp') return true;
   if(n.to===MY_GRADE) return true;
@@ -3280,10 +3766,46 @@ function toggleNotif(){
   var p=document.getElementById('notif-panel');
   var willShow=p.classList.contains('hidden');
   p.classList.toggle('hidden');
-  if(willShow){ renderNotifList(); NOTIFS.forEach(function(n){ if(notifVisible(n)) n.read=true; }); refreshNotifBadge(); }
+  if(willShow){
+    renderNotifList();
+    // 열면 전부 읽음 처리
+    if(DB_USER){
+      var unreadIds = DB_NOTIFS.filter(function(n){return !n.is_read;}).map(function(n){return n.id;});
+      DB_NOTIFS.forEach(function(n){ n.is_read=true; });
+      refreshNotifBadge();
+      if(unreadIds.length){
+        db.from('notifications').update({is_read:true}).in('id', unreadIds).then(function(r){
+          if(r.error) console.log('읽음 처리 오류:', r.error);
+        });
+      }
+    } else {
+      NOTIFS.forEach(function(n){ if(notifVisible(n)) n.read=true; });
+      refreshNotifBadge();
+    }
+  }
+}
+function timeAgo(iso){
+  if(!iso) return '방금';
+  var t=new Date(iso).getTime(), now=Date.now();
+  var s=Math.floor((now-t)/1000);
+  if(s<60) return '방금';
+  if(s<3600) return Math.floor(s/60)+'분 전';
+  if(s<86400) return Math.floor(s/3600)+'시간 전';
+  var d=Math.floor(s/86400);
+  if(d<7) return d+'일 전';
+  return new Date(iso).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});
 }
 function renderNotifList(){
   var list=document.getElementById('notif-list');
+  if(!list) return;
+  if(DB_USER){
+    if(DB_NOTIFS.length===0){ list.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">새 알림이 없습니다</div>'; return; }
+    list.innerHTML=DB_NOTIFS.map(function(n){
+      return '<div style="padding:11px 14px;border-bottom:1px solid var(--line);'+(n.is_read?'':'background:var(--lblue)')+'"><div style="font-size:12.5px;line-height:1.5">'+escH(n.text)+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:3px">'+timeAgo(n.created_at)+'</div></div>';
+    }).join('');
+    return;
+  }
+  // 시연 모드
   var mine=NOTIFS.filter(notifVisible);
   if(mine.length===0){ list.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">새 알림이 없습니다</div>'; return; }
   list.innerHTML=mine.map(function(n){
@@ -3559,6 +4081,16 @@ function enterApp(){
   });
   // 오늘 이미 제출한 일지 있는지 체크
   loadTodayLogIfAny();
+  // 내 알림 로드 + 주기적 갱신(60초)
+  loadMyNotifs();
+  // 대표 하이라이트 로드 → 직원 오늘의 리하이에 반영
+  loadCeoHighlights().then(function(){ try { renderCompany(); } catch(e){} });
+  if(NOTIF_POLL) clearInterval(NOTIF_POLL);
+  NOTIF_POLL = setInterval(function(){
+    var p=document.getElementById('notif-panel');
+    // 패널이 닫혀 있을 때만 백그라운드 갱신 (열려있으면 읽음 덮어쓰기 방지)
+    if(DB_USER && p && p.classList.contains('hidden')) loadMyNotifs();
+  }, 60000);
 }
 function applyGrade(){
   // 권한별 토글 노출:
