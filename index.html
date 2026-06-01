@@ -15,114 +15,132 @@
     --gray-bg:#EEF1F5;
     --r:10px; --r-s:7px;
     --sans:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+    --maxw:1320px;
   }
+  /* 다크 테마 — 변수만 덮어쓰면 전체 자동 전환 */
+  body.dark{
+    --navy:#1a2942; --navy-d:#0F1A2B; --blue:#5BA3E8; --lblue:#1C3047;
+    --ink:#E8EDF4; --muted:#A3B0C0; --hint:#6F7E90; --line:#2A3645; --line2:#384656;
+    --bg:#0F1620; --card:#19222F; --soft:#1E2835;
+    --green:#2FB488; --green-bg:#16312A; --green-t:#5FD9B0;
+    --amber:#E0A030; --amber-bg:#3A2E14; --amber-t:#E8B860;
+    --red:#E85C55; --red-bg:#3A1E1C; --red-t:#F09A94;
+    --gray-bg:#222D3A;
+  }
+  body.dark .card,body.dark input[type=text],body.dark input[type=date],body.dark input[type=password],body.dark select,body.dark textarea{background:var(--card);color:var(--ink);border-color:var(--line2)}
+  body.dark .banner.demo{background:var(--soft)}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
   button{font-family:inherit;cursor:pointer}
   .hidden{display:none!important}
 
   /* shell */
-  .topbar{background:var(--navy);color:#fff;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:-0.01em}
-  .brand .logo{width:30px;height:30px;border-radius:8px;background:#fff;color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
-  .who{display:flex;align-items:center;gap:10px;font-size:13px}
-  .who .av{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+  .topbar{background:var(--navy);color:#fff;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;letter-spacing:-0.01em}
+  .brand .logo{width:32px;height:32px;border-radius:8px;background:#fff;color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .who{display:flex;align-items:center;gap:11px;font-size:14px}
+  .who .av{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
   .roleswitch{display:flex;gap:4px;background:rgba(255,255,255,.12);padding:3px;border-radius:8px}
-  .roleswitch button{background:transparent;border:none;color:#cdd9e8;font-size:12px;padding:5px 11px;border-radius:6px;font-weight:500}
+  .roleswitch button{background:transparent;border:none;color:#cdd9e8;font-size:13px;padding:6px 13px;border-radius:6px;font-weight:500}
   .roleswitch button.on{background:#fff;color:var(--navy)}
+  .theme-btn{background:rgba(255,255,255,.14);border:none;border-radius:8px;width:36px;height:34px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
 
-  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 60px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 26px 64px}
+
 
   /* primary tabs */
   .ptabs{display:flex;gap:4px;background:var(--gray-bg);border-radius:var(--r);padding:4px;margin-bottom:6px}
   .ptabs button{flex:1;background:transparent;border:none;font-size:14.5px;font-weight:600;color:var(--muted);padding:11px;border-radius:var(--r-s);display:flex;align-items:center;justify-content:center;gap:7px}
   .ptabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,40,70,.08)}
-  .phint{font-size:11.5px;color:var(--hint);text-align:center;margin-bottom:18px}
+  .phint{font-size:13.5px;color:var(--hint);text-align:center;margin-bottom:18px}
 
   /* cards / sections */
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
-  .card+.card{margin-top:14px}
-  h2{font-size:17px;font-weight:600;letter-spacing:-0.01em}
-  h3{font-size:14.5px;font-weight:600}
-  .sub{font-size:12px;color:var(--hint);margin-top:2px}
-  .sec-h{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+  .card+.card{margin-top:16px}
+  h2{font-size:21px;font-weight:600;letter-spacing:-0.01em}
+  h3{font-size:17.5px;font-weight:600}
+  .sub{font-size:14px;color:var(--hint);margin-top:3px}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 
-  .pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .pill{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .p-blue{background:var(--lblue);color:var(--navy)}
   .p-green{background:var(--green-bg);color:var(--green-t)}
   .p-amber{background:var(--amber-bg);color:var(--amber-t)}
   .p-red{background:var(--red-bg);color:var(--red-t)}
   .p-gray{background:var(--gray-bg);color:var(--muted)}
-  .proj{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--lblue);color:var(--navy)}
+  .proj{font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--lblue);color:var(--navy)}
 
-  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block}
   .d-green{background:var(--green)} .d-amber{background:var(--amber)} .d-red{background:var(--red)} .d-gray{background:var(--hint)}
 
   /* metric cards */
-  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-  .metric{background:var(--soft);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px}
-  .metric .lab{font-size:12px;color:var(--muted)}
-  .metric .val{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-top:2px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+  .metric{background:var(--soft);border:1px solid var(--line);border-radius:var(--r-s);padding:14px 16px}
+  .metric .lab{font-size:13.5px;color:var(--muted)}
+  .metric .val{font-size:27px;font-weight:700;letter-spacing:-0.02em;margin-top:3px}
 
   /* sub tabs */
-  .stabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px}
-  .stabs button{background:transparent;border:1px solid var(--line2);color:var(--ink);font-size:13px;padding:7px 13px;border-radius:var(--r-s);font-weight:500;display:flex;align-items:center;gap:5px}
+  .stabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:18px}
+  .stabs button{background:transparent;border:1px solid var(--line2);color:var(--ink);font-size:14.5px;padding:8px 15px;border-radius:var(--r-s);font-weight:500;display:flex;align-items:center;gap:5px}
   .stabs button.on{background:var(--lblue);color:var(--navy);border-color:var(--blue)}
 
-  .row{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .row{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
   .row .main{flex:1;min-width:0}
-  .row .t{font-size:13.5px}
-  .row .m{font-size:12px;color:var(--muted);margin-top:1px}
-  .row .due{font-size:11.5px;color:var(--hint);white-space:nowrap;font-weight:500}
+  .row .t{font-size:15px}
+  .row .m{font-size:13.5px;color:var(--muted);margin-top:2px}
+  .row .due{font-size:13px;color:var(--hint);white-space:nowrap;font-weight:500}
   .row .due.urg{color:var(--red-t)}
 
-  .help-card{background:var(--card);border-radius:var(--r-s);padding:11px 13px;margin-bottom:8px;border:1px solid var(--line)}
-  .help-card .q{font-size:13.5px;margin-bottom:7px}
-  .help-meta{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--hint)}
-  .btn{border:1px solid var(--line2);background:#fff;color:var(--ink);font-size:12.5px;padding:6px 13px;border-radius:var(--r-s);font-weight:500}
+  .help-card{background:var(--card);border-radius:var(--r-s);padding:13px 15px;margin-bottom:9px;border:1px solid var(--line)}
+  .help-card .q{font-size:15px;margin-bottom:8px}
+  .help-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--hint)}
+  .btn{border:1px solid var(--line2);background:#fff;color:var(--ink);font-size:14px;padding:7px 15px;border-radius:var(--r-s);font-weight:500}
   .btn:hover{background:var(--soft)}
   .btn-pri{background:var(--blue);color:#fff;border-color:var(--blue)}
   .btn-pri:hover{background:#2c75c4}
 
   /* inputs */
-  input[type=text],select{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:var(--r-s);background:#fff;color:var(--ink);height:36px}
-  input[type=text]:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,.12)}
+  input[type=text],input[type=date],input[type=password],select,textarea{font-family:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line2);border-radius:var(--r-s);background:#fff;color:var(--ink);height:40px}
+  textarea{height:auto}
+  input[type=text]:focus,input[type=date]:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,.12)}
   input[type=text]{width:100%}
 
-  .banner{border-radius:var(--r-s);padding:11px 13px;font-size:12.5px;display:flex;gap:9px;align-items:flex-start;line-height:1.55}
+  .banner{border-radius:var(--r-s);padding:12px 15px;font-size:14px;display:flex;gap:9px;align-items:flex-start;line-height:1.55}
   .banner.info{background:var(--lblue);color:var(--navy)}
   .banner.warn{background:var(--amber-bg);color:var(--amber-t)}
   .banner.demo{background:var(--gray-bg);color:var(--muted)}
 
   /* kanban */
-  .board{display:flex;gap:9px;overflow-x:auto;padding-bottom:8px}
-  .col{flex:0 0 165px;background:var(--gray-bg);border-radius:var(--r-s);padding:9px;transition:background .15s}
+  .board{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;padding-bottom:8px;align-items:start}
+  .col{background:var(--gray-bg);border-radius:var(--r-s);padding:11px;transition:background .15s;min-width:0}
   .col.drop-over{background:var(--lblue);outline:2px dashed var(--blue);outline-offset:-2px}
   .kcard[draggable="true"]:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
-  .dept-chip{background:#fff;border:1px solid var(--line2);color:var(--ink);font-size:12.5px;padding:7px 12px;border-radius:20px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+  @media(max-width:1100px){.board{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:680px){.board{grid-template-columns:repeat(2,1fr)}}
+  .dept-chip{background:#fff;border:1px solid var(--line2);color:var(--ink);font-size:14px;padding:8px 14px;border-radius:20px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
   .dept-chip:hover{border-color:var(--blue);color:var(--navy)}
   .dept-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .dept-chip .cnt{font-size:11px;background:rgba(0,0,0,.06);padding:1px 6px;border-radius:8px;font-weight:600;color:var(--muted)}
+  .dept-chip .cnt{font-size:12.5px;background:rgba(0,0,0,.06);padding:1px 7px;border-radius:8px;font-weight:600;color:var(--muted)}
   .dept-chip.on .cnt{background:rgba(255,255,255,.22);color:#fff}
-  .dept-chip .urg-dot{font-size:10.5px;background:var(--red-bg);color:var(--red-t);padding:1px 6px;border-radius:8px;font-weight:700}
+  .dept-chip .urg-dot{font-size:12px;background:var(--red-bg);color:var(--red-t);padding:1px 7px;border-radius:8px;font-weight:700}
   .dept-chip.on .urg-dot{background:#fff;color:var(--red-t)}
-  .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:12.5px;font-weight:600}
-  .kcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:9px 10px;margin-bottom:7px;cursor:grab}
+  .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;font-weight:600}
+  .kcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:11px 12px;margin-bottom:8px;cursor:grab}
   .kcard:active{cursor:grabbing}
-  .kcard .kt{font-size:12.5px;font-weight:600;line-height:1.35;margin-bottom:4px}
-  .kcard .ko{font-size:11px;color:var(--muted)}
-  .kcard .kw{font-size:11px;color:var(--hint);margin-top:3px}
-  .dday{font-size:10.5px;font-weight:700;color:#fff;padding:2px 7px;border-radius:6px;float:right;margin-left:5px}
+  .kcard .kt{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:5px}
+  .kcard .ko{font-size:12.5px;color:var(--muted)}
+  .kcard .kw{font-size:12.5px;color:var(--hint);margin-top:4px}
+  .dday{font-size:12px;font-weight:700;color:#fff;padding:2px 8px;border-radius:6px;float:right;margin-left:5px}
 
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:13px;align-items:center}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:14px;align-items:center}
   .legend span{display:flex;align-items:center;gap:5px}
 
-  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
-  .teamcard{background:var(--soft);border:1px solid var(--line);border-radius:var(--r-s);padding:11px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .teamcard{background:var(--soft);border:1px solid var(--line);border-radius:var(--r-s);padding:13px}
   .teamcard.mine{border-color:var(--blue);background:var(--lblue)}
-  .teamcard .tn{font-size:12.5px;font-weight:600;margin-bottom:5px}
-  .teamcard .tw{font-size:11.5px;color:var(--muted);line-height:1.55}
+  .teamcard .tn{font-size:14px;font-weight:600;margin-bottom:6px}
+  .teamcard .tw{font-size:13.5px;color:var(--muted);line-height:1.55}
 
   .bar{height:7px;background:var(--gray-bg);border-radius:4px;overflow:hidden}
   .bar>i{display:block;height:100%;border-radius:4px}
@@ -227,7 +245,8 @@
       <button id="rs-mgr" onclick="setRole('mgr')">대표</button>
     </div>
     <select id="emp-select" onchange="switchEmp(this.value)" style="height:32px;font-size:12px;border-radius:7px;border:none;background:rgba(255,255,255,.14);color:#fff;padding:0 8px;max-width:140px"></select>
-    <button id="notif-bell" onclick="toggleNotif()" style="position:relative;background:rgba(255,255,255,.14);border:none;border-radius:8px;width:34px;height:32px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg><span id="notif-badge" class="hidden" style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px"></span></button>
+    <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" title="다크/라이트 전환">🌙</button>
+    <button id="notif-bell" onclick="toggleNotif()" style="position:relative;background:rgba(255,255,255,.14);border:none;border-radius:8px;width:36px;height:34px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg><span id="notif-badge" class="hidden" style="position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px"></span></button>
     <button class="av" id="topav" onclick="toggleProfile()" style="border:none;cursor:pointer">차현</button>
   </div>
 </div>
@@ -257,7 +276,7 @@
     <!-- daily -->
     <div id="e-daily">
       <div class="card">
-        <div class="sec-h"><div><h2 id="greet">차현창 님, 좋은 아침입니다</h2><div class="sub" id="greet-sub">전기이륜차사업팀 · 2026-05-28 (목) · 운영형</div></div><span class="pill p-gray" id="step-badge">STEP 1 / 4</span></div>
+        <div class="sec-h"><div><h2 id="greet">좋은 아침입니다</h2><div class="sub" id="greet-sub">로그인 중…</div></div><span class="pill p-gray" id="step-badge">STEP 1 / 4</span></div>
         <div id="tenure-banner" class="banner info" style="margin-bottom:14px"></div>
 
         <div id="wiz-progress" style="display:flex;gap:5px;margin-bottom:18px"></div>
@@ -325,16 +344,17 @@
           </div>
 
           <div class="input-block" style="margin-bottom:12px">
-            <div style="font-weight:600;margin-bottom:8px">막힌 것 / 도움 요청 <span style="font-size:11.5px;color:var(--hint);font-weight:400">→ 혼자 끙끙대지 마세요, 함께 풉니다</span></div>
+            <div style="font-weight:600;margin-bottom:5px">막힌 것 / 도움 요청 <span style="font-size:13px;color:var(--hint);font-weight:400">→ 혼자 끙끙대지 마세요, 함께 풉니다</span></div>
+            <div style="font-size:13px;color:var(--blue);background:var(--lblue);border-radius:7px;padding:8px 11px;margin-bottom:9px">📌 여기 적은 내용은 <b>대표님께 전송됩니다.</b> 팀장·임원도 확인하고 답변할 수 있어요.</div>
             <div id="help-list"></div>
-            <button class="btn" style="width:100%;font-size:13px" onclick="addHelp()">+ 도움 요청 추가</button>
+            <button class="btn" style="width:100%;font-size:14px" onclick="addHelp()">+ 도움 요청 추가</button>
           </div>
 
           <div class="input-block">
-            <div style="font-weight:600;margin-bottom:3px">오늘/이번 주 회의 일정 <span style="font-size:11.5px;color:var(--hint);font-weight:400">→ 대표님 회의 레이더에 표시</span></div>
-            <div style="font-size:11.5px;color:var(--hint);margin-bottom:10px">회의 안건을 적으면 대표님이 참석·관심을 표시할 수 있습니다</div>
+            <div style="font-weight:600;margin-bottom:3px">외부 손님 / 거래처 방문 회의 <span style="font-size:13px;color:var(--hint);font-weight:400">→ 대표님 회의 레이더에 표시</span></div>
+            <div style="font-size:13px;color:var(--hint);margin-bottom:10px">오늘 <b>외부 손님이 오거나 거래처를 방문하는 회의</b>가 있으면 적어주세요. 대표님이 참석·관심을 표시할 수 있습니다.</div>
             <div id="meeting-list"></div>
-            <button class="btn" style="width:100%;font-size:13px" onclick="addMeeting()">+ 회의 추가</button>
+            <button class="btn" style="width:100%;font-size:14px" onclick="addMeeting()">+ 회의 추가</button>
           </div>
         </div>
 
@@ -475,7 +495,7 @@
       </div>
 
       <div class="card" style="margin-top:14px">
-        <div class="sec-h"><div><h3>오늘 회의 레이더</h3><div class="sub">직원들이 잡은 회의 — 안건 보고 참석·관심 표시</div></div><span class="pill p-blue" id="m-meet-count">0건</span></div>
+        <div class="sec-h"><div><h3>오늘 외부 방문 회의</h3><div class="sub">외부 손님이 오거나 거래처를 방문하는 회의 — 참석·관심 표시</div></div><span class="pill p-blue" id="m-meet-count">0건</span></div>
         <div id="m-meeting-list"></div>
       </div>
 
@@ -567,15 +587,14 @@ var DB_USER = null;
 
 var ROSTER = [
   {name:'추혜성', dept:'경영기획실', title:'대표이사', hire:'2018-10-15', birth:'1993-11-01', mode:'운영형'},
-  {name:'황원준', dept:'경영기획실', title:'총괄이사', hire:'2019-11-01', birth:'1994-08-11', mode:'운영형'},
+  {name:'황원준', dept:'경영기획실', title:'총괄이사', hire:'2019-11-01', birth:'1994-08-11', mode:'목표형'},
   {name:'정다영', dept:'경영기획실', title:'실장', hire:'2021-12-13', birth:'1992-10-15', mode:'운영형'},
-  {name:'김세진', dept:'SW팀', title:'팀장', hire:'2022-12-19', birth:'1998-09-21', mode:'목표형'},
+  {name:'김세진', dept:'SW팀', title:'팀장', hire:'2022-12-19', birth:'1998-09-21', mode:'운영형'},
   {name:'안지호', dept:'군집드론팀', title:'팀원', hire:'2023-09-25', birth:'1996-02-25', mode:'운영형'},
-  {name:'최철곤', dept:'군집드론팀', title:'팀원', hire:'2023-09-08', birth:'2000-10-30', mode:'운영형'},
+  {name:'최철곤', dept:'군집드론팀', title:'팀원', hire:'2023-09-08', birth:'2000-10-30', mode:'목표형'},
   {name:'성종은', dept:'사업기획팀', title:'팀원', hire:'2025-01-01', birth:'1995-07-26', mode:'운영형'},
   {name:'박병석', dept:'SW팀', title:'기술고문', hire:'2025-01-15', birth:'1970-09-29', mode:'목표형'},
   {name:'유수빈', dept:'SW팀', title:'팀원', hire:'2025-04-18', birth:'2000-03-08', mode:'목표형'},
-  {name:'권종하', dept:'HW팀', title:'기술고문', hire:'2023-05-01', birth:'1967-05-11', mode:'목표형'},
   {name:'박동훈', dept:'HW팀', title:'팀장', hire:'2025-06-16', birth:'1984-02-13', mode:'목표형'},
   {name:'백재우', dept:'사업기획팀', title:'팀장', hire:'2025-11-17', birth:'1986-02-28', mode:'운영형'},
   {name:'김다현', dept:'HW팀', title:'팀원', hire:'2025-11-24', birth:'2001-04-11', mode:'목표형'},
@@ -584,68 +603,29 @@ var ROSTER = [
   {name:'백석호', dept:'전기이륜차사업팀', title:'영업이사', hire:'2026-01-01', birth:'1976-02-25', mode:'운영형'},
   {name:'박건희', dept:'SW팀', title:'팀원', hire:'2026-02-23', birth:'2000-07-09', mode:'목표형'},
   {name:'차현창', dept:'전기이륜차사업팀', title:'팀장', hire:'2026-05-06', birth:'1993-10-08', mode:'운영형'},
-  {name:'정연직', dept:'전기이륜차사업팀', title:'팀장', hire:'2026-05-06', birth:'1985-08-07', mode:'운영형'}
+  {name:'정연직', dept:'전기이륜차사업팀', title:'팀원', hire:'2026-05-06', birth:'1985-08-07', mode:'운영형'}
 ];
-var CUR_EMP = ROSTER.find(function(e){return e.name==='차현창';});
+var CUR_EMP = ROSTER.find(function(e){return e.name==='추혜성';});
 
 var DATA = {
-  leave_today: [
-    {name:'성종은', type:'연차'}
-  ],
-  highlights: [
-    {emoji:'🎯', team:'SW팀', text:'동축반전 드론 8개 모터 동작 확인 진행 중'},
-    {emoji:'🏭', team:'HW팀', text:'포스코 시연 비행 최종 리허설 — 오늘이 D-Day'},
-    {emoji:'🏆', team:'사업기획팀', text:'경북테크노파크 방산항공우주 사업 선정 ✨'},
-    {emoji:'🏆', team:'사업기획팀', text:'경상북도 관광진흥기금 보조사업 선정 ✨'}
-  ],
-  company: [
-    {team:'사업기획팀', n:2, work:'방산원가 교육(백재우) · 성종은 연차', ic:'brief', done:1, prog:1, fly:0, hours:'외부', row:1},
-    {team:'HW팀', n:3, work:'포스코 그물망 시연 · DCP 포항공대 기체 메인프레임 교체', ic:'tool', done:0, prog:5, fly:1, hours:'종일', row:1},
-    {team:'SW팀', n:4, work:'동축반전 8모터 · GCS v2 UI · Jetson 객체 탐지', ic:'code', done:0, prog:7, fly:1, hours:'집중', row:1},
-    {team:'군집드론팀', n:3, work:'시민의날 드론쇼 · 울릉도 특별비행승인 · 거제·성주·세종 행사', ic:'drone', done:0, prog:9, fly:0, hours:'바쁨', row:2},
-    {team:'전기이륜차팀', n:2, work:'LGES 미팅 출장(차현창) · 중국출장 리뷰 작성(정연직)', ic:'bike', done:0, prog:3, fly:0, hours:'외부', mine:true, row:2}
-  ],
+  leave_today: [],
+  highlights: [],
+  company: [],
   execs: [
-    {name:'황원준', title:'총괄이사', work:'심천 드론 전시회 모터 업체 이메일 전송(~5/29) · 울릉도 오징어축제 드론라이트쇼 대행사(에이시티) 사전답사 일정 협의 · 시민의날 체험장 배너 제작 협의(~6/1) [오후 반차]', mode:'운영형'},
-    {name:'백석호', title:'영업이사', work:'전기이륜차 보급사업 영업 · BYD JDM 협력 라인업 · 배달 모빌리티 파트너 발굴', mode:'운영형'},
-    {name:'박병석', title:'기술고문', work:'동축반전 드론의 8개 모터 동작 확인 자문 · FC 아키텍처 방향 검토', mode:'자문'}
+    {name:'황원준', title:'총괄이사', work:'(오늘 보고 작성 전)', mode:'운영형'},
+    {name:'백석호', title:'영업이사', work:'(오늘 보고 작성 전)', mode:'운영형'},
+    {name:'박병석', title:'기술고문', work:'(오늘 보고 작성 전)', mode:'목표형'}
   ],
   depts: [
-    {name:'SW팀', mode:'목표형', rows:[
-      {who:'김세진', goal:'FC·GCS 성능 최적화', proj:'군교육용드론', task:'동축반전 FC코드 개발 · PID 튜닝', st:'amber'},
-      {who:'유수빈', goal:'GCS v1·v2 UI 개발', proj:'GCS개발', task:'V2 UI(미션·환경설정·제어) · 미션플래너 코드 분석·이식 문서화', st:'amber'},
-      {who:'박건희', goal:'카메라·Jetson 최적화', proj:'군집비행', task:'공용 RTK 활용 군집 비행 시스템 연구 · Jetson 통신 시스템 연구', st:'amber'}
-    ]},
-    {name:'HW팀', mode:'목표형', rows:[
-      {who:'박동훈', goal:'포스코 시연 성공', proj:'포스코', task:'포스코 시연 비행 최종 리허설 · S/W팀 군집 2호기 정비 지원', st:'red', due:'5/28'},
-      {who:'이정현', goal:'포항공대 기체 납품', proj:'DCP', task:'포항공대 기체 메인프레임 교체 · FC 상용 Damper 진동값 테스트', st:'amber'},
-      {who:'김다현', goal:'포항공대 기체 납품', proj:'DCP', task:'메인프레임 교체 · 군집 2호기 메인프레임·보호가드·모터 교체', st:'amber'}
-    ]},
-    {name:'군집드론팀', mode:'운영형', rows:[
-      {who:'최철곤', proj:'시민의날드론쇼', task:'드론쇼 준비 · 울릉도 특별비행승인·일정조율 · 대전선관위 영상(금주내) · 7·8월 일정 확인', st:'amber'},
-      {who:'안지호', proj:'행사대응', task:'거제 행사 1건 담당자 유선미팅 · 성주 운영관리 월보 · 세종수목원 월보 · 울릉도 특별비행승인 신청', st:'amber'},
-      {who:'이수연', proj:'시민의날드론쇼', task:'PPT 레퍼런스 조사·초안 3~5P 제작 · 시민의날 도안 3개(3·8·9번) 진행', st:'amber'}
-    ]},
-    {name:'전기이륜차팀', mode:'운영형', rows:[
-      {who:'차현창', proj:'BYD·LG협력', task:'LGES 미팅 출장 · 큐모터스 정리사항 확인', st:'amber', due:'5/28'},
-      {who:'정연직', proj:'BYD·LG협력', task:'중국출장(BYD·드론전시회) 리뷰 작성 · 국내 제작자 등록 필요사항 확인', st:'amber', due:'5/29·6/5'}
-    ]},
-    {name:'사업기획팀', mode:'운영형', rows:[
-      {who:'백재우', proj:'방산', task:'방산원가 실무 및 계산 교육 참석', st:'amber'},
-      {who:'성종은', proj:'-', task:'연차', st:'gray'}
-    ]},
-    {name:'경영기획실', mode:'운영형', rows:[
-      {who:'정다영', proj:'경영관리', task:'구노 연구노트 배포 · 급여대장 결재 · 등기부등본 이사 변경 · ICT우수기업 스토리북 작성 · 자동이체 예약', st:'amber'}
-    ]},
-    {name:'총괄이사', mode:'운영형', rows:[
-      {who:'황원준', proj:'경영관리', task:'심천 드론 전시회 모터 업체 이메일(~5/29) · 울릉도 오징어축제 대행사 협의 · 시민의날 배너 제작 협의(~6/1) [오후 반차]', st:'amber'}
-    ]}
+    {name:'SW팀', mode:'목표형', rows:[]},
+    {name:'HW팀', mode:'목표형', rows:[]},
+    {name:'군집드론팀', mode:'운영형', rows:[]},
+    {name:'전기이륜차사업팀', mode:'운영형', rows:[]},
+    {name:'사업기획팀', mode:'운영형', rows:[]},
+    {name:'경영기획실', mode:'운영형', rows:[]}
   ],
   weather: {am:{cond:'맑음', temp:'18°C', wind:'2.8 m/s', ok:true}, pm:{cond:'구름 많음', temp:'23°C', wind:'5.5 m/s', ok:true}},
-  flights: [
-    {time:'11:00', end:'12:00', purpose:'포스코 실외 테스트베드 그물망 투하 시나리오 비행(연습)', team:'HW팀', who:'박동훈·이정현·김다현', place:'테스트필드'},
-    {time:'15:00', end:'17:00', purpose:'군교육용 드론 테스트', team:'SW팀', who:'김세진·박병석', place:'테스트필드'}
-  ],
+  flights: [],
   kanban: [
     {key:'review', t:'0 추진검토', lock:false, cards:[
       {n:'2026년 산림청 소방드론 실증사업 (예시 신청)', o:'산림청', w:'성종은', pending:true, budget:'2억원 / 자부담 30%', reason:'산불 대응 소방드론 1·2호기 실증 경험 활용 가능, 6월 공고 대비 사전 추진', link:'https://www.forest.go.kr'}
@@ -967,10 +947,7 @@ function submitReply(idx, cIdx){
 
 // ===== 대표 회사 하이라이트 (1주일 노출) =====
 // 직원 오늘의 리하이 맨 위에 황금카드로 자동 노출
-var CEO_HIGHLIGHTS = [
-  // 시연용 예시 (비로그인 시에만 사용)
-  {text:'리하이가 \'2026 K-Defense Official Partner\'로 선정되었습니다. 6월 코엑스 전시 함께 준비합시다.', by:'추혜성 대표', when:'5/26', daysLeft:5}
-];
+var CEO_HIGHLIGHTS = [];
 
 // DB에서 활성 하이라이트 로드 → CEO_HIGHLIGHTS 채움
 async function loadCeoHighlights(){
@@ -1057,12 +1034,7 @@ async function removeCeoHighlight(idxOrId){
 
 // ===== 도움 요청 (양방향 흐름) =====
 // 직원이 STEP3에서 적은 도움 요청 → 팀장·임원·대표 화면에 표시 → 답변 → 직원 알림
-var HELPS = [
-  {id:1, who:'정연직', dept:'전기이륜차팀', when:'5/26', text:'큐모터스 견적 회신 지연 — 평가자료 확정 못 함, 푸시 필요', status:'open', replies:[]},
-  {id:2, who:'박동훈', dept:'HW팀', when:'5/27', text:'포스코 그물망 동작모듈 부품 입고 일정 확인 필요 — 시연 D-Day 영향', status:'open', replies:[]},
-  {id:3, who:'성종은', dept:'사업기획팀', when:'5/26', text:'경북테크노 UAM 발표 자료 — 대표님 발표 동선 협의 필요', status:'open', replies:[]},
-  {id:4, who:'최철곤', dept:'군집드론팀', when:'5/27', text:'7·8월 시민참여형 드론쇼 주제 — 팀 회의 결과 도출 필요', status:'open', replies:[]}
-];
+var HELPS = [];
 
 // ============================================
 // 도움요청 DB 연동 — 공용 로더·렌더 헬퍼
@@ -1676,7 +1648,7 @@ function renderProfile(){
   var dispHire = fromDb ? (fromDb.hire_date||emp.hire) : emp.hire;
   var dispBirth = fromDb ? (fromDb.birth_date||emp.birth) : emp.birth;
   var dispMode = fromDb ? (fromDb.mode||emp.mode) : emp.mode;
-  var dispEmail = fromDb ? fromDb.email : ((DEMO_ID[emp.name]||'name')+'@lihai.co.kr');
+  var dispEmail = fromDb ? fromDb.email : ((DEMO_ID[emp.name]||'name')+'@lihai.io');
   var dispPhone = fromDb ? (fromDb.phone||'') : '';
   
   var d=daysBetween(dispHire,TODAY)+1;
@@ -1987,7 +1959,7 @@ function adminAddEmp(){
     +'<div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span style="font-size:20px">➕</span><div><div style="font-size:14.5px;font-weight:700">신규 직원 등록</div><div style="font-size:11px;color:var(--hint);margin-top:2px">기본 정보 입력 후 등록 → 초기 비번 0000으로 계정 생성</div></div></div>'
     +'<div style="padding:18px 22px">'
     +empField('이름','ae-name','예: 홍길동','text',true)
-    +empField('이메일 (아이디로 사용)','ae-email','예: gd.hong@lihai.co.kr','email',true)
+    +empField('이메일 (아이디로 사용)','ae-email','예: gd.hong@lihai.io','email',true)
     +empField('휴대폰','ae-phone','010-0000-0000','text',false)
     +empField('생년월일','ae-birth','YYYY-MM-DD','text',false)
     +empField('입사일','ae-hire',TODAY,'text',true)
@@ -2303,7 +2275,9 @@ async function submitDay(){
     
     if(saveResult.error) throw saveResult.error;
     
-    toast('일일업무가 저장되었습니다 🟢');
+    var ws = getWriteWindowState();
+    if(ws.late){ toast('⏰ 지각 작성으로 저장되었습니다 (권장: 전일 17시~금일 11시)'); }
+    else { toast('일일업무가 저장되었습니다 🟢'); }
 
     // 도움 필요 → help_requests 자동 생성 (이미 열린 동일 요청은 건너뜀)
     try {
@@ -2420,18 +2394,21 @@ function collectDailyLogData(){
     result.help_needed = helpTexts.join('\n');
   } catch(e){}
   
-  // 회의 — meeting-list 안의 각 .input-block (첫 input = 안건)
+  // 회의 — meeting-list 안의 각 .input-block (input: 안건·참석·장소 / select: 시간)
   try {
     var meets = document.querySelectorAll('#meeting-list .input-block');
     meets.forEach(function(block){
       var ins = block.querySelectorAll('input[type="text"]');
+      var sel = block.querySelector('select');
       var topic = ins[0] ? ins[0].value.trim() : '';
       if(topic){
+        var t = sel ? sel.value : '';
+        var todayLabel = TODAY.slice(5).replace('-','/');
         result.meetings.push({
           topic: topic,
-          when: ins[1] ? ins[1].value.trim() : '',
-          who: ins[2] ? ins[2].value.trim() : '',
-          where: ins[3] ? ins[3].value.trim() : ''
+          when: t ? (todayLabel+' '+t) : ('오늘('+todayLabel+')'),
+          who: ins[1] ? ins[1].value.trim() : '',
+          where: ins[2] ? ins[2].value.trim() : ''
         });
       }
     });
@@ -2498,7 +2475,7 @@ async function loadTodayLogIfAny(){
 // ============================================
 function buildTodayRowHtml(proj, task, status, hours){
   var statuses=['진행중','완료','지연','막힘'];
-  var hoursOpts=['2h','4h','0.5h','종일'];
+  var hoursOpts=['0.5h','1h','2h','4h','종일'];
   if(status && statuses.indexOf(status)<0) statuses.unshift(status);
   if(hours && hoursOpts.indexOf(hours)<0) hoursOpts.unshift(hours);
   function opts(arr, sel){ return arr.map(function(o){ return '<option'+(o===sel?' selected':'')+'>'+escH(o)+'</option>'; }).join(''); }
@@ -3148,254 +3125,7 @@ function markSelected(colIdx, cardIdx){
 }
 
 // ===== 직원별 일일업무 예시 placeholder (PDF 4월~5월 데이터 학습 기반) =====
-var EMP_HINTS = {
-  // SW팀
-  '박병석': {
-    goals:[
-      {p:'LIHAI FC', g:'동축반전 드론 8개 모터 제어 안정화'},
-      {p:'군교육용드론', g:'PID 튜닝 완료 및 비행 테스트'}
-    ],
-    carry:{p:'LIHAI FC', t:'동축반전 제어 코드 개발 (어제 진행 중)'},
-    today:[
-      {p:'LIHAI FC', t:'동축반전 드론 8개 모터 동작 확인', st:'진행중', h:'4h'},
-      {p:'GCS', t:'GPS 이용 자동착륙시 아밍해제 기능 추가', st:'진행중', h:'2h'}
-    ],
-    help:'동축반전 추력손실 관련 외부 자문 필요',
-    chips:['LIHAI FC','군교육용드론','GCS','축구공드론']
-  },
-  '김세진': {
-    goals:[
-      {p:'FC·GCS', g:'성능 최적화 및 미션 테스트 마무리'},
-      {p:'동축반전', g:'FC코드 개발 및 송수신 세팅 완료'}
-    ],
-    carry:{p:'FC·GCS', t:'GCS↔FC 명령 송수신 개선 (어제 진행 중)'},
-    today:[
-      {p:'동축반전', t:'동축반전을 위한 FC 2개 송수신 세팅', st:'진행중', h:'4h'},
-      {p:'군교육용드론', t:'PID 튜닝', st:'진행중', h:'2h'},
-      {p:'FC·GCS', t:'미션 비행 웨이포인트 누락 확인 기능 테스트', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['FC·GCS','동축반전','군교육용드론','미션비행']
-  },
-  '유수빈': {
-    goals:[
-      {p:'GCS', g:'GCS v2 UI 디자인 완성 (미션·환경설정·제어설정)'},
-      {p:'GCS', g:'미션플래너 코드 분석 및 문서화'}
-    ],
-    carry:{p:'GCS', t:'GCS V2 UI 디자인 개발 (어제 진행 중)'},
-    today:[
-      {p:'GCS', t:'GCS V2 UI 디자인 개발 (미션·환경설정·제어설정 UI)', st:'진행중', h:'4h'},
-      {p:'GCS', t:'미션플래너 전체 코드 분석 및 이식 데이터 파악·문서화', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['GCS','PID 프로토콜','Qt 학습','LTE 통신']
-  },
-  '박건희': {
-    goals:[
-      {p:'Jetson', g:'카메라 객체 탐지 시스템 안정화 (30FPS 확보)'},
-      {p:'군집비행', g:'RTK 활용 군집 비행 아키텍처 정리'}
-    ],
-    carry:{p:'Jetson', t:'카메라 객체 탐지 성능 최적화 (어제 진행 중)'},
-    today:[
-      {p:'Jetson', t:'공용 RTK 활용 군집 비행 시스템 연구', st:'진행중', h:'4h'},
-      {p:'Jetson', t:'Jetson 통신 시스템 활용 방안 연구', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['Jetson','카메라','RTK','군집비행']
-  },
-  // HW팀
-  '박동훈': {
-    goals:[
-      {p:'포스코', g:'포스코 시연 비행 최종 리허설 완료'},
-      {p:'DCP', g:'페이로드 100kg급 드론 메인프레임 설계 진행'}
-    ],
-    carry:{p:'포스코', t:'포항공대 테스트기체 카본시트 작업 (어제 진행 중)'},
-    today:[
-      {p:'포스코', t:'포스코 시연 비행 최종 리허설 실시', st:'진행중', h:'종일'},
-      {p:'SW팀 지원', t:'군집 2호기 정비 — 전일 모터불량 확인건 교체작업', st:'진행중', h:'2h'}
-    ],
-    help:'그물망 동작모듈 재설계 필요 — 외부 부품 입고 일정 확인',
-    chips:['포스코','DCP','군교육용드론','SW팀지원']
-  },
-  '이정현': {
-    goals:[
-      {p:'DCP', g:'포항공대 납품용 기체 메인프레임 교체 완료'},
-      {p:'포스코', g:'그물망 시연 비행 준비 완료'}
-    ],
-    carry:{p:'DCP', t:'포항공대 기체 메인프레임 교체작업 (어제 진행 중)'},
-    today:[
-      {p:'DCP', t:'포항공대 기체 납품용 메인프레임 교체작업', st:'진행중', h:'4h'},
-      {p:'DCP', t:'FC용 상용 Damper 장착 후 진동값 확인 테스트', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['DCP','포스코','군교육용드론']
-  },
-  '김다현': {
-    goals:[
-      {p:'DCP', g:'포항공대 납품 기체 메인프레임 교체 완료'},
-      {p:'SW팀 지원', g:'군집 2호기 정비 완료'}
-    ],
-    carry:{p:'SW팀 지원', t:'군집 2호기 정비 — 메인프레임·보호가드·모터 교체 (어제 진행 중)'},
-    today:[
-      {p:'DCP', t:'포항공대 납품용 기체 메인프레임 교체', st:'진행중', h:'4h'},
-      {p:'SW팀 지원', t:'군집 2호기 정비 — 메인프레임·보호가드·모터 연결', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['DCP','SW팀지원','군교육용드론','포스코']
-  },
-  // 군집드론팀
-  '최철곤': {
-    goals:[
-      {p:'시민의날드론쇼', g:'드론쇼 도안·음원 작업 완료'},
-      {p:'울릉도', g:'특별비행승인 신청 및 일정 조율'}
-    ],
-    carry:{p:'시민의날', t:'시민의날 드론쇼 도안 진행 (어제에서 이어옴)'},
-    today:[
-      {p:'시민의날', t:'시민의날 드론쇼 준비', st:'진행중', h:'4h'},
-      {p:'울릉도', t:'특별비행승인, 일정 조율', st:'진행중', h:'2h'},
-      {p:'대전선관위', t:'영상 전달 (금주내 필요 요청)', st:'진행중', h:'1h'}
-    ],
-    help:'7·8월 시민참여형 드론쇼 주제 — 팀 회의 결과 도출 필요',
-    chips:['시민의날','울릉도','대전선관위','미스경북','동궁과월지']
-  },
-  '안지호': {
-    goals:[
-      {p:'행사대응', g:'거제·목포 행사 담당자 미팅 마무리'},
-      {p:'월간보고', g:'성주·세종수목원 월 보고서 작성'}
-    ],
-    carry:{p:'세종수목원', t:'월 NDVI 가공 (어제 진행 중)'},
-    today:[
-      {p:'행사대응', t:'행사 1건(거제) 대응 및 담당자 유선 미팅', st:'진행중', h:'2h'},
-      {p:'월간보고', t:'성주 운영관리 용역 월 보고서 작성', st:'진행중', h:'2h'},
-      {p:'월간보고', t:'세종수목원 월 보고서 작성', st:'진행중', h:'2h'},
-      {p:'울릉도', t:'특별비행승인 신청', st:'진행중', h:'1h'}
-    ],
-    help:'',
-    chips:['행사대응','성주','세종수목원','울릉도','거제']
-  },
-  '이수연': {
-    goals:[
-      {p:'시민의날', g:'드론쇼 도안 3개 (3·8·9번) 제작 완료'},
-      {p:'PPT', g:'사내 공식 PPT 레퍼런스 조사·초안 완성'}
-    ],
-    carry:{p:'PPT', t:'PPT 레퍼런스 조사·초안 제작 (어제 진행 중)'},
-    today:[
-      {p:'PPT', t:'PPT 레퍼런스 조사 및 초안 3~5P 제작', st:'진행중', h:'4h'},
-      {p:'시민의날', t:'시민의날 도안 3개 진행 (3·8·9번)', st:'진행중', h:'4h'}
-    ],
-    help:'',
-    chips:['시민의날','PPT','홍보관','미스경북','대전선관위']
-  },
-  // 전기이륜차팀
-  '차현창': {
-    goals:[
-      {p:'BYD·LG협력', g:'LGES 미팅 마무리 & 큐모터스 정리'},
-      {p:'보급사업', g:'수행자 평가 준비 완료'}
-    ],
-    carry:{p:'BYD·LG협력', t:'큐모터스 정리사항 확인 (어제 진행 중)'},
-    today:[
-      {p:'BYD·LG협력', t:'LGES 미팅 출장 (큐모터스 정리사항 확인)', st:'진행중', h:'종일'}
-    ],
-    help:'큐모터스 견적 회신 지연 — 대표님 푸시 필요',
-    chips:['BYD·LG협력','보급사업','큐모터스','이륜차']
-  },
-  '정연직': {
-    goals:[
-      {p:'중국출장', g:'중국출장 리뷰 보고 작성 완료'},
-      {p:'국내제작자등록', g:'제작자 등록 필요사항 확인'}
-    ],
-    carry:{p:'중국출장', t:'중국출장(BYD·드론전시회) 리뷰 작성 (어제 진행 중)'},
-    today:[
-      {p:'중국출장', t:'중국출장 내용 정리 및 보고 (~5/29)', st:'진행중', h:'4h'},
-      {p:'제작자등록', t:'국내 제작자 등록 필요사항 확인 (~6/5)', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['중국출장','제작자등록','법규','신규차종','이륜차']
-  },
-  // 사업기획팀
-  '백재우': {
-    goals:[
-      {p:'방산교육', g:'방산원가 실무 교육 이수'},
-      {p:'DCP', g:'DCP 정산 집행 내역 정리 완료'}
-    ],
-    carry:{p:'DCP', t:'DCP 정산 집행 내역 정리 (어제 진행 중)'},
-    today:[
-      {p:'방산교육', t:'방산원가 실무 및 계산 교육 참석', st:'진행중', h:'종일'}
-    ],
-    help:'',
-    chips:['방산교육','DCP','뷰런테크놀로지','MOU','보안규정']
-  },
-  '성종은': {
-    goals:[
-      {p:'경북테크노', g:'도심항공교통(UAM) 발표 준비'},
-      {p:'바우처', g:'기술보호 통합지원 사업계획서 초안 완료'}
-    ],
-    carry:{p:'바우처', t:'혁신바우처 중간 보고자료 작성 (어제 진행 중)'},
-    today:[
-      {p:'바우처', t:'혁신바우처 중간 보고자료 작성', st:'진행중', h:'4h'},
-      {p:'정산', t:'선정된 사업 사업비 전체 정리', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['바우처','경북테크노','정산','민간이전','연구노트']
-  },
-  // 경영기획실
-  '정다영': {
-    goals:[
-      {p:'급여대장', g:'5월 급여대장 결재 완료'},
-      {p:'관광진흥기금', g:'경상북도 관광진흥기금 보완사항 처리'}
-    ],
-    carry:{p:'급여대장', t:'급여대장 작성 (어제 진행 중)'},
-    today:[
-      {p:'경영지원', t:'구노 연구노트 배포', st:'진행중', h:'1h'},
-      {p:'경영지원', t:'급여대장 결재', st:'진행중', h:'1h'},
-      {p:'법무', t:'등기부등본 이사 변경 서류', st:'진행중', h:'2h'},
-      {p:'홍보', t:'2026 ICT우수기업 스토리북 기본정보 작성', st:'진행중', h:'2h'},
-      {p:'경영지원', t:'자동이체 예약', st:'진행중', h:'1h'}
-    ],
-    help:'',
-    chips:['경영지원','법무','회계','홍보','관광진흥기금']
-  },
-  // 대표·임원 (직원 화면용)
-  '추혜성': {
-    goals:[
-      {p:'경영총괄', g:'주요 사업 현황 점검 및 의사결정'},
-      {p:'영업·대외', g:'주요 파트너 미팅 및 협의'}
-    ],
-    carry:{p:'경영총괄', t:'전일 업무 이어가기'},
-    today:[
-      {p:'경영총괄', t:'대표 일정 (회의·결재)', st:'진행중', h:'종일'}
-    ],
-    help:'',
-    chips:['경영총괄','영업·대외','전략','파트너십']
-  },
-  '황원준': {
-    goals:[
-      {p:'심천 모터', g:'심천 드론 전시회 업체 종합 이메일 전송 (~5/29)'},
-      {p:'울릉도', g:'오징어축제 드론라이트쇼 대행사 협의 완료'}
-    ],
-    carry:{p:'시민의날', t:'배너 제작 협의 (어제 진행 중)'},
-    today:[
-      {p:'심천 모터', t:'모터 업체 이메일 전송 (~5/29) — 페이로드 업체까지', st:'진행중', h:'2h'},
-      {p:'울릉도', t:'대행사(에이시티) 사전 답사 일정 확인 후 군집팀 일정 조율 협의', st:'진행중', h:'2h'},
-      {p:'시민의날', t:'체험장 배너 제작 협의 (~6/1)', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['심천 모터','울릉도','시민의날','관광진흥기금','AI플랫폼']
-  },
-  '백석호': {
-    goals:[
-      {p:'전기이륜차 영업', g:'보급사업 영업 전략 수립'},
-      {p:'파트너십', g:'BYD JDM 협력 라인업 정리'}
-    ],
-    carry:{p:'BYD JDM', t:'협력 파트너 미팅 자료 (어제 진행 중)'},
-    today:[
-      {p:'전기이륜차 영업', t:'보급사업 영업 전략 · 거래처 발굴', st:'진행중', h:'4h'},
-      {p:'배달 모빌리티', t:'배달 모빌리티 파트너 발굴', st:'진행중', h:'2h'}
-    ],
-    help:'',
-    chips:['전기이륜차 영업','BYD JDM','배달 모빌리티','파트너십']
-  }
-};
+var EMP_HINTS = {};  // 실제 배포: 직원별 예시 제거 (gh()의 중립 기본값 사용)
 
 function gh(emp){
   return EMP_HINTS[emp.name] || {
@@ -3436,19 +3166,10 @@ function fillEmpHints(){
       +'<div class="flex" id="carry-btns"><button class="btn" onclick="carryAction(\'done\')" style="background:var(--green-bg);color:var(--green-t);border-color:var(--green-bg)">✓ 완료</button><button class="btn" onclick="carryAction(\'keep\')">이어감</button><button class="btn" onclick="carryAction(\'stop\')">중단</button></div>';
   } else if(ca){ ca.style.display='none'; }
 
-  // STEP 3 — 오늘 업무 (예시 placeholder)
+  // STEP 3 — 오늘 업무 (빈 입력칸 2개로 시작)
   var tl=document.getElementById('today-list');
   if(tl){
-    var th='';
-    hints.today.forEach(function(t){
-      th+='<div class="input-block hint-row" style="margin-bottom:8px;position:relative;border-style:dashed">'
-        +'<button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;line-height:1;padding:2px 5px">×</button>'
-        +'<div style="font-size:10.5px;color:var(--hint);font-style:italic;margin-bottom:5px">예시 — 클릭하면 지우고 직접 입력</div>'
-        +'<div class="flex" style="margin-bottom:7px;padding-right:20px"><span class="proj" style="opacity:.55">'+t.p+'</span><input type="text" placeholder="'+t.t.replace(/"/g,'&quot;')+'" style="color:var(--hint)" data-hint="'+t.t.replace(/"/g,'&quot;')+'" onfocus="if(!this.value){this.placeholder=\'\';this.style.color=\'\';this.closest(\'.hint-row\').classList.remove(\'hint-row\');this.closest(\'.input-block\').style.borderStyle=\'\'}" onblur="if(!this.value){this.placeholder=this.dataset.hint;this.style.color=\'var(--hint)\'}"></div>'
-        +'<div class="flex" style="flex-wrap:wrap"><select><option>'+t.st+'</option><option>완료</option><option>지연</option><option>막힘</option></select><span style="font-size:11.5px;color:var(--hint)">소요</span><select><option>'+t.h+'</option><option>2h</option><option>4h</option><option>종일</option></select></div>'
-        +'</div>';
-    });
-    tl.innerHTML=th;
+    tl.innerHTML = buildTodayRowHtml('','','진행중','') + buildTodayRowHtml('','','진행중','');
   }
 
   // STEP 3 — 프로젝트 칩
@@ -3470,12 +3191,36 @@ function fillEmpHints(){
   // STEP 3 — 회의 일정 (기본 빈 칸 1개)
   var ml=document.getElementById('meeting-list');
   if(ml){
-    ml.innerHTML='<div class="input-block" style="margin-bottom:8px"><input type="text" placeholder="회의 안건 (예: 시민의날 드론쇼 사전회의)" style="margin-bottom:7px"><div class="flex" style="flex-wrap:wrap"><span style="font-size:11px;color:var(--hint)">일시</span><input type="text" placeholder="5/29 14:00" style="width:105px"><span style="font-size:11px;color:var(--hint)">참석</span><input type="text" placeholder="참석자" style="width:110px"><span style="font-size:11px;color:var(--hint)">장소</span><input type="text" placeholder="회의실 A" style="width:100px"></div></div>';
+    ml.innerHTML='<div class="input-block" style="margin-bottom:8px">'+meetingRowInner()+'</div>';
   }
 }
 
 // ===== 입사일 기반 근속 카운트 + 축하 =====
-var TODAY = '2026-05-28';       // 견본 기준일
+// 업무일(work day) 기준: 당일 17:00이 지나면 다음 날을 '오늘 업무일'로 본다.
+// (전일 17시 ~ 금일 17시가 하나의 업무일 구간)
+function computeWorkDate(){
+  var now = new Date();
+  var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if(now.getHours() >= 17){ d.setDate(d.getDate()+1); }
+  var y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), day=('0'+d.getDate()).slice(-2);
+  return y+'-'+m+'-'+day;
+}
+var TODAY = computeWorkDate();   // 실제 업무일 (배포용)
+// YYYY-MM-DD → "2026-06-01 (월)" 한국어 표시
+function fmtTodayKo(){
+  var p = TODAY.split('-');
+  var d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+  var wd = ['일','월','화','수','목','금','토'][d.getDay()];
+  return TODAY + ' (' + wd + ')';
+}
+// 일지 작성 가능 시간대 판정: 전일 17:00 ~ 금일 11:00 권장, 그 외는 '지각 작성'
+function getWriteWindowState(){
+  var now = new Date();
+  var h = now.getHours();
+  // 17:00~23:59 => 다음 업무일 작성 시작(정상), 00:00~10:59 => 당일 작성(정상), 11:00~16:59 => 지각
+  if(h>=17 || h<11){ return {late:false, label:'정상 작성 시간'}; }
+  return {late:true, label:'지각 작성'};
+}
 function daysBetween(a,b){ return Math.floor((new Date(b)-new Date(a))/86400000); }
 function isBirthdayToday(birth){
   if(!birth) return false;
@@ -3525,13 +3270,13 @@ function renderTenure(){
       +'• 일일업무 작성 면제 (휴가자는 안 써도 돼요)<br>'
       +'• 전사 현황(오늘의 리하이)에서 "휴가 중"으로 표시<br>'
       +'• 대표·총괄이사 화면에도 휴가로 자동 표기<br>'
-      +'• 내일(5/29) 출근하면 일일업무 화면이 정상으로 돌아옵니다'
+      +'• 휴가 다음 근무일에 출근하면 일일업무 화면이 정상으로 돌아옵니다'
       +'</div>'
       +'<div style="margin-top:18px;display:flex;gap:8px;justify-content:center"><button class="btn" onclick="empTab(\'grant\')" style="font-size:13px">과제현황 보기</button><button class="btn" onclick="alert(\'견본에선 휴가 취소 기능을 시연만 합니다\')" style="font-size:13px">휴가 취소(긴급)</button></div>'
       +'</div>';
     el.className='banner'; el.style.cssText='display:none';
     greetEl.textContent = emp.name + ' 님, 편안한 휴가 보내세요 🌿';
-    subEl.textContent = emp.dept + ' · ' + emp.title + ' · 2026-05-28 (목) · 오늘 '+leaveInfo.type;
+    subEl.textContent = emp.dept + ' · ' + emp.title + ' · ' + fmtTodayKo() + ' · 오늘 '+leaveInfo.type;
     document.getElementById('topav').textContent = emp.name.substring(0,2);
     return;
   } else {
@@ -3542,7 +3287,7 @@ function renderTenure(){
 
   greetEl.textContent = emp.name + ' 님, 좋은 아침입니다 ☀️';
   var partial = PARTIAL_LEAVE[emp.name];
-  var subText = emp.dept + ' · ' + emp.title + ' · 2026-05-28 (목) · ' + emp.mode;
+  var subText = emp.dept + ' · ' + emp.title + ' · ' + fmtTodayKo() + ' · ' + emp.mode;
   if(partial){ subText += ' · 🌤️ ' + partial; }
   subEl.textContent = subText;
   document.getElementById('topav').textContent = emp.name.substring(0,2);
@@ -3692,7 +3437,20 @@ function newProject(){
 }
 
 // ===== 알림 시스템 (양방향 흐름의 핵심) =====
-var NOTIFS = [];  // {to:'emp'|'exec'|'mgr'|이름, text, time, read} — 비로그인 시연용
+var DARK_MODE = false;
+function toggleTheme(){
+  DARK_MODE = !DARK_MODE;
+  document.body.classList.toggle('dark', DARK_MODE);
+  var btn=document.getElementById('theme-toggle');
+  if(btn) btn.textContent = DARK_MODE ? '☀️' : '🌙';
+  try { localStorage.setItem('lihai-theme', DARK_MODE?'dark':'light'); } catch(e){}
+}
+function initTheme(){
+  var saved=null;
+  try { saved=localStorage.getItem('lihai-theme'); } catch(e){}
+  if(saved==='dark'){ DARK_MODE=true; document.body.classList.add('dark'); var b=document.getElementById('theme-toggle'); if(b) b.textContent='☀️'; }
+}
+
 var DB_NOTIFS = [];  // DB에서 로드한 내 알림 행
 var NOTIF_POLL = null;
 
@@ -3941,7 +3699,7 @@ function myTeamMembers(empName){
     return e.dept === teamName && e.name !== empName;
   });
 }
-var DEMO_ID = {추혜성:'hs.chu', 황원준:'wj.hwang', 백석호:'sh.baek', 박병석:'bs.park', 권종하:'jh.kwon', 차현창:'hc.cha', 박동훈:'dh.park', 성종은:'je.sung', 정다영:'dy.jung', 김세진:'sj.kim', 최철곤:'cg.choi', 백재우:'jw.baek', 유수빈:'sb.yoo', 박건희:'gh.park', 이정현:'jh.lee', 김다현:'dh.kim', 정연직:'yj.jung', 안지호:'jh.an', 이수연:'sy.lee'};
+var DEMO_ID = {추혜성:'hs.chu', 황원준:'wj.hwang', 백석호:'sh.baek', 박병석:'bs.park', 차현창:'hc.cha', 박동훈:'dh.park', 성종은:'je.sung', 정다영:'dy.jeong', 김세진:'sj.kim', 최철곤:'cg.choi', 백재우:'jw.baek', 유수빈:'sb.yoo', 박건희:'gh.park', 이정현:'jh.lee', 김다현:'dh.kim', 정연직:'yj.jeong', 안지호:'jh.an', 이수연:'sy.lee'};
 function pickDemoAccount(){
   var name=document.getElementById('login-demo').value;
   if(!name){ return; }
@@ -3962,8 +3720,8 @@ async function doLogin(){
     return;
   }
   
-  // 이메일 만들기: hs.chu → hs.chu@lihai.co.kr
-  var email = loginId.includes('@') ? loginId : (loginId + '@lihai.co.kr');
+  // 이메일 만들기: hs.chu → hs.chu@lihai.io
+  var email = loginId.includes('@') ? loginId : (loginId + '@lihai.io');
   
   btn.textContent = '로그인 중...';
   btn.disabled = true;
@@ -4124,6 +3882,7 @@ fillEmpSelect();
 renderTenure();
 mgrSub('dept');
 initWizard();
+initTheme();
 
 // ============================================
 // DB에서 grants(과제) 데이터 불러와서 칸반 채우기
@@ -4264,6 +4023,24 @@ function initWizard(){
   renderWizProgress();
   showWizStep(1);
   renderFlightInput();
+  renderWriteWindowNotice();
+}
+function renderWriteWindowNotice(){
+  var host=document.querySelector('#e-daily > .card');
+  if(!host) return;
+  var old=document.getElementById('write-window-notice');
+  if(old) old.remove();
+  var ws=getWriteWindowState();
+  var n=document.createElement('div');
+  n.id='write-window-notice';
+  if(ws.late){
+    n.style.cssText='background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber-t);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:13.5px;line-height:1.5';
+    n.innerHTML='⏰ <b>지각 작성 시간대입니다.</b> 업무일지는 <b>전일 17:00 ~ 금일 11:00</b> 작성을 권장합니다. 지금 제출하면 \'지각 작성\'으로 기록됩니다.';
+  } else {
+    n.style.cssText='background:var(--lblue);border:1px solid var(--blue);color:var(--navy);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:13.5px;line-height:1.5';
+    n.innerHTML='🕐 업무일지 작성 권장 시간: <b>전일 17:00 ~ 금일 11:00</b> · 오늘 업무일 <b>'+TODAY+'</b> 기준으로 작성됩니다.';
+  }
+  host.insertBefore(n, host.firstChild.nextSibling);
 }
 function renderWizProgress(){
   var el=document.getElementById('wiz-progress'); if(!el) return;
@@ -4296,13 +4073,45 @@ function renderFlightInput(){
   var w=DATA.weather;
   function wc(label,d){ var wind=parseFloat(d.wind); var col=wind>=8?'var(--red-t)':(wind>=5?'var(--amber-t)':'var(--green-t)'); var bg=wind>=8?'var(--red-bg)':(wind>=5?'var(--amber-bg)':'var(--green-bg)'); var note=wind>=8?'강풍 주의':(wind>=5?'주의':'양호');
     return '<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:9px 11px"><div style="font-size:11px;color:var(--hint);margin-bottom:3px">'+label+'</div><div style="font-size:12.5px;margin-bottom:5px">'+d.cond+' · '+d.temp+'</div><div style="display:inline-block;font-size:11.5px;font-weight:600;color:'+col+';background:'+bg+';padding:2px 8px;border-radius:5px">풍속 '+d.wind+' · '+note+'</div></div>'; }
-  var h='<div style="font-size:11.5px;color:var(--hint);margin-bottom:7px">본사(건천읍) 오늘 날씨 (예보) — 드론은 풍속이 핵심</div>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'+wc('오전',w.am)+wc('오후',w.pm)+'</div>'
-    +'<div style="display:flex;gap:7px;margin-bottom:12px"><button class="btn" id="fly-yes" onclick="setFlyMode(true)" style="flex:1;font-size:13px;background:var(--lblue);color:var(--navy);border-color:var(--blue)">✈️ 비행 있음</button><button class="btn" id="fly-no" onclick="setFlyMode(false)" style="flex:1;font-size:13px">🚫 오늘 비행 없음</button></div>'
+  var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:13px;color:var(--hint)">본사(건천읍) 실시간 날씨 — 드론은 풍속이 핵심</span><button class="btn" style="font-size:12px;padding:3px 10px" onclick="loadLiveWeather()">↻ 새로고침</button></div>'
+    +'<div id="weather-live" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><div style="font-size:13px;color:var(--hint);padding:8px">날씨 불러오는 중…</div></div>'
+    +'<div style="display:flex;gap:7px;margin-bottom:12px"><button class="btn" id="fly-yes" onclick="setFlyMode(true)" style="flex:1;font-size:14px;background:var(--lblue);color:var(--navy);border-color:var(--blue)">✈️ 비행 있음</button><button class="btn" id="fly-no" onclick="setFlyMode(false)" style="flex:1;font-size:14px">🚫 오늘 비행 없음</button></div>'
     +'<div id="fly-none-msg" class="hidden banner demo" style="margin-bottom:12px"><span>오늘은 비행 계획이 없습니다. (우천·강풍·일정 없음) 전사 현황에도 "비행 없음"으로 표시됩니다.</span></div>'
-    +'<div id="fly-section"><div id="flight-rows"><div class="input-block" style="margin-bottom:8px;position:relative"><button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;padding:2px 5px">×</button><input type="text" placeholder="비행 목적 (예: 군교육용 드론 테스트)" style="margin-bottom:7px;padding-right:20px"><div class="flex" style="flex-wrap:wrap"><span style="font-size:11px;color:var(--hint)">시간</span><input type="text" placeholder="15:00~17:00" style="width:115px"><span style="font-size:11px;color:var(--hint)">장소</span><input type="text" placeholder="테스트필드" style="width:100px"></div></div></div>'
-    +'<button class="btn" style="width:100%;font-size:13px" onclick="addFlightRow()">+ 비행 추가</button></div>';
+    +'<div id="fly-section"><div id="flight-rows"><div class="input-block" style="margin-bottom:8px;position:relative"><button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;padding:2px 5px">×</button><input type="text" placeholder="비행 목적 (예: 군교육용 드론 테스트)" style="margin-bottom:7px;padding-right:20px"><div class="flex" style="flex-wrap:wrap"><span style="font-size:13px;color:var(--hint)">시간</span><input type="text" placeholder="15:00~17:00" style="width:130px"><span style="font-size:13px;color:var(--hint)">장소</span><input type="text" placeholder="테스트필드" style="width:110px"></div></div></div>'
+    +'<button class="btn" style="width:100%;font-size:14px" onclick="addFlightRow()">+ 비행 추가</button></div>';
   el.innerHTML=h;
+  loadLiveWeather();
+}
+// 실시간 날씨 (Open-Meteo, 키 불필요) — 본사 경주 건천읍
+function loadLiveWeather(){
+  var box=document.getElementById('weather-live');
+  if(!box) return;
+  var lat=35.8438, lon=129.1300;
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,wind_speed_10m,weather_code&hourly=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul&wind_speed_unit=ms&forecast_days=1';
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    function wcode(c){
+      if(c===0) return '맑음'; if(c<=3) return '구름'; if(c<=48) return '안개';
+      if(c<=67) return '비'; if(c<=77) return '눈'; if(c<=82) return '소나기'; if(c<=99) return '뇌우'; return '흐림';
+    }
+    function card(label, temp, wind, code){
+      var w=parseFloat(wind);
+      var col=w>=8?'var(--red-t)':(w>=5?'var(--amber-t)':'var(--green-t)');
+      var bg=w>=8?'var(--red-bg)':(w>=5?'var(--amber-bg)':'var(--green-bg)');
+      var note=w>=8?'강풍 주의':(w>=5?'주의':'양호');
+      return '<div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:11px 13px"><div style="font-size:12.5px;color:var(--hint);margin-bottom:3px">'+label+'</div><div style="font-size:14px;margin-bottom:6px">'+wcode(code)+' · '+Math.round(temp)+'°C</div><div style="display:inline-block;font-size:13px;font-weight:600;color:'+col+';background:'+bg+';padding:3px 9px;border-radius:5px">풍속 '+w.toFixed(1)+'m/s · '+note+'</div></div>';
+    }
+    var cur=d.current||{};
+    var h='';
+    h+=card('지금', cur.temperature_2m, cur.wind_speed_10m, cur.weather_code);
+    // 오후(15시) 예보
+    if(d.hourly && d.hourly.time){
+      var idx=d.hourly.time.findIndex(function(t){return t.indexOf('T15:00')>=0;});
+      if(idx>=0){ h+=card('오후 3시', d.hourly.temperature_2m[idx], d.hourly.wind_speed_10m[idx], d.hourly.weather_code[idx]); }
+    }
+    box.innerHTML=h || '<div style="font-size:13px;color:var(--hint);padding:8px">날씨 정보 없음</div>';
+  }).catch(function(e){
+    box.innerHTML='<div style="font-size:13px;color:var(--amber-t);padding:8px">⚠ 실시간 날씨를 불러오지 못했습니다 (네트워크 확인). <button class="btn" style="font-size:12px;padding:2px 8px" onclick="loadLiveWeather()">재시도</button></div>';
+  });
 }
 function setFlyMode(hasFlights){
   document.getElementById('fly-yes').style.cssText = hasFlights?'flex:1;font-size:13px;background:var(--lblue);color:var(--navy);border-color:var(--blue)':'flex:1;font-size:13px';
@@ -4336,10 +4145,30 @@ function addMeeting(){
   var list=document.getElementById('meeting-list');
   var div=document.createElement('div');
   div.className='input-block'; div.style.marginBottom='8px';
-  div.innerHTML='<input type="text" placeholder="회의 안건" style="margin-bottom:7px">'
-    +'<div class="flex" style="flex-wrap:wrap"><span style="font-size:11px;color:var(--hint)">일시</span><input type="text" placeholder="5/28 10:00" style="width:105px"><span style="font-size:11px;color:var(--hint)">참석</span><input type="text" placeholder="참석자" style="width:110px"><span style="font-size:11px;color:var(--hint)">장소</span><input type="text" placeholder="회의실" style="width:85px"></div>';
+  div.innerHTML=meetingRowInner();
   list.appendChild(div);
   div.querySelector('input').focus();
+}
+// 회의 행 내부 HTML — 일시는 오늘 자동, 시간만 드롭다운 선택
+function meetingTimeOptions(sel){
+  var opts='<option value="">시간 선택</option>';
+  for(var hpart=8; hpart<=20; hpart++){
+    ['00','30'].forEach(function(mm){
+      var v=(hpart<10?'0'+hpart:hpart)+':'+mm;
+      opts+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+v+'</option>';
+    });
+  }
+  opts+='<option value="종일"'+(sel==='종일'?' selected':'')+'>종일</option>';
+  return opts;
+}
+function meetingRowInner(){
+  var todayLabel = TODAY.slice(5).replace('-','/'); // 예: 06/01
+  return '<input type="text" placeholder="회의 안건 (예: ○○社 방문 — 부품 단가 협의)" style="margin-bottom:7px">'
+    +'<div class="flex" style="flex-wrap:wrap;align-items:center">'
+    +'<span style="font-size:13px;color:var(--hint)">오늘 '+todayLabel+'</span>'
+    +'<span style="font-size:13px;color:var(--hint)">시간</span><select style="width:auto;padding-right:26px">'+meetingTimeOptions('')+'</select>'
+    +'<span style="font-size:13px;color:var(--hint)">방문자/거래처</span><input type="text" placeholder="○○社 3명" style="width:120px">'
+    +'<span style="font-size:13px;color:var(--hint)">장소</span><input type="text" placeholder="본사 회의실" style="width:100px"></div>';
 }
 
 function editDay(){
