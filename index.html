@@ -675,11 +675,45 @@ async function loadExecComments(){
   } catch(e){ console.log('임원댓글 로드 오류:', e); }
 }
 
+// 임원들의 오늘 일일업무(daily_logs)를 불러와 DATA.execs[].work 에 채움
+async function loadExecDailyLogs(){
+  try {
+    var res = await db.from('daily_logs')
+      .select('today_tasks, work_status, help_needed, employees!inner(name)')
+      .eq('work_date', TODAY);
+    if(res.error) throw res.error;
+    var byName = {};
+    (res.data||[]).forEach(function(l){
+      var nm = l.employees ? l.employees.name : '';
+      if(nm) byName[nm] = l;
+    });
+    var statusLabel={office:'🏢 사무실', home:'🏠 재택', field:'🚗 외근', trip:'✈️ 출장'};
+    DATA.execs.forEach(function(e){
+      var log = byName[e.name];
+      if(log){
+        var tasks = Array.isArray(log.today_tasks)?log.today_tasks:[];
+        if(tasks.length){
+          e.work = tasks.map(function(t){
+            var pj = t.project ? '['+t.project+'] ' : '';
+            var st = t.status==='done' ? ' ✓완료' : (t.status==='doing' ? ' ·진행중' : '');
+            return '• '+pj+(t.task||'')+st;
+          }).join('\n');
+        } else {
+          e.work = '(오늘 업무 입력 없음)';
+        }
+        if(log.work_status && statusLabel[log.work_status]) e.statusToday = statusLabel[log.work_status];
+      } else {
+        e.work = '(오늘 보고 작성 전)';
+      }
+    });
+  } catch(e){ console.log('임원 일일업무 로드 오류:', e); }
+}
+
 function renderExec(){
   var el=document.getElementById('m-exec'); if(!el) return;
   if(!DB_USER){ return renderExecDemo(); }
   el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--hint);font-size:13px">임원 보고·댓글 불러오는 중…</div></div>';
-  loadExecComments().then(function(){ renderExecBody(true); }).catch(function(){ renderExecBody(true); });
+  Promise.all([loadExecComments(), loadExecDailyLogs()]).then(function(){ renderExecBody(true); }).catch(function(){ renderExecBody(true); });
 }
 
 function renderExecBody(isDB){
@@ -696,11 +730,11 @@ function renderExecBody(isDB){
   DATA.execs.forEach(function(e,idx){
     var isMyCard = LOGIN_USER && LOGIN_USER.name===e.name;
     var borderHi = isMyCard ? '1.5px solid var(--blue)' : '1px solid var(--line)';
-    var bgHi = isMyCard ? 'background:linear-gradient(to right,var(--lblue),#fff)' : 'background:var(--card)';
+    var bgHi = isMyCard ? 'background:linear-gradient(to right,var(--lblue),var(--card))' : 'background:var(--card)';
     var myBadge = isMyCard ? '<span class="pill" style="font-size:9.5px;padding:1.5px 7px;margin-left:4px;background:var(--blue);color:#fff;font-weight:600">내 보고</span>' : '';
     h+='<div style="'+bgHi+';border:'+borderHi+';border-radius:var(--r-s);padding:14px;margin-bottom:14px">'
-      +'<div class="flex" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600">'+e.name+'</span><span class="pill p-gray">'+e.title+'</span>'+myBadge+'<span style="font-size:11px;color:var(--hint);margin-left:auto">오늘 보고</span></div>'
-      +'<div style="font-size:13px;color:var(--ink);line-height:1.6;background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-bottom:10px">'+e.work+'</div>'
+      +'<div class="flex" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600">'+e.name+'</span><span class="pill p-gray">'+e.title+'</span>'+myBadge+(e.statusToday?'<span class="pill p-blue" style="font-size:9.5px">'+e.statusToday+'</span>':'')+'<span style="margin-left:auto;font-size:11px;color:var(--hint)">오늘 보고</span></div>'
+      +'<div style="font-size:13px;color:var(--ink);line-height:1.6;background:var(--soft);border-radius:var(--r-s);padding:10px 12px;margin-bottom:10px;white-space:pre-line">'+escH(e.work)+'</div>'
       +'<div id="exec-cmt-'+idx+'">'+(isDB?renderExecCommentsDB(idx):renderExecComments(idx, meName))+'</div>';
 
     if(canDirect){
@@ -1424,12 +1458,7 @@ function renderHistory(){
   var el=document.getElementById('e-history'); if(!el) return;
   var emp=CUR_EMP;
   var hints = gh(emp);
-  var stats = {
-    완료:Math.floor(Math.random()*6)+22,
-    지연:Math.floor(Math.random()*3)+1,
-    도움요청:Math.floor(Math.random()*2)+1,
-    비행:emp.dept==='SW팀'||emp.dept==='HW팀'||emp.dept==='군집드론팀'?Math.floor(Math.random()*4)+3:0
-  };
+  var stats = { 완료:0, 지연:0, 도움요청:0, 비행:0 };
 
   var h='<div class="card"><div class="sec-h"><div><h2>내 기록</h2><div class="sub">지난 일지·주간 보고서·이번 달 통계 — 본인 기록만 보입니다</div></div></div>';
 
@@ -1448,15 +1477,25 @@ function renderHistory(){
   h+='</div>';
 
   if(HISTORY_SUB==='week'){
-    // 이번 주 (월~금 5일)
-    var weekDays=[
-      {d:'5/26', day:'월', st:'done'},
-      {d:'5/27', day:'화', st:'done'},
-      {d:'5/28', day:'수', st:'today', label:'오늘'},
-      {d:'5/29', day:'목', st:'future'},
-      {d:'5/30', day:'금', st:'future'}
-    ];
-    h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">이번 주 — 5/26(월) ~ 5/30(금)</div>';
+    // 이번 주 (월~금 5일) — TODAY 기준 동적 계산
+    var td = new Date(TODAY+'T00:00:00');
+    var dow = td.getDay(); // 0=일
+    var monOffset = (dow===0? -6 : 1-dow);
+    var monday = new Date(td); monday.setDate(td.getDate()+monOffset);
+    var dayNames=['월','화','수','목','금'];
+    var weekDays=[];
+    for(var wi=0; wi<5; wi++){
+      var dd=new Date(monday); dd.setDate(monday.getDate()+wi);
+      var iso = dd.toISOString().slice(0,10);
+      var md = (dd.getMonth()+1)+'/'+dd.getDate();
+      var st;
+      if(iso===TODAY) st='today';
+      else if(dd<td) st='past';   // 지난 날 — 일지 있으면 done으로 갱신(DB)
+      else st='future';
+      weekDays.push({d:md, iso:iso, day:dayNames[wi], st:st, label:(iso===TODAY?'오늘':null)});
+    }
+    var wkStart=weekDays[0].d, wkEnd=weekDays[4].d;
+    h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">이번 주 — '+wkStart+'(월) ~ '+wkEnd+'(금)</div>';
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">';
     weekDays.forEach(function(d,i){
       var bg;
@@ -1465,7 +1504,7 @@ function renderHistory(){
       else bg='background:var(--card);color:var(--hint);border-color:var(--line2)';
       var label = d.label || (d.d+' '+d.day);
       var clickable = d.st!=='future';
-      h+='<button class="btn" '+(clickable?'':'disabled')+' style="flex:1;font-size:12px;padding:10px 8px;'+bg+(clickable?'':';opacity:.55;cursor:not-allowed')+'" '+(clickable?'onclick="openHistoryDay(\''+d.d+'\','+i+')"':'')+'>'+(d.st==='done'?'✓ ':'')+label+'</button>';
+      h+='<button class="btn hist-day" data-iso="'+d.iso+'" '+(clickable?'':'disabled')+' style="flex:1;font-size:12px;padding:10px 8px;'+bg+(clickable?'':';opacity:.55;cursor:not-allowed')+'" '+(clickable?'onclick="openHistoryDay(\''+d.d+'\','+i+')"':'')+'>'+(d.st==='done'?'✓ ':'')+label+'</button>';
     });
     h+='</div>';
 
@@ -1478,7 +1517,7 @@ function renderHistory(){
     h+='<div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line)">';
     h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">📊 이번 주 보고서 (자동 생성 미리보기)</div>';
     h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;font-size:12.5px;line-height:1.7">';
-    h+='<b>'+emp.name+' · '+emp.dept+' · '+emp.title+'</b> · 5/26(월) ~ 5/30(금)<br>';
+    h+='<b>'+emp.name+' · '+emp.dept+' · '+emp.title+'</b> · '+wkStart+'(월) ~ '+wkEnd+'(금)<br>';
     h+='<div style="margin-top:8px;color:var(--muted)">'+(hints.goals[0]?'<b>이번 주 목표:</b> '+hints.goals[0].g+'<br>':'')+'</div>';
     h+='<div style="margin-top:4px;color:var(--muted)"><b>완료 업무:</b> '+stats.완료+'건 · <b>이어감:</b> '+stats.지연+'건 · <b>도움요청:</b> '+stats.도움요청+'건</div>';
     h+='<div style="margin-top:4px;color:var(--muted)"><b>비행 참여:</b> '+stats.비행+'회</div>';
@@ -1492,40 +1531,71 @@ function renderHistory(){
   h+='<div style="font-size:11.5px;color:var(--hint);margin-top:16px;text-align:center">📌 당일 일지는 수정 가능, 과거 일지는 읽기 전용 (조작 방지)</div>';
   h+='</div>';
   el.innerHTML=h;
+  // 실제 DB 통계 집계 (로그인 상태일 때만) — 이번 달 본인 daily_logs 기준
+  if(DB_USER){ loadMyMonthStats(); }
 }
 
-function setHistorySub(s){
-  HISTORY_SUB=s;
-  renderHistory();
+// 이번 달 본인 일지 통계를 daily_logs에서 집계해 숫자 카드 갱신
+async function loadMyMonthStats(){
+  try {
+    var ym = TODAY.slice(0,7); // YYYY-MM
+    var res = await db.from('daily_logs')
+      .select('work_date, today_tasks, help_needed, flight_plan')
+      .eq('employee_id', DB_USER.id)
+      .gte('work_date', ym+'-01')
+      .lte('work_date', ym+'-31');
+    if(res.error) throw res.error;
+    var done=0, delay=0, help=0, fly=0;
+    (res.data||[]).forEach(function(l){
+      var tasks = Array.isArray(l.today_tasks)?l.today_tasks:[];
+      tasks.forEach(function(t){
+        if(t.status==='done') done++;
+        else if(t.status==='delay'||t.status==='carry') delay++;
+      });
+      var helps = Array.isArray(l.help_needed)?l.help_needed:[];
+      help += helps.filter(function(x){ return x && (x.text||x.title||(typeof x==='string'&&x)); }).length;
+      var flies = Array.isArray(l.flight_plan)?l.flight_plan:[];
+      fly += flies.length;
+    });
+    var el=document.getElementById('e-history'); if(!el) return;
+    // 4개 통계 숫자 갱신 (순서: 완료·지연·도움요청·비행)
+    var nums = el.querySelectorAll('div[style*="font-size:22px"]');
+    if(nums.length>=4){
+      nums[0].textContent=done; nums[1].textContent=delay;
+      nums[2].textContent=help; nums[3].textContent=fly;
+    }
+    // 이번 주 일지가 있는 날짜 버튼에 ✓ 표시
+    var loggedDates = {};
+    (res.data||[]).forEach(function(l){ loggedDates[l.work_date]=true; });
+    el.querySelectorAll('.hist-day').forEach(function(btn){
+      var iso=btn.getAttribute('data-iso');
+      if(loggedDates[iso] && iso!==TODAY && btn.textContent.indexOf('✓')<0){
+        btn.style.background='var(--green-bg)'; btn.style.color='var(--green-t)'; btn.style.borderColor='var(--green-bg)';
+        btn.textContent='✓ '+btn.textContent.trim();
+      }
+    });
+  } catch(e){ console.log('내 통계 집계 오류:', e); }
 }
 
 function renderHistoryMonth(emp, curStats){
-  // 시연용 — 최근 3개월 (5월·4월·3월) 카드형
+  // 이번 달 실제 통계만 (curStats는 loadMyMonthStats가 갱신)
+  var ym = TODAY.slice(0,7);
+  var mLabel = parseInt(ym.slice(5),10)+'월 (이번 달)';
   var months=[
-    {m:'2026-05', label:'5월 (이번 달)', open:true, done:curStats.완료, fly:curStats.비행, help:curStats.도움요청, days:21},
-    {m:'2026-04', label:'4월', open:false, done:38, fly:7, help:3, days:22},
-    {m:'2026-03', label:'3월', open:false, done:32, fly:5, help:4, days:21}
+    {m:ym, label:mLabel, open:true, done:curStats.완료, fly:curStats.비행, help:curStats.도움요청, days:'-'}
   ];
-  var h='<div style="font-size:13px;font-weight:600;margin-bottom:9px">월별 기록 — 카드 누르면 그 달 일지·통계가 펼쳐집니다</div>';
+  var h='<div style="font-size:13px;font-weight:600;margin-bottom:9px">월별 기록 — 이번 달 통계입니다</div>';
   months.forEach(function(m, idx){
     var statusColor = m.open?'var(--navy)':'var(--line)';
     h+='<div style="background:var(--card);border:1.5px solid '+(m.open?'var(--blue)':'var(--line)')+';border-radius:10px;margin-bottom:9px;overflow:hidden">';
-    h+='<div onclick="toggleMonth('+idx+')" style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;background:'+(m.open?'var(--lblue)':'#fff')+'">';
-    h+='<div style="flex:1"><div style="font-size:14px;font-weight:600;color:'+(m.open?'var(--navy)':'var(--ink)')+'">'+m.label+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">근무일 '+m.days+'일 · 완료 '+m.done+'건 · 비행 '+m.fly+'회 · 도움요청 '+m.help+'건</div></div>';
+    h+='<div onclick="toggleMonth('+idx+')" style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;background:'+(m.open?'var(--lblue)':'var(--card)')+'">';
+    h+='<div style="flex:1"><div style="font-size:14px;font-weight:600;color:'+(m.open?'var(--ink)':'var(--ink)')+'">'+m.label+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">완료 '+m.done+'건 · 비행 '+m.fly+'회 · 도움요청 '+m.help+'건</div></div>';
     h+='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate('+(m.open?'180':'0')+'deg);transition:.18s;color:var(--hint)"><path d="M6 9l6 6 6-6"/></svg>';
     h+='</div>';
     if(m.open){
-      // 5월의 경우 모든 평일 나열 (시연용)
       h+='<div style="padding:12px 14px;border-top:1px solid var(--line);background:var(--card)">';
-      var mayDays=['5/2(금)','5/8(목)','5/9(금)','5/12(화)','5/13(수)','5/14(목)','5/15(금)','5/16(금)','5/19(월)','5/20(화)','5/21(수)','5/22(목)','5/23(금)','5/26(월)','5/27(수)','5/28(목)'];
-      h+='<div style="display:flex;gap:5px;flex-wrap:wrap">';
-      mayDays.forEach(function(d){
-        var today = d.indexOf('5/28')===0;
-        var bg = today ? 'background:var(--navy);color:#fff;border-color:var(--navy)' : 'background:var(--green-bg);color:var(--green-t);border-color:var(--green-bg)';
-        h+='<button class="btn" style="font-size:11.5px;padding:6px 10px;'+bg+'" onclick="openHistoryDay(\''+d.split('(')[0]+'\',0)">'+(today?'':'✓ ')+d+'</button>';
-      });
-      h+='</div>';
-      h+='<button class="btn" onclick="exportMonth(\''+m.m+'\')" style="margin-top:11px;width:100%;font-size:12px">📥 '+m.label+' 일지 엑셀 내보내기</button>';
+      h+='<div style="font-size:11.5px;color:var(--hint);margin-bottom:10px">날짜별 일지는 위 \'이번 주\'에서 확인하세요. 이번 달 전체 기록은 아래에서 내려받을 수 있습니다.</div>';
+      h+='<button class="btn" onclick="exportMonth(\''+m.m+'\')" style="width:100%;font-size:12px">📥 '+m.label+' 일지 엑셀 내보내기</button>';
       h+='</div>';
     }
     h+='</div>';
@@ -1585,15 +1655,20 @@ async function openHistoryDay(date, idx){
       +(dbLog.work_status?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">근무 상태: '+({office:'🏢 사무실', home:'🏠 재택', field:'🚗 외근', trip:'✈️ 출장'}[dbLog.work_status]||dbLog.work_status)+'</div>':'')
       +(dbLog.submitted_at?'<div style="font-size:10.5px;color:var(--hint);margin-top:4px">제출: '+new Date(dbLog.submitted_at).toLocaleString('ko-KR')+'</div>':'')
       +(isToday?'<button class="btn btn-pri" style="margin-top:11px;width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무로 이동해서 수정 →</button>':'<div style="font-size:11px;color:var(--hint);margin-top:11px;text-align:center">⚠ 과거 일지는 수정할 수 없습니다 (감사 추적 보장)</div>');
+  } else if(DB_USER){
+    // 로그인 상태인데 그날 일지가 DB에 없음 → 시연 데이터 대신 안내만
+    d.innerHTML=
+      '<div class="flex" style="margin-bottom:10px;align-items:center"><span style="font-size:14px;font-weight:600">'+TODAY.slice(0,4)+'-'+date+' 일지</span>'+headerBadge+'</div>'
+      +(isToday
+        ? '<div style="font-size:11.5px;padding:9px 11px;background:var(--amber-bg);border:1px solid var(--amber-t);color:var(--amber-t);border-radius:7px;margin-bottom:9px">💡 오늘 일지를 아직 제출하지 않았습니다. 일일업무 탭에서 작성·제출하면 여기에 표시됩니다.</div>'
+           +'<button class="btn btn-pri" style="width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무 작성하러 가기 →</button>'
+        : '<div style="font-size:12px;color:var(--hint);text-align:center;padding:24px 0">이 날에는 작성된 일지가 없습니다.</div>');
   } else {
-    // DB 일지 없으면 시연용 데이터 표시 (옛 방식)
+    // 비로그인(시연) — 옛 방식 힌트 데이터
     var todayWork = hints.today.map(function(t){return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+t.p+'</span> '+t.t+' <span style="font-size:10px;color:var(--green-t);float:right">'+t.st+'</span></div>';}).join('');
     d.innerHTML=
       '<div class="flex" style="margin-bottom:10px;align-items:center"><span style="font-size:14px;font-weight:600">2026-'+date+' 일지</span>'+headerBadge+'</div>'
-      +(isToday && DB_USER?'<div style="font-size:11.5px;color:var(--hint);padding:7px 10px;background:var(--amber-bg);border:1px solid #F0D48A;color:var(--amber-t);border-radius:7px;margin-bottom:9px">💡 오늘 일지를 아직 제출하지 않았습니다. 일일업무 탭에서 제출하면 여기에 표시됩니다.</div>':'')
-      +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px"><b>오늘 업무</b> <span style="font-size:10.5px;color:var(--hint)">(시연 데이터)</span></div>'
       +'<div style="font-size:12px;color:var(--ink)">'+todayWork+'</div>'
-      +(hints.carry?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">↓ 어제에서 이어옴 — '+hints.carry.t+'</div>':'')
       +(isToday?'<button class="btn btn-pri" style="margin-top:11px;width:100%;font-size:12px" onclick="empTab(\'daily\')">일일업무로 이동해서 수정 →</button>':'<div style="font-size:11px;color:var(--hint);margin-top:11px;text-align:center">⚠ 과거 일지는 수정할 수 없습니다 (감사 추적 보장)</div>');
   }
 }
