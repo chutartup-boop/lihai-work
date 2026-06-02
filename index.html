@@ -31,8 +31,11 @@
   body.dark .card,body.dark input[type=text],body.dark input[type=date],body.dark input[type=password],body.dark select,body.dark textarea{background:var(--card);color:var(--ink);border-color:var(--line2)}
   body.dark .banner.demo{background:var(--soft)}
   body.dark .ptabs button.on{color:var(--ink)}
-  body.dark .roleswitch button.on{color:var(--navy-d)}
   body.dark .dept-chip.on{color:var(--ink)}
+  .ceo-gold{background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;color:#5A3A06}
+  .ceo-gold .ceo-gold-text{color:#5A3A06}
+  body.dark .ceo-gold{background:var(--amber-bg);border-color:var(--amber);color:var(--amber-t)}
+  body.dark .ceo-gold .ceo-gold-text{color:var(--ink)}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
   button{font-family:inherit;cursor:pointer}
@@ -300,7 +303,7 @@
           <div id="status-detail" class="hidden" style="margin-top:10px;padding:10px;background:var(--soft);border-radius:7px">
             <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
               <span style="font-size:11.5px;color:var(--hint);min-width:36px" id="sd-label">행선지</span>
-              <input type="text" id="sd-where" placeholder="어디로? (예: 큐모터스 본사)" style="flex:1;min-width:140px">
+              <input type="text" id="sd-where" placeholder="어디로? (예: 거래처 본사)" style="flex:1;min-width:140px">
               <span style="font-size:11.5px;color:var(--hint)">면담</span>
               <input type="text" id="sd-who" placeholder="누구를? (예: 김부장)" style="flex:1;min-width:120px">
               <span style="font-size:11.5px;color:var(--hint)">기간</span>
@@ -401,31 +404,10 @@
     <!-- employee weekly report -->
     <div id="e-weekly" class="hidden">
       <div class="card">
-        <div class="sec-h"><div><h2>주간 업무 보고서</h2><div class="sub">차현창 · 전기이륜차사업팀 · 2026.05.25~05.29</div></div><span class="pill p-green">자동 생성</span></div>
-        <div class="banner info" style="margin-bottom:14px"><span>월~금 매일 적은 일지가 자동으로 합쳐졌습니다. 따로 쓰지 않았습니다.</span></div>
-        <div class="wgrid">
-          <div class="wstat"><div class="v" style="color:var(--green-t)">5</div><div class="l">완료</div></div>
-          <div class="wstat"><div class="v" style="color:var(--amber-t)">2</div><div class="l">진행중</div></div>
-          <div class="wstat"><div class="v">7</div><div class="l">총 업무</div></div>
-          <div class="wstat"><div class="v">71%</div><div class="l">완료율</div></div>
-        </div>
-        <h3 style="margin-bottom:9px">프로젝트별 투입</h3>
-        <div style="margin-bottom:8px"><div class="flex" style="justify-content:space-between;font-size:12px;margin-bottom:3px"><span>BYD·LG협력</span><span style="color:var(--muted)">3건 · 약 60%</span></div><div class="bar"><i style="width:60%;background:var(--blue)"></i></div></div>
-        <div style="margin-bottom:16px"><div class="flex" style="justify-content:space-between;font-size:12px;margin-bottom:3px"><span>이륜차보급사업</span><span style="color:var(--muted)">4건 · 약 40%</span></div><div class="bar"><i style="width:40%;background:var(--green)"></i></div></div>
-        <h3 style="margin-bottom:8px">완료한 일</h3>
-        <div style="margin-bottom:14px">
-          <div class="row"><span class="dot d-green"></span><div class="main"><div class="t">중국출장(BYD·드론전시회) 리뷰 작성</div><div class="m">BYD·LG협력</div></div></div>
-          <div class="row"><span class="dot d-green"></span><div class="main"><div class="t">연고산업육성사업 인증지원 자료 작성</div><div class="m">이륜차보급사업</div></div></div>
-          <div class="row"><span class="dot d-green"></span><div class="main"><div class="t">LGES 미팅내용 검토</div><div class="m">BYD·LG협력</div></div></div>
-        </div>
-        <h3 style="margin-bottom:8px">다음 주로 이월</h3>
-        <div style="margin-bottom:14px">
-          <div class="banner warn" style="margin-bottom:6px"><span>전기이륜차 보급사업 수행자 평가 (~5/29 마감)</span></div>
-          <div class="banner warn"><span>국내 제작자 등록 필요사항 확인</span></div>
-        </div>
-        <h3 style="margin-bottom:8px">이번 주 막혔던 것</h3>
-        <div class="card" style="padding:10px 12px;font-size:12.5px">큐모터스 견적 회신 지연 → 대표님 푸시로 해결됨 (5/28 회신 확인)</div>
-        <div class="banner info" style="margin-top:14px"><span>이 보고서는 본인·팀장·대표님이 함께 받습니다.</span></div>
+        <div class="sec-h"><div><h2>주간 업무 보고서</h2><div class="sub">매주 금요일 17시 자동 생성</div></div><span class="pill p-green">자동 생성</span></div>
+        <div class="banner info" style="margin-bottom:14px"><span>월~금 매일 작성한 일일업무가 자동으로 합쳐져 주간 보고서가 됩니다. 따로 작성할 필요가 없습니다.</span></div>
+        <div style="text-align:center;padding:30px 16px;color:var(--hint);font-size:13px;line-height:1.7">이번 주 일일업무를 작성하시면<br>금요일 17시에 주간 보고서가 자동으로 생성됩니다.</div>
+        <div class="banner info" style="margin-top:6px"><span>완성된 보고서는 본인·팀장·대표님이 함께 받습니다.</span></div>
         <button class="btn" style="margin-top:14px" onclick="empTab('daily')">← 일일업무로</button>
       </div>
     </div>
@@ -455,8 +437,8 @@
     <div id="m-daily">
       <div id="m-helps-card" class="card" style="border-color:var(--red-bg)"></div>
 
-      <div class="card" style="margin-top:14px;border-color:#F0D48A;background:linear-gradient(to right,#FFFBF0,#fff)" id="m-ceo-hl-card">
-        <div class="sec-h"><div><h3 style="color:var(--amber-t);display:flex;align-items:center;gap:6px"><span style="font-size:16px">⭐</span> 회사 하이라이트 작성 <span style="font-size:10.5px;background:#7A4D08;color:#fff;padding:2px 7px;border-radius:5px;font-weight:700">대표 전용</span></h3><div class="sub">전사에 공유할 소식·격려·방향을 적으면 <b>1주일간 황금카드</b>로 전직원의 \'오늘의 리하이\' 맨 위에 노출됩니다</div></div></div>
+      <div class="card" style="margin-top:14px;border-color:var(--amber);background:var(--amber-bg)" id="m-ceo-hl-card">
+        <div class="sec-h"><div><h3 style="color:var(--amber-t);display:flex;align-items:center;gap:6px"><span style="font-size:16px">⭐</span> 회사 하이라이트 작성 <span style="font-size:10.5px;background:var(--amber-t);color:#fff;padding:2px 7px;border-radius:5px;font-weight:700">대표 전용</span></h3><div class="sub">전사에 공유할 소식·격려·방향을 적으면 <b>1주일간 황금카드</b>로 전직원의 \'오늘의 리하이\' 맨 위에 노출됩니다</div></div></div>
         <div id="ceo-hl-active" style="margin-bottom:11px"></div>
         <div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:13px 14px">
           <label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">새 회사 하이라이트</label>
@@ -508,10 +490,10 @@
 
   <!-- ============ ADMIN MODE VIEW ============ -->
   <div id="view-admin" class="hidden">
-    <div style="background:linear-gradient(135deg,#FFFBF0,#FFF6E0);border:1.5px solid #F0D48A;border-radius:12px;padding:15px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
+    <div style="background:var(--amber-bg);border:1.5px solid var(--amber);border-radius:12px;padding:15px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
       <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#D98A0E,#A86A08);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
       <div style="flex:1"><div style="font-size:14.5px;font-weight:700;color:var(--amber-t)">관리자 모드</div><div style="font-size:11.5px;color:var(--amber-t);margin-top:1px;opacity:.85">민감한 인사·계정·설정 영역 · 모든 작업이 활동 로그에 기록됩니다</div></div>
-      <button class="btn" onclick="exitAdminMode()" style="font-size:12px;background:var(--card);color:var(--amber-t);border-color:#F0D48A">↩ 일반 모드</button>
+      <button class="btn" onclick="exitAdminMode()" style="font-size:12px;background:var(--card);color:var(--amber-t);border-color:var(--amber)">↩ 일반 모드</button>
     </div>
     <div class="ptabs">
       <button id="a-pt-emp" class="on" onclick="adminTab('emp')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M3 21a6 6 0 0112 0M16 11l2 2 4-4"/></svg>직원 명단</button>
@@ -695,7 +677,7 @@ async function loadExecDailyLogs(){
         if(tasks.length){
           e.work = tasks.map(function(t){
             var pj = t.project ? '['+t.project+'] ' : '';
-            var st = t.status==='done' ? ' ✓완료' : (t.status==='doing' ? ' ·진행중' : '');
+            var st = t.status==='완료' ? ' ✓완료' : (t.status==='진행중' ? ' ·진행중' : (t.status?' ·'+t.status:''));
             return '• '+pj+(t.task||'')+st;
           }).join('\n');
         } else {
@@ -1005,7 +987,7 @@ function renderCeoHighlightList(){
   var h='<div style="font-size:11.5px;color:var(--amber-t);font-weight:600;margin-bottom:7px">현재 공유 중 ('+CEO_HIGHLIGHTS.length+'건)</div>';
   CEO_HIGHLIGHTS.forEach(function(c, idx){
     var rmArg = (c.id!=null) ? "'"+c.id+"'" : idx;
-    h+='<div style="background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;border-radius:9px;padding:11px 13px;margin-bottom:6px"><div style="font-size:12.5px;color:var(--ink);line-height:1.55">'+escH(c.text)+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:var(--amber-t);font-weight:600"><span>'+escH(c.by)+' · '+c.when+'</span><span style="background:var(--card);color:var(--amber-t);padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+rmArg+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:var(--card);color:var(--amber-t);border-color:#C77A0E">조기 종료</button></div></div>';
+    h+='<div class="ceo-gold" style="border-radius:9px;padding:11px 13px;margin-bottom:6px"><div class="ceo-gold-text" style="font-size:12.5px;line-height:1.55">'+escH(c.text)+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:var(--amber-t);font-weight:600"><span>'+escH(c.by)+' · '+c.when+'</span><span style="background:var(--card);color:var(--amber-t);padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+rmArg+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:var(--card);color:var(--amber-t);border-color:var(--amber)">조기 종료</button></div></div>';
   });
   box.innerHTML=h;
 }
@@ -1417,7 +1399,7 @@ function renderTeamDemo(){
     h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12px;color:var(--hint)">현재 우리 팀에 답변 대기 중인 도움 요청 없음</div>';
   } else {
     teamHelps.forEach(function(hp){
-      h+='<div style="background:var(--amber-bg);border:1px solid #F0D48A;border-radius:9px;padding:11px 13px;margin-bottom:8px"><div style="font-size:12.5px;color:var(--amber-t)"><b>'+hp.who+'</b> · '+hp.when+'<br>'+hp.text+'</div>';
+      h+='<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:9px;padding:11px 13px;margin-bottom:8px"><div style="font-size:12.5px;color:var(--amber-t)"><b>'+hp.who+'</b> · '+hp.when+'<br>'+hp.text+'</div>';
       h+='<button class="btn btn-pri" onclick="openHelpReply('+hp.id+')" style="margin-top:8px;font-size:11.5px;padding:5px 13px">답변하기 →</button>';
       h+='</div>';
     });
@@ -1549,8 +1531,8 @@ async function loadMyMonthStats(){
     (res.data||[]).forEach(function(l){
       var tasks = Array.isArray(l.today_tasks)?l.today_tasks:[];
       tasks.forEach(function(t){
-        if(t.status==='done') done++;
-        else if(t.status==='delay'||t.status==='carry') delay++;
+        if(t.status==='완료') done++;
+        else if(t.status==='지연'||t.status==='막힘') delay++;
       });
       var helps = Array.isArray(l.help_needed)?l.help_needed:[];
       help += helps.filter(function(x){ return x && (x.text||x.title||(typeof x==='string'&&x)); }).length;
@@ -1575,6 +1557,11 @@ async function loadMyMonthStats(){
       }
     });
   } catch(e){ console.log('내 통계 집계 오류:', e); }
+}
+
+function setHistorySub(s){
+  HISTORY_SUB=s;
+  renderHistory();
 }
 
 function renderHistoryMonth(emp, curStats){
@@ -1617,11 +1604,11 @@ async function openHistoryDay(date, idx){
   var hints=gh(emp);
   var d=document.getElementById('history-detail');
   if(!d) return;
-  var isToday=(date==='5/28');
-  
-  // 날짜를 YYYY-MM-DD로 변환 (5/28 → 2026-05-28)
+  // 날짜를 YYYY-MM-DD로 변환 (M/D → 올해 기준), 오늘 판정도 동적
+  var yr = TODAY.slice(0,4);
   var dateParts = date.split('/');
-  var ymd = '2026-' + dateParts[0].padStart(2,'0') + '-' + dateParts[1].padStart(2,'0');
+  var ymd = yr + '-' + dateParts[0].padStart(2,'0') + '-' + dateParts[1].padStart(2,'0');
+  var isToday=(ymd===TODAY);
   
   // DB에서 본인의 그 날짜 일지 조회
   var dbLog = null;
@@ -1690,7 +1677,7 @@ function renderProfile(){
   var d=daysBetween(dispHire,TODAY)+1;
   var grade=gradeOf(emp);
   var gradeName={emp:'직원',lead:'팀장',exec:'임원',mgr:'총괄·대표'}[grade];
-  var adminBadge = isAdmin(emp.name) ? '<span style="margin-left:5px;font-size:10.5px;background:var(--amber-bg);color:var(--amber-t);padding:2px 8px;border-radius:9px;font-weight:600;border:1px solid #F0D48A">🔧 관리자 모드 가능</span>' : '';
+  var adminBadge = isAdmin(emp.name) ? '<span style="margin-left:5px;font-size:10.5px;background:var(--amber-bg);color:var(--amber-t);padding:2px 8px;border-radius:9px;font-weight:600;border:1px solid var(--amber)">🔧 관리자 모드 가능</span>' : '';
   var dbBadge = fromDb ? '<span style="margin-left:5px;font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC">🟢 DB 연결</span>' : '';
 
   var h='<div class="card"><div class="sec-h"><div><h2>내 정보</h2><div class="sub">내 연락처·비밀번호·알림 설정을 관리합니다</div></div></div>';
@@ -1847,7 +1834,7 @@ function renderProfilePanel(){
 function pmenuItem(ic, label, action, variant){
   var color = variant==='admin' ? 'color:var(--amber-t)' : (variant==='danger' ? 'color:var(--red-t)' : '');
   var bg = variant==='admin' ? 'background:var(--amber-bg)' : '';
-  return '<button onclick="'+action+'" style="width:100%;text-align:left;border:none;background:transparent;padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:13px;'+color+';'+bg+'" onmouseover="this.style.background=\''+(variant==='admin'?'#FFF6E0':'var(--soft)')+'\'" onmouseout="this.style.background=\''+(variant==='admin'?'#FFFBF0':'transparent')+'\'"><span style="font-size:14px;width:18px;text-align:center">'+ic+'</span><span>'+label+'</span></button>';
+  return '<button onclick="'+action+'" style="width:100%;text-align:left;border:none;background:transparent;padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:13px;'+color+';'+bg+'" onmouseover="this.style.background=\''+(variant==='admin'?'var(--amber-bg)':'var(--soft)')+'\'" onmouseout="this.style.background=\''+(variant==='admin'?'transparent':'transparent')+'\'"><span style="font-size:14px;width:18px;text-align:center">'+ic+'</span><span>'+label+'</span></button>';
 }
 function closeProfile(){
   document.getElementById('profile-panel').classList.add('hidden');
@@ -1929,7 +1916,7 @@ function renderAdminEmp(){
 
   // 현재 팀장 매핑 요약
   var leadNames = Object.keys(TEAM_LEADS);
-  h+='<div style="background:var(--amber-bg);border:1px solid #F0D48A;border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--amber-t);line-height:1.6">📌 현재 팀장: '+leadNames.map(function(n){return n+'('+TEAM_LEADS[n].replace('사업팀','').replace('팀','').replace('실','')+')';}).join(' · ')+'<br><span style="font-size:11px;opacity:.85">팀장 변동 시 각 직원 카드에서 "🎖 팀장 지정/해제"로 변경 가능합니다.</span></div>';
+  h+='<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--amber-t);line-height:1.6">📌 현재 팀장: '+leadNames.map(function(n){return n+'('+TEAM_LEADS[n].replace('사업팀','').replace('팀','').replace('실','')+')';}).join(' · ')+'<br><span style="font-size:11px;opacity:.85">팀장 변동 시 각 직원 카드에서 "🎖 팀장 지정/해제"로 변경 가능합니다.</span></div>';
 
   deptOrder.forEach(function(dept){
     var list = byDept[dept] || [];
@@ -2074,7 +2061,7 @@ function renderAdminAcc(){
   h+='</div>';
 
   // 비밀번호 초기화 자주 쓰는 작업
-  h+='<div style="background:var(--amber-bg);border:1px solid #F0D48A;border-radius:9px;padding:14px 16px;margin-bottom:16px">';
+  h+='<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:9px;padding:14px 16px;margin-bottom:16px">';
   h+='<div style="font-size:13px;font-weight:600;color:var(--amber-t);margin-bottom:9px">🔑 비밀번호 초기화</div>';
   h+='<div style="font-size:11.5px;color:var(--amber-t);margin-bottom:9px;line-height:1.55">직원이 비밀번호를 잊었을 때 초기 비번(lihai2026)으로 되돌립니다. 직원은 다음 로그인 시 새 비번 변경이 강제됩니다.</div>';
   h+='<div style="display:flex;gap:7px"><select id="pw-reset-target" style="flex:1;height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option value="">초기화할 직원 선택...</option>';
@@ -2116,7 +2103,8 @@ function renderAdminLeave(){
   h+='<div style="background:var(--lblue);border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--ink);line-height:1.6">💡 리하이는 휴가 승인 절차가 없습니다. 직원이 일일업무 STEP1에서 자율 등록하면 자동으로 여기에 반영됩니다. 별도 협의는 사내 메신저로 하세요.</div>';
 
   // 오늘 휴가자
-  h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">오늘 (5/28) 휴가자</div>';
+  var _td=TODAY.split('-'); var _mdToday=parseInt(_td[1],10)+'/'+parseInt(_td[2],10);
+  h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">오늘 ('+_mdToday+') 휴가자</div>';
   if(DATA.leave_today && DATA.leave_today.length){
     h+='<div style="margin-bottom:16px">';
     DATA.leave_today.forEach(function(l){
@@ -2706,9 +2694,9 @@ function renderCompany(){
     // 대표 한마디 — 기존처럼 큰 카드로
     ceoItems.forEach(function(x){
       var byInfo = x.by ? '<div style="font-size:10.5px;color:var(--amber-t);margin-top:4px;font-weight:600">— '+x.by+' · '+x.when+' 작성</div>' : '';
-      hh += '<div style="display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,#FFC85C,#FFE399);border:2px solid #C77A0E;border-radius:var(--r-s);padding:13px 14px;margin-bottom:7px">'
+      hh += '<div class="ceo-gold" style="display:flex;align-items:center;gap:10px;border-width:2px;border-radius:var(--r-s);padding:13px 14px;margin-bottom:7px">'
         + '<span style="font-size:24px;flex-shrink:0">'+x.emoji+'</span>'
-        + '<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:var(--amber-t);background:var(--card);padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:14px">'+x.text+'</span>'+byInfo+'</div>'
+        + '<div class="ceo-gold-text" style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:var(--amber-t);background:var(--card);padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:14px">'+x.text+'</span>'+byInfo+'</div>'
         + '<button class="btn" onclick="cheer(this)" style="font-size:11.5px;padding:4px 11px;flex-shrink:0">🎈 축하</button>'
         + '</div>';
     });
@@ -3333,7 +3321,7 @@ function renderTenure(){
   var msg = '리하이와 함께한 지 <b>'+d.toLocaleString()+'일째</b>입니다.';
   if(milestones[d]){
     el.className='banner';
-    el.style.cssText='margin-bottom:14px;background:var(--amber-bg);color:var(--amber-t);border:1px solid #F0D48A';
+    el.style.cssText='margin-bottom:14px;background:var(--amber-bg);color:var(--amber-t);border:1px solid var(--amber)';
     el.innerHTML = '<span style="font-size:18px">'+milestones[d]+'</span><div style="flex:1"><b>축하합니다! 오늘로 리하이 근무 '+d.toLocaleString()+'일을 맞으셨습니다.</b><br><span style="font-size:12px">함께해 주셔서 감사합니다. 이 소식은 대표님께도 전달되었습니다.</span></div>';
   } else {
     el.className='banner info'; el.style.marginBottom='14px';
@@ -3482,6 +3470,7 @@ function initTheme(){
   if(saved==='dark'){ DARK_MODE=true; document.body.classList.add('dark'); var b=document.getElementById('theme-toggle'); if(b) b.textContent='☀️'; }
 }
 
+var NOTIFS = [];     // 비로그인(시연)용 알림 목록
 var DB_NOTIFS = [];  // DB에서 로드한 내 알림 행
 var NOTIF_POLL = null;
 
@@ -3614,7 +3603,7 @@ function meetingAttend(btn, organizer, topic){
 }
 function meetingInterest(btn, organizer, topic){
   btn.textContent='★ 관심 표시됨';
-  btn.style.background='#FFF8E6'; btn.style.color='var(--amber-t)'; btn.style.borderColor='#F0D48A';
+  btn.style.background='var(--amber-bg)'; btn.style.color='var(--amber-t)'; btn.style.borderColor='var(--amber)';
   btn.disabled=true;
   var meName = LOGIN_USER ? LOGIN_USER.name : '대표';
   var meTitle = LOGIN_USER ? (LOGIN_USER.title==='대표이사'?'대표':LOGIN_USER.title) : '대표';
