@@ -3223,7 +3223,7 @@ async function renderPendingDB(el){
   var pend=[]; deptOrder.forEach(function(d){ (membersByDept[d]||[]).forEach(function(m){ if(!submitted[m.name]) pend.push(m); }); });
   var todayDisp = TODAY.slice(5).replace('-','/');
   var h='<div style="font-size:13px;margin-bottom:8px;color:var(--ink)">오늘('+todayDisp+') 일일업무 <b style="color:var(--amber-t)">미제출 '+pend.length+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
-  h+='<div style="font-size:11px;color:var(--hint);background:var(--soft);border-radius:7px;padding:8px 11px;margin-bottom:13px;line-height:1.5">📩 <b>독려</b>는 앱 알림(무료)으로 즉시 전송돼요. <b>메일</b>은 메일 앱이 열려 보내기만 누르면 됩니다(무료). · <b>오늘 휴가/반차인 분은 보내지 마세요.</b></div>';
+  h+='<div style="font-size:11px;color:var(--hint);background:var(--soft);border-radius:7px;padding:8px 11px;margin-bottom:13px;line-height:1.5">📩 <b>독려</b>는 앱 알림으로 즉시 전송돼요(메일 연동을 켜두면 같은 내용이 <b>메일로도 자동 발송</b>). <b>메일</b> 버튼은 수동으로 메일 앱을 여는 보조 수단입니다. · <b>오늘 휴가/반차인 분은 보내지 마세요.</b></div>';
   if(pend.length===0){ h+='<div style="background:var(--green-bg);border-radius:9px;padding:16px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 전원 제출 완료</div>'; el.innerHTML=h; return; }
   deptOrder.forEach(function(d){
     var list=(membersByDept[d]||[]).filter(function(m){ return !submitted[m.name]; });
