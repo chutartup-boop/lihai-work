@@ -489,8 +489,10 @@
 
       <div class="card" style="margin-top:14px;border-color:var(--lblue)">
         <div class="sec-h"><div><h3 style="color:var(--ink)">신규 프로젝트 등록 승인</h3><div class="sub">직원이 "계속 쓸 프로젝트"로 요청한 항목 — 승인하면 전 직원 공유 칩이 됩니다</div></div></div>
-        <div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:16px;text-align:center;font-size:13px;color:var(--hint)">승인 대기 중인 신규 프로젝트가 없습니다.</div>
+        <div id="m-projreq-list"><div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:16px;text-align:center;font-size:13px;color:var(--hint)">승인 대기 중인 신규 프로젝트가 없습니다.</div></div>
       </div>
+
+      <div id="m-event-card" style="margin-top:14px"></div>
     </div>
 
     <div id="m-grant" class="hidden"></div>
@@ -2152,8 +2154,8 @@ function adminResetPw(){
   sel.value='';
 }
 
-async function renderAdminEvent(){
-  var el=document.getElementById('a-event');
+async function renderAdminEvent(elId){
+  var el=document.getElementById(elId||'a-event');
   if(!el) return;
   el.innerHTML='<div class="card"><div class="sec-h"><div><h2>🎈 오늘의 이벤트 결과</h2><div class="sub">행운 풍선 참여·당첨 내역 · 당첨자에게 휴가/조기퇴근을 반영해 주세요</div></div></div><div style="padding:22px;text-align:center;color:var(--hint);font-size:13px">불러오는 중…</div></div>';
   if(!DB_USER){ el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--hint);font-size:13px">로그인(DB 연결) 상태에서만 결과를 볼 수 있습니다.</div></div>'; return; }
@@ -2297,8 +2299,51 @@ function renderAdminSet(){
   h+='<button class="btn" style="margin-top:9px;width:100%;font-size:12px">휴일 편집</button>';
   h+='</div>';
 
+  // 📧 알림 메일 발송 설정 (on/off)
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-top:14px">';
+  h+='<div style="font-size:13px;font-weight:600;margin-bottom:4px">📧 알림 메일 발송 설정</div>';
+  h+='<div style="font-size:11.5px;color:var(--hint);margin-bottom:6px;line-height:1.5">앱 알림을 직원 메일로 자동 발송할지 항목별로 켜고 끌 수 있어요. (Supabase 메일 연동 적용 후 작동)</div>';
+  h+='<div id="email-settings-box"><div style="font-size:12px;color:var(--hint);padding:8px 0">설정 불러오는 중…</div></div>';
+  h+='</div>';
+
   h+='</div>';
   el.innerHTML=h;
+  if(typeof loadEmailSettings==='function') loadEmailSettings();
+}
+// 메일 발송 설정 로드/저장 (app_settings 테이블)
+async function loadEmailSettings(){
+  var box=document.getElementById('email-settings-box');
+  if(!box) return;
+  var defs=[
+    ['email_all','알림 메일 발송 (전체 마스터 스위치)'],
+    ['email_nudge','미제출 독려 메일'],
+    ['email_comment','임원 댓글 알림 메일'],
+    ['email_grant','과제 관련 알림 메일'],
+    ['email_weekly_event','주간 이벤트 결과 메일 (대표에게)']
+  ];
+  var state={};
+  if(DB_USER){
+    try {
+      var r=await db.from('app_settings').select('key, enabled');
+      if(r.error) throw r.error;
+      if(r.data){ r.data.forEach(function(s){ state[s.key]=s.enabled; }); }
+    } catch(e){ box.innerHTML='<div style="font-size:12px;color:var(--red-t);padding:6px 0">⚠ 설정 조회 실패: '+escH(e.message||e)+'<br><span style="color:var(--hint)">app_settings 테이블이 있는지 확인하세요 (연동 가이드 SQL)</span></div>'; return; }
+  }
+  box.innerHTML = defs.map(function(d){
+    var on = state[d[0]]!==false; // 기본값 ON
+    var master = d[0]==='email_all';
+    return '<label style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer">'
+      +'<input type="checkbox" '+(on?'checked':'')+' onchange="toggleEmailSetting(\''+d[0]+'\',this)" style="width:17px;height:17px;cursor:pointer">'
+      +'<span style="font-size:12.5px;'+(master?'font-weight:700':'color:var(--muted)')+'">'+d[1]+'</span></label>';
+  }).join('');
+}
+async function toggleEmailSetting(key, cb){
+  if(!DB_USER){ try{ toast('로그인 상태에서만 저장됩니다.'); }catch(e){} return; }
+  try {
+    var r=await db.from('app_settings').upsert({ key:key, enabled: cb.checked }, { onConflict:'key' });
+    if(r.error) throw r.error;
+    try{ toast('설정 저장됨'); }catch(e){}
+  } catch(e){ alert('설정 저장 실패: '+(e.message||e)); cb.checked=!cb.checked; }
 }
 
 function renderAdminAi(){
@@ -2936,7 +2981,7 @@ function mgrTab(t){
   document.getElementById('m-daily').classList.toggle('hidden', t!=='daily');
   document.getElementById('m-grant').classList.toggle('hidden', t!=='grant');
   document.getElementById('m-exec').classList.toggle('hidden', t!=='exec');
-  if(t==='daily'){ mgrSub('dept'); renderMgrMeetings(); renderMgrFlights(); renderMgrHelps(); renderCeoHighlightList(); }
+  if(t==='daily'){ mgrSub('dept'); renderMgrMeetings(); renderMgrFlights(); renderMgrHelps(); renderCeoHighlightList(); renderAdminEvent('m-event-card'); renderProjectRequests(); }
   if(t==='grant'){ renderKanban('m-grant', true); }
   if(t==='exec'){ renderExec(); }
 }
@@ -3872,8 +3917,67 @@ function addTask(proj, text, carried){
   div.scrollIntoView({behavior:'smooth', block:'center'});
 }
 function toggleRegisterHint(cb){
-  var hint = cb.closest('.input-block').querySelector('.reg-hint');
+  var block = cb.closest('.input-block');
+  var hint = block.querySelector('.reg-hint');
   if(hint){ hint.classList.toggle('hidden', !cb.checked); }
+  if(cb.checked && !cb._submitted){
+    var pin = block.querySelector('input[placeholder="새 프로젝트명"]');
+    var pname = pin ? (pin.value||'').trim() : '';
+    if(!pname){ alert('먼저 새 프로젝트명을 입력해 주세요.'); cb.checked=false; if(hint) hint.classList.add('hidden'); return; }
+    submitProjectRequest(pname);
+    cb._submitted = true;
+  }
+}
+// 직원: 신규 프로젝트 공식 등록 요청 → 대표 승인 대기
+async function submitProjectRequest(pname){
+  if(!DB_USER){ try{ toast('요청이 기록되었습니다 (로그인 시 대표님께 전달).'); }catch(e){} return; }
+  try {
+    var r = await db.from('project_requests').insert({ emp_name: DB_USER.name, emp_dept: DB_USER.dept||null, title: pname, status:'pending' });
+    if(r.error) throw r.error;
+    try{ notify('exec', '🆕 신규 프로젝트 등록 요청: "'+pname+'" ('+DB_USER.name+')'); }catch(e){}
+    try{ toast('대표님께 "'+pname+'" 등록 요청을 보냈습니다.'); }catch(e){}
+  } catch(e){ alert('요청 전송 실패: '+(e.message||e)+'\n(project_requests 테이블이 있는지 확인하세요)'); }
+}
+// 대표: 신규 프로젝트 등록 요청 목록
+async function renderProjectRequests(){
+  var el=document.getElementById('m-projreq-list');
+  if(!el || !DB_USER) return;
+  try {
+    var r = await db.from('project_requests').select('*').eq('status','pending').order('created_at',{ascending:true});
+    if(r.error) throw r.error;
+    var rows=r.data||[];
+    if(rows.length===0){ el.innerHTML='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:16px;text-align:center;font-size:13px;color:var(--hint)">승인 대기 중인 신규 프로젝트가 없습니다.</div>'; return; }
+    el.innerHTML = rows.map(function(p){
+      var nm=(p.title||'').replace(/['"\\]/g,'');
+      var ap=(p.emp_name||'').replace(/['"\\]/g,'');
+      return '<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:var(--card)">'
+        +'<span style="font-size:17px">🆕</span>'
+        +'<div style="flex:1"><b style="font-size:13.5px">'+escH(p.title||'')+'</b><div style="font-size:11.5px;color:var(--hint)">요청: '+escH(p.emp_name||'')+' · '+escH(p.emp_dept||'')+'</div></div>'
+        +'<button class="btn btn-pri" style="font-size:11.5px;padding:5px 12px" onclick="approveProjectReq('+p.id+',\''+nm+'\',\''+ap+'\')">승인</button>'
+        +'<button class="btn" style="font-size:11.5px;padding:5px 12px;color:var(--red-t)" onclick="rejectProjectReq('+p.id+',\''+nm+'\',\''+ap+'\')">반려</button>'
+        +'</div>';
+    }).join('');
+  } catch(e){ el.innerHTML='<div style="font-size:12px;color:var(--red-t);padding:12px">⚠ 조회 실패: '+escH(e.message||e)+' (project_requests 테이블 확인)</div>'; }
+}
+async function approveProjectReq(id, name, applicant){
+  if(!confirm('"'+name+'" 프로젝트를 승인할까요?\n전 직원 공유 프로젝트로 등록됩니다.')) return;
+  try {
+    var r = await db.from('project_requests').update({status:'approved'}).eq('id', id);
+    if(r.error) throw r.error;
+    try{ notify(applicant, '✅ 신규 프로젝트 "'+name+'" 등록이 승인되었습니다. 이제 전 직원이 함께 쓰는 프로젝트로 사용할 수 있어요.'); }catch(e){}
+    try{ toast('"'+name+'" 승인 완료'); }catch(e){}
+    renderProjectRequests();
+  } catch(e){ alert('승인 실패: '+(e.message||e)); }
+}
+async function rejectProjectReq(id, name, applicant){
+  if(!confirm('"'+name+'" 요청을 반려할까요?')) return;
+  try {
+    var r = await db.from('project_requests').update({status:'rejected'}).eq('id', id);
+    if(r.error) throw r.error;
+    try{ notify(applicant, '신규 프로젝트 "'+name+'" 등록 요청이 반려되었습니다.'); }catch(e){}
+    try{ toast('"'+name+'" 반려 처리'); }catch(e){}
+    renderProjectRequests();
+  } catch(e){ alert('반려 실패: '+(e.message||e)); }
 }
 
 function newProject(){
@@ -4412,12 +4516,13 @@ async function loadGrantsFromDB(){
       {key:'present', t:'③ 발표평가', lock:false, cards:[]},
       {key:'wait', t:'④ 선정대기', lock:false, cards:[]},
       {key:'won', t:'⑤ 선정', lock:true, cards:[]},
-      {key:'lost', t:'⑥ 탈락', lock:true, cards:[]}
+      {key:'lost', t:'⑥ 탈락', lock:true, cards:[]},
+      {key:'done', t:'✅ 종료', lock:true, cards:[]}
     ];
-    var keyToIdx = {'review':0, 'apply':1, 'doc':2, 'present':3, 'wait':4, 'won':5, 'lost':6};
+    var keyToIdx = {'review':0, 'apply':1, 'doc':2, 'present':3, 'wait':4, 'won':5, 'lost':6, 'done':7};
     
     result.data.forEach(function(g){
-      var stageKey = STAGE_MAP[String(g.stage)] || 'review';
+      var stageKey = g.closed ? 'done' : (STAGE_MAP[String(g.stage)] || 'review');
       var colIdx = keyToIdx[stageKey];
       
       // 담당자 표시 (PM + 참여 실무직원 일부)
@@ -4527,6 +4632,8 @@ async function openGrantDetail(dbId){
   if(pmName==='미지정' && card && card.w) pmName = card.w;
 
   var canEdit = MY_GRADE==='mgr' || MY_GRADE==='exec' || (DB_USER && DB_USER.can_edit_grants) || (LOGIN_USER && (LOGIN_USER.name===pmName.split('·')[0]));
+  var gnameJs = (g.name||'').replace(/['"\\]/g,'');
+  var isClosed = !!g.closed;
   var rows = [
     ['과제명', g.name||''],
     ['발주처/기관', g.org||'—'],
@@ -4551,13 +4658,58 @@ async function openGrantDetail(dbId){
   bg.innerHTML='<div style="background:var(--card);border-radius:14px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.3)">'
     +'<div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span style="font-size:22px">📋</span><div style="flex:1"><div style="font-size:16px;font-weight:700">과제 상세</div><div style="font-size:12.5px;color:var(--hint);margin-top:2px">'+escH(g.name||'')+'</div></div><button onclick="closeGrantDetail()" style="border:none;background:transparent;font-size:22px;color:var(--hint);cursor:pointer">×</button></div>'
     +'<div style="padding:8px 22px 18px" id="grant-detail-body">'+body+'</div>'
-    +'<div style="padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end">'
-    +(canEdit?'<button class="btn btn-pri" onclick="openGrantEdit('+dbId+')">✏ 수정하기</button>':'<span style="font-size:12px;color:var(--hint);align-self:center">수정 권한 없음 (담당자·임원·대표만)</span>')
+    +'<div style="padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">'
+    +(canEdit ? (isClosed
+        ? '<button class="btn" onclick="reopenGrant('+dbId+')">↩ 종료 해제</button>'
+        : '<button class="btn" style="color:var(--hint)" onclick="closeGrant('+dbId+',\''+gnameJs+'\')">✅ 과제 종료</button>')
+      : '')
+    +(canEdit ? '<button class="btn" style="border-color:var(--red);color:var(--red-t)" onclick="deleteGrantDetail('+dbId+',\''+gnameJs+'\')">🗑 삭제</button>' : '')
+    +(canEdit?'<button class="btn btn-pri" onclick="openGrantEdit('+dbId+')">✏ 수정하기</button>':'<span style="font-size:12px;color:var(--hint);align-self:center">수정·삭제 권한 없음 (담당자·임원·대표만)</span>')
     +'<button class="btn" onclick="closeGrantDetail()">닫기</button></div>'
     +'</div>';
   document.body.appendChild(bg);
 }
 function closeGrantDetail(){ var b=document.getElementById('grant-detail-bg'); if(b) b.remove(); }
+// 과제 삭제 (담당·임원·대표·권한직원)
+async function deleteGrantDetail(dbId, name){
+  if(!DB_USER){ alert('로그인 후 사용 가능합니다.'); return; }
+  if(!confirm('"'+(name||'이 과제')+'" 과제를 정말 삭제할까요?\n삭제하면 되돌릴 수 없습니다.')) return;
+  try {
+    var r = await db.from('grants').delete().eq('id', dbId);
+    if(r.error) throw r.error;
+    try{ notify('exec', '🗑 과제 삭제: "'+(name||'')+'" ('+(DB_USER.name||'')+' 처리)'); }catch(e){}
+    try{ toast('과제를 삭제했습니다.'); }catch(e){}
+    closeGrantDetail();
+    await loadGrantsFromDB();
+    if(typeof renderKanban==='function'){ renderKanban('m-grant', true); renderKanban('e-grant', false); }
+  } catch(e){ alert('삭제 실패: '+(e.message||e)); }
+}
+// 과제 종료 (완료/마감)
+async function closeGrant(dbId, name){
+  if(!DB_USER){ alert('로그인 후 사용 가능합니다.'); return; }
+  if(!confirm('"'+(name||'이 과제')+'" 과제를 종료 처리할까요?\n종료된 과제는 칸반 맨 아래 "종료" 칸으로 이동합니다.')) return;
+  try {
+    var r = await db.from('grants').update({ closed:true }).eq('id', dbId);
+    if(r.error) throw r.error;
+    try{ notify('exec', '✅ 과제 종료: "'+(name||'')+'" ('+(DB_USER.name||'')+' 처리)'); }catch(e){}
+    try{ toast('과제를 종료 처리했습니다.'); }catch(e){}
+    closeGrantDetail();
+    await loadGrantsFromDB();
+    if(typeof renderKanban==='function'){ renderKanban('m-grant', true); renderKanban('e-grant', false); }
+  } catch(e){ alert('종료 처리 실패: '+(e.message||e)+'\n(grants 테이블에 closed 컬럼이 있는지 확인하세요)'); }
+}
+// 과제 종료 해제
+async function reopenGrant(dbId){
+  if(!DB_USER){ return; }
+  try {
+    var r = await db.from('grants').update({ closed:false }).eq('id', dbId);
+    if(r.error) throw r.error;
+    try{ toast('종료를 해제했습니다.'); }catch(e){}
+    closeGrantDetail();
+    await loadGrantsFromDB();
+    if(typeof renderKanban==='function'){ renderKanban('m-grant', true); renderKanban('e-grant', false); }
+  } catch(e){ alert('해제 실패: '+(e.message||e)); }
+}
 
 function openGrantEdit(dbId){
   (async function(){
