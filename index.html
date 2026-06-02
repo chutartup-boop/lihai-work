@@ -3210,28 +3210,53 @@ async function renderPendingDB(el){
   var membersByDept={}; ROSTER.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
   var deptOrder=DATA.depts.map(function(dp){return dp.name;});
   Object.keys(membersByDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
-  var submitted={};
+  var submitted={}, emailByName={};
   try {
     var res = await db.from('daily_logs').select('employees!inner(name)').eq('work_date', TODAY);
     if(res.error) throw res.error;
     (res.data||[]).forEach(function(l){ if(l.employees&&l.employees.name) submitted[l.employees.name]=true; });
+    var er = await db.from('employees').select('name, email');
+    if(er.data){ er.data.forEach(function(e){ emailByName[e.name]=e.email; }); }
   } catch(e){
     el.innerHTML='<div style="padding:20px;text-align:center;color:var(--red-t);font-size:12.5px">⚠ 조회 실패: '+escH(e.message||e)+'</div>'; return;
   }
   var pend=[]; deptOrder.forEach(function(d){ (membersByDept[d]||[]).forEach(function(m){ if(!submitted[m.name]) pend.push(m); }); });
   var todayDisp = TODAY.slice(5).replace('-','/');
-  var h='<div style="font-size:13px;margin-bottom:12px;color:var(--ink)">오늘('+todayDisp+') 일일업무 <b style="color:var(--amber-t)">미제출 '+pend.length+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
+  var h='<div style="font-size:13px;margin-bottom:8px;color:var(--ink)">오늘('+todayDisp+') 일일업무 <b style="color:var(--amber-t)">미제출 '+pend.length+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
+  h+='<div style="font-size:11px;color:var(--hint);background:var(--soft);border-radius:7px;padding:8px 11px;margin-bottom:13px;line-height:1.5">📩 <b>독려</b>는 앱 알림(무료)으로 즉시 전송돼요. <b>메일</b>은 메일 앱이 열려 보내기만 누르면 됩니다(무료). · <b>오늘 휴가/반차인 분은 보내지 마세요.</b></div>';
   if(pend.length===0){ h+='<div style="background:var(--green-bg);border-radius:9px;padding:16px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 전원 제출 완료</div>'; el.innerHTML=h; return; }
   deptOrder.forEach(function(d){
     var list=(membersByDept[d]||[]).filter(function(m){ return !submitted[m.name]; });
     if(list.length===0) return;
     h+='<div style="margin-bottom:13px"><div style="font-size:12.5px;font-weight:600;margin-bottom:6px">'+escH(d)+' <span style="font-size:11px;color:var(--hint);font-weight:400">· 미제출 '+list.length+'명</span></div>';
     list.forEach(function(m){
-      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px dashed var(--line2);border-radius:8px;margin-bottom:5px;background:var(--soft)"><b style="font-size:12.5px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span><span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">미제출</span></div>';
+      var nm=(m.name||'').replace(/'/g,'\\\'');
+      var email=emailByName[m.name]||'';
+      var mailBtn = email
+        ? '<button class="btn" style="font-size:11px;padding:4px 10px" onclick="mailtoSubmit(\''+email.replace(/'/g,'')+'\',\''+nm+'\')">✉ 메일</button>'
+        : '';
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px dashed var(--line2);border-radius:8px;margin-bottom:5px;background:var(--soft)">'
+        +'<b style="font-size:12.5px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
+        +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">미제출</span>'
+        +'<button class="btn btn-pri" style="font-size:11px;padding:4px 10px" onclick="nudgeSubmit(\''+nm+'\')">📩 독려</button>'+mailBtn
+        +'</div>';
     });
     h+='</div>';
   });
   el.innerHTML=h;
+}
+// 미제출 직원에게 작성 요청 (앱 알림 — 무료)
+function nudgeSubmit(name){
+  if(!name) return;
+  notify(name, '📝 금일 일일업무일지를 아직 작성하지 않으셨어요. 작성 화면에서 바로 등록 부탁드립니다.');
+  try{ toast('"'+name+'" 님에게 작성 요청 알림을 보냈습니다 🟢'); }catch(e){}
+}
+// 미제출 직원에게 메일 (mailto — 무료, 메일 앱 실행)
+function mailtoSubmit(email, name){
+  if(!email){ alert('등록된 이메일이 없습니다.'); return; }
+  var subject = encodeURIComponent('[리하이] 금일 일일업무일지 작성 안내');
+  var body = encodeURIComponent((name||'')+'님,\n\n금일 일일업무일지가 아직 등록되지 않았습니다.\n아래에서 작성 부탁드립니다.\nhttps://work.lihai.co.kr\n\n감사합니다.');
+  window.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
 }
 
 // 기한·리스크 탭 — 업무 내용 기반(막힘/지연 업무 + 마감 임박 과제)
@@ -3999,10 +4024,12 @@ function notifGoto(el){
   var canMgrView = (MY_GRADE==='mgr' || MY_GRADE==='exec');
   var mgrRole = (MY_GRADE==='mgr') ? 'mgr' : 'exec';
   var isComment = /답글|댓글|의견을 남겼/.test(t);
+  var isWrite = /일일업무일지|작성 부탁|작성하지 않|작성해 주|작성해주/.test(t);
   var isGrant = /과제|발굴|신청|추진|승인|반려|단계로 이동|선정/.test(t);
   var isHelp = /도움/.test(t);
   var isMeeting = /회의/.test(t);
   try {
+    if(isWrite){ setRole('emp'); empTab('daily'); return; }
     if(isComment && canMgrView){ setRole(mgrRole); mgrTab('exec'); return; }
     if(isGrant){
       if(canMgrView){ setRole(mgrRole); mgrTab('grant'); }
@@ -4623,14 +4650,35 @@ async function openTodayEvent(){
       var chk = await db.from('event_plays').select('prize').eq('emp_name', DB_USER.name).eq('play_date', TODAY).limit(1);
       if(chk.data && chk.data.length){ renderEventOverlay('server', chk.data[0].prize); return; }
     } catch(e){ /* 조회 실패 시 그냥 진행 */ }
-    EVENT_STATE={ mode:'server', picked:false };
-    renderEventOverlay('server', null);
-    return;
+  } else {
+    var prev=null; try{ prev=localStorage.getItem('lihai-event-'+(CUR_EMP?CUR_EMP.name:'guest')+'-'+TODAY); }catch(e){}
+    if(prev){ renderEventOverlay('client', prev); return; }
   }
-  // 비로그인 데모: 클라이언트 추첨 (배포 사이트에선 항상 server 모드)
+  renderEventIntro();
+}
+function renderEventIntro(){
+  closeEvent();
+  var bg=document.createElement('div'); bg.id='event-bg';
+  bg.style.cssText='position:fixed;inset:0;background:rgba(15,25,45,.78);z-index:600;display:flex;align-items:center;justify-content:center;padding:18px;opacity:1;transition:opacity .5s';
+  bg.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:470px;width:100%;box-shadow:0 16px 60px rgba(0,0,0,.4);padding:26px">'
+    +'<div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:4px">🎈 오늘의 행운 풍선</div>'
+    +'<div style="font-size:12.5px;color:var(--hint);text-align:center;margin-bottom:18px">참여 전에 꼭 확인해 주세요 · 하루 딱 한 번</div>'
+    +'<div style="background:var(--soft);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.7;margin-bottom:14px">'
+      +'<div style="margin-bottom:9px">🕐 <b>1·2시간 조기 퇴근</b> — <b>오늘 바로</b> 사용하세요. <b>팀장님께 보고 후</b> 퇴근하면 됩니다.</div>'
+      +'<div style="margin-bottom:9px">🌴 <b>반차 · 휴가</b> — <b>한 달 내</b> 사용. 당첨되면 <b>휴가증</b>이 발급돼요(다운로드 → 휴가신청 시 근거서류로 첨부).</div>'
+      +'<div>🎯 기회는 <b>딱 한 번</b>, 풍선 하나만 터뜨릴 수 있어요.</div>'
+    +'</div>'
+    +'<div style="font-size:11.5px;color:var(--amber-t);background:var(--amber-bg);border-radius:8px;padding:9px 12px;margin-bottom:18px">⚠ 오늘 <b>휴가·반차·경조사</b>로 쉬는 날이면 이벤트 대상이 아니에요.</div>'
+    +'<div style="display:flex;gap:8px"><button class="btn" style="flex:1" onclick="eventDeclineLeave()">오늘 휴가예요</button><button class="btn btn-pri" style="flex:2" onclick="startEventGame()">🎈 시작하기 (정상 근무)</button></div>'
+    +'</div>';
+  bg.onclick=function(e){ if(e.target===bg) closeEvent(); };
+  document.body.appendChild(bg);
+}
+function eventDeclineLeave(){ closeEvent(); try{ toast('오늘은 푹 쉬세요 🏝️ 이벤트는 다음에 또 있어요!'); }catch(e){} }
+function startEventGame(){
+  if(DB_USER){ EVENT_STATE={ mode:'server', picked:false }; renderEventOverlay('server', null); return; }
+  // 비로그인 데모: 클라이언트 추첨
   var key='lihai-event-'+(CUR_EMP?CUR_EMP.name:'guest')+'-'+TODAY;
-  var prev=null; try{ prev=localStorage.getItem(key); }catch(e){}
-  if(prev){ renderEventOverlay('client', prev); return; }
   var prizes=[];
   [['휴가 🏝️',1],['반차 🌴',1],['2시간 일찍 퇴근 🕑',2],['1시간 일찍 퇴근 🕐',3]].forEach(function(p){ for(var k=0;k<p[1];k++) prizes.push(p[0]); });
   while(prizes.length<50) prizes.push('꽝');
@@ -4710,8 +4758,17 @@ function revealEvent(layout, i, prizeLabel, isWin){
   var res=document.getElementById('ev-result');
   if(res){
     if(isWin){
+      var isLeave = /휴가|반차/.test(prizeLabel);
+      var sub = isLeave
+        ? '한 달 내 사용하세요. 아래 <b>휴가증</b>을 받아 휴가신청 시 근거서류로 첨부하면 됩니다.'
+        : '<b>오늘 바로</b> 사용 — 팀장님께 보고 후 퇴근하세요.';
+      var certBtn = isLeave
+        ? '<div style="margin-top:11px"><button class="btn btn-pri" onclick="downloadLeaveCert(\''+prizeLabel.replace(/'/g,'')+'\')">📄 휴가증 발급 (인쇄·PDF 저장)</button></div>'
+        : '';
       res.innerHTML='<span style="color:var(--green-t)">🎉 축하합니다! <b>'+escH(prizeLabel)+'</b> 당첨!</span>'
-        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">대표님이 관리자 탭에서 확인하고 혜택을 반영해 드립니다 😊</div>';
+        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">'+sub+'</div>'
+        +'<div style="font-size:11px;color:var(--hint);font-weight:400;margin-top:2px">대표님도 관리자 탭에서 확인합니다.</div>'
+        +certBtn;
       try { launchBalloons(); } catch(e){}
     } else {
       res.innerHTML='<span style="color:var(--muted)">아쉽게도 <b>꽝</b>! 😅 선물 풍선은 위에 빛나게 표시했어요 — 진짜 있었죠?</span>'
@@ -4719,7 +4776,54 @@ function revealEvent(layout, i, prizeLabel, isWin){
     }
   }
   var cl=document.getElementById('ev-close'); if(cl) cl.style.display='';
-  setTimeout(function(){ closeEvent(); }, isWin?7000:6000);
+  // 꽝이면 잠깐 보여준 뒤 자동 페이드아웃 / 당첨이면 직접 닫을 때까지 유지(휴가증 발급 시간)
+  if(!isWin){ setTimeout(function(){ closeEvent(); }, 6000); }
+}
+// 휴가/반차 당첨 시 휴가증 발급 (인쇄·PDF) — 휴가신청 근거서류
+function downloadLeaveCert(prizeLabel){
+  var name = DB_USER ? DB_USER.name : (CUR_EMP ? CUR_EMP.name : '');
+  var dept = DB_USER ? (DB_USER.dept||'') : (CUR_EMP ? (CUR_EMP.dept||'') : '');
+  var kind = /반차/.test(prizeLabel) ? '반차' : '휴가(연차)';
+  var issue = TODAY;
+  var d=new Date(TODAY+'T00:00:00'); d.setMonth(d.getMonth()+1);
+  var exp = d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var serial = 'LH-EV-'+issue.replace(/-/g,'')+'-'+Math.floor(Math.random()*9000+1000);
+  function e(s){ return (''+s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  var doc='<!doctype html><html><head><meta charset="utf-8"><title>휴가증 - '+e(name)+'</title>'
+    +'<style>body{font-family:"Malgun Gothic","맑은 고딕",sans-serif;background:#eef1f6;margin:0;padding:30px;color:#1b2a44}'
+    +'.cert{max-width:640px;margin:0 auto;background:#fff;border:2px solid #1b2a44;border-radius:14px;padding:44px 48px;box-shadow:0 8px 30px rgba(0,0,0,.1)}'
+    +'.brand{text-align:center;font-size:13px;letter-spacing:3px;color:#3a6;font-weight:700;margin-bottom:6px}'
+    +'.title{text-align:center;font-size:34px;font-weight:800;letter-spacing:14px;margin:10px 0 4px}'
+    +'.sub{text-align:center;font-size:12px;color:#6b7b8e;margin-bottom:30px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:15px}'
+    +'th,td{border:1px solid #cdd5e0;padding:12px 14px;text-align:left}'
+    +'th{background:#f4f6fa;width:34%;font-weight:600;color:#3a4a5e}'
+    +'.note{font-size:12.5px;color:#54657a;line-height:1.7;background:#f4f6fa;border-radius:8px;padding:14px 16px;margin-bottom:28px}'
+    +'.sign{text-align:right;font-size:15px;line-height:2;margin-top:8px}'
+    +'.sign b{font-size:18px;letter-spacing:2px}'
+    +'.noprint{text-align:center;margin-top:24px}'
+    +'.noprint button{background:#1b2a44;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:14px;cursor:pointer}'
+    +'@media print{body{background:#fff;padding:0}.cert{border:2px solid #1b2a44;box-shadow:none}.noprint{display:none}}'
+    +'</style></head><body><div class="cert">'
+    +'<div class="brand">LIHAI · 주식회사 리하이</div>'
+    +'<div class="title">'+(kind==='반차'?'반 차 증':'휴 가 증')+'</div>'
+    +'<div class="sub">오늘의 행운 풍선 이벤트 당첨 증서</div>'
+    +'<table>'
+    +'<tr><th>성명</th><td>'+e(name)+'</td></tr>'
+    +'<tr><th>부서</th><td>'+e(dept)+'</td></tr>'
+    +'<tr><th>종류</th><td>'+e(prizeLabel)+'</td></tr>'
+    +'<tr><th>발급 사유</th><td>사내 「오늘의 행운 풍선」 이벤트 당첨</td></tr>'
+    +'<tr><th>발급일</th><td>'+e(issue)+'</td></tr>'
+    +'<tr><th>사용 기한</th><td>'+e(exp)+' 까지 (발급일로부터 1개월 내 소진)</td></tr>'
+    +'<tr><th>증서 번호</th><td>'+e(serial)+'</td></tr>'
+    +'</table>'
+    +'<div class="note">본 증서는 사내 이벤트 당첨에 따라 발급된 것으로, <b>휴가신청서 제출 시 근거서류</b>로 사용할 수 있습니다. 사용 기한 내 미사용 시 자동 소멸됩니다.</div>'
+    +'<div class="sign">위 사람의 '+(kind==='반차'?'반차':'휴가')+' 사용을 확인합니다.<br>'+e(issue)+'<br><b>주식회사 리하이 대표이사 (직인)</b></div>'
+    +'<div class="noprint"><button onclick="window.print()">🖨 인쇄 / PDF로 저장</button></div>'
+    +'</div></body></html>';
+  var w=window.open('','_blank');
+  if(!w){ alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용한 뒤 다시 시도해주세요.'); return; }
+  w.document.write(doc); w.document.close();
 }
 function closeEvent(){
   var bg=document.getElementById('event-bg');
