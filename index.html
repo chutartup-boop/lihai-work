@@ -11,7 +11,7 @@
     --ink:#1a2230; --muted:#5F6B7A; --hint:#94A2B2; --line:#E3E8EF; --line2:#D3DAE3;
     --bg:#F4F6F9; --card:#FFFFFF; --soft:#F7F9FC;
     --green:#1D9E75; --green-bg:#E1F5EE; --green-t:#0F6E56;
-    --amber:#D98A0E; --amber-bg:#FBF0DC; --amber-t:#7A4D08;
+    --amber:#D98A0E; --amber-bg:#FBF0DC; --amber-t:#7A4D08; --purple:var(--purple); --purple-bg:#F0EAFA; --purple-t:#5E44C4;
     --red:#D8453E; --red-bg:#FBE9E8; --red-t:#9A2C28;
     --gray-bg:#EEF1F5;
     --r:10px; --r-s:7px;
@@ -24,7 +24,7 @@
     --ink:#E8EDF4; --muted:#A3B0C0; --hint:#6F7E90; --line:#2A3645; --line2:#384656;
     --bg:#0F1620; --card:#19222F; --soft:#1E2835;
     --green:#2FB488; --green-bg:#16312A; --green-t:#5FD9B0;
-    --amber:#E0A030; --amber-bg:#3A2E14; --amber-t:#E8B860;
+    --amber:#E0A030; --amber-bg:#3A2E14; --amber-t:#E8B860; --purple:#9B82F5; --purple-bg:#241B3D; --purple-t:#B9A6F5;
     --red:#E85C55; --red-bg:#3A1E1C; --red-t:#F09A94;
     --gray-bg:#222D3A;
   }
@@ -733,13 +733,13 @@ function renderExecCommentsDB(idx){
     var bg, badge;
     if(c.comment_type==='mgr'){ bg='background:var(--lblue);color:var(--ink);border-left:3px solid var(--blue)'; badge='<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>'; }
     else if(c.comment_type==='self'){ bg='background:var(--amber-bg);color:var(--amber-t);border-left:3px solid var(--amber)'; badge='<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'; }
-    else { bg='background:#F0EAFA;color:#5E44C4;border-left:3px solid #7A5AF0'; badge='<span style="font-size:9.5px;background:#7A5AF0;color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>'; }
+    else { bg='background:var(--purple-bg);color:var(--purple-t);border-left:3px solid var(--purple)'; badge='<span style="font-size:9.5px;background:var(--purple);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>'; }
     h+='<div style="font-size:12.5px;border-radius:var(--r-s);padding:9px 12px;margin-bottom:7px;'+bg+'">'
       +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+escH(authorDisp)+'</b><span style="font-size:10.5px;color:var(--hint)">· '+timeAgo(c.created_at)+'</span>'+badge+'</div>'
       +'<div style="line-height:1.5">'+escH(c.text)+'</div>';
     var replies = list.filter(function(r){ return r.parent_id===c.id; });
     if(replies.length){
-      var lineColor = c.comment_type==='mgr'?'var(--blue)':(c.comment_type==='self'?'var(--amber)':'#7A5AF0');
+      var lineColor = c.comment_type==='mgr'?'var(--blue)':(c.comment_type==='self'?'var(--amber)':'var(--purple)');
       h+='<div style="margin-top:7px;padding-left:11px;border-left:2px solid '+lineColor+'">';
       replies.forEach(function(r){
         var ra=(EMP_MAP[r.author_id]||{}); var raDisp=(ra.name||'')+(ra.title?' '+ra.title:'');
@@ -796,14 +796,14 @@ function renderExecComments(idx, meName){
   list.forEach(function(c, cIdx){
     var bg;
     if(c.fromMgr) bg='background:var(--lblue);color:var(--ink);border-left:3px solid var(--blue)';
-    else if(c.fromPeer) bg='background:#F0EAFA;color:#5E44C4;border-left:3px solid #7A5AF0';
+    else if(c.fromPeer) bg='background:var(--purple-bg);color:var(--purple-t);border-left:3px solid var(--purple)';
     else bg='background:var(--amber-bg);color:var(--amber-t);border-left:3px solid var(--amber)';
     h+='<div style="font-size:12.5px;border-radius:var(--r-s);padding:9px 12px;margin-bottom:7px;'+bg+'">'
-      +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+c.author+'</b><span style="font-size:10.5px;color:var(--hint)">· '+c.ts+'</span>'+(c.fromMgr?'<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>':(c.fromPeer?'<span style="font-size:9.5px;background:#7A5AF0;color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>':'<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'))+'</div>'
+      +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+c.author+'</b><span style="font-size:10.5px;color:var(--hint)">· '+c.ts+'</span>'+(c.fromMgr?'<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>':(c.fromPeer?'<span style="font-size:9.5px;background:var(--purple);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>':'<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'))+'</div>'
       +'<div style="line-height:1.5">'+c.text+'</div>';
     // 답글들
     if(c.replies && c.replies.length){
-      var lineColor = c.fromMgr?'var(--blue)':(c.fromPeer?'#7A5AF0':'var(--amber)');
+      var lineColor = c.fromMgr?'var(--blue)':(c.fromPeer?'var(--purple)':'var(--amber)');
       h+='<div style="margin-top:7px;padding-left:11px;border-left:2px solid '+lineColor+'">';
       c.replies.forEach(function(r){
         h+='<div style="font-size:12px;background:var(--card);border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
@@ -1862,7 +1862,7 @@ function renderAdminEmp(){
     h+='<div style="margin-bottom:18px"><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--lblue)">'+dept+' <span style="font-size:11px;color:var(--hint);font-weight:400">· '+list.length+'명</span></div>';
     list.forEach(function(e){
       var g = gradeOf(e);
-      var gColor = {emp:'#6B7B8E',lead:'#378ADD',exec:'#7A5AF0',mgr:'#1D9E75'}[g];
+      var gColor = {emp:'#6B7B8E',lead:'#378ADD',exec:'var(--purple)',mgr:'#1D9E75'}[g];
       var gName = {emp:'직원',lead:'팀장',exec:'임원',mgr:'총괄·대표'}[g];
       var adminB = isAdmin(e.name)?'<span style="font-size:9.5px;background:var(--amber-bg);color:var(--amber-t);padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600">관리자</span>':'';
       var d=daysBetween(e.hire,TODAY)+1;
@@ -1994,7 +1994,7 @@ function renderAdminAcc(){
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px">';
   h+='<div style="background:#EDEFF3;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#54657A;font-weight:600">직원</div><div style="font-size:20px;font-weight:700;color:#54657A;margin-top:3px">'+grades.emp+'</div></div>';
   h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--ink);font-weight:600">팀장</div><div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:3px">'+grades.lead+'</div></div>';
-  h+='<div style="background:#F0EAFA;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#5E44C4;font-weight:600">임원</div><div style="font-size:20px;font-weight:700;color:#5E44C4;margin-top:3px">'+grades.exec+'</div></div>';
+  h+='<div style="background:var(--purple-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--purple-t);font-weight:600">임원</div><div style="font-size:20px;font-weight:700;color:var(--purple-t);margin-top:3px">'+grades.exec+'</div></div>';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600">총괄·대표</div><div style="font-size:20px;font-weight:700;color:var(--green-t);margin-top:3px">'+grades.mgr+'</div></div>';
   h+='</div>';
 
@@ -2068,7 +2068,7 @@ function renderAdminLeave(){
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px">';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600">연차</div><div style="font-size:20px;font-weight:700;color:var(--green-t);margin-top:3px">3건</div></div>';
   h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--ink);font-weight:600">반차</div><div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:3px">2건</div></div>';
-  h+='<div style="background:#F0EAFA;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#5E44C4;font-weight:600">출장</div><div style="font-size:20px;font-weight:700;color:#5E44C4;margin-top:3px">5건</div></div>';
+  h+='<div style="background:var(--purple-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--purple-t);font-weight:600">출장</div><div style="font-size:20px;font-weight:700;color:var(--purple-t);margin-top:3px">5건</div></div>';
   h+='</div>';
 
   h+='<button class="btn" style="width:100%" onclick="adminExportLeave()">📥 이번 달 휴가 기록 엑셀 내보내기</button>';
