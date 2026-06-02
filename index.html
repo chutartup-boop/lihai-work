@@ -510,6 +510,7 @@
       <button id="a-pt-leave" onclick="adminTab('leave')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>휴가 관리</button>
       <button id="a-pt-set" onclick="adminTab('set')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>회사 설정</button>
       <button id="a-pt-ai" onclick="adminTab('ai')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>AI·토큰</button>
+      <button id="a-pt-event" onclick="adminTab('event')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>이벤트 결과</button>
       <button id="a-pt-log" onclick="adminTab('log')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>활동 로그</button>
     </div>
     <div class="phint">↑ 관리자 전용 메뉴 · 추혜성·황원준·정다영만 접근</div>
@@ -518,6 +519,7 @@
     <div id="a-leave" class="hidden"></div>
     <div id="a-set" class="hidden"></div>
     <div id="a-ai" class="hidden"></div>
+    <div id="a-event" class="hidden"></div>
     <div id="a-log" class="hidden"></div>
   </div>
 
@@ -1901,9 +1903,9 @@ function showAdminView(){
 var ADMIN_TAB='emp';
 function adminTab(t){
   ADMIN_TAB=t;
-  ['emp','acc','leave','set','ai','log'].forEach(function(k){
-    document.getElementById('a-pt-'+k).classList.toggle('on', k===t);
-    document.getElementById('a-'+k).classList.toggle('hidden', k!==t);
+  ['emp','acc','leave','set','ai','event','log'].forEach(function(k){
+    var btn=document.getElementById('a-pt-'+k); if(btn) btn.classList.toggle('on', k===t);
+    var pane=document.getElementById('a-'+k); if(pane) pane.classList.toggle('hidden', k!==t);
   });
   renderAdmin();
 }
@@ -1913,6 +1915,7 @@ function renderAdmin(){
   else if(ADMIN_TAB==='leave') renderAdminLeave();
   else if(ADMIN_TAB==='set') renderAdminSet();
   else if(ADMIN_TAB==='ai') renderAdminAi();
+  else if(ADMIN_TAB==='event') renderAdminEvent();
   else if(ADMIN_TAB==='log') renderAdminLog();
 }
 
@@ -2147,6 +2150,78 @@ function adminResetPw(){
   if(!sel.value){ alert('직원을 선택해주세요.'); return; }
   toast(sel.value.split(' (')[0]+' 님의 비밀번호가 lihai2026으로 초기화되었습니다');
   sel.value='';
+}
+
+async function renderAdminEvent(){
+  var el=document.getElementById('a-event');
+  if(!el) return;
+  el.innerHTML='<div class="card"><div class="sec-h"><div><h2>🎈 오늘의 이벤트 결과</h2><div class="sub">행운 풍선 참여·당첨 내역 · 당첨자에게 휴가/조기퇴근을 반영해 주세요</div></div></div><div style="padding:22px;text-align:center;color:var(--hint);font-size:13px">불러오는 중…</div></div>';
+  if(!DB_USER){ el.innerHTML='<div class="card"><div style="padding:24px;text-align:center;color:var(--hint);font-size:13px">로그인(DB 연결) 상태에서만 결과를 볼 수 있습니다.</div></div>'; return; }
+  var rows=[];
+  try {
+    var res = await db.from('event_plays').select('emp_name, emp_dept, prize, is_win, play_date, created_at').order('created_at',{ascending:false}).limit(300);
+    if(res.error) throw res.error;
+    rows = res.data||[];
+  } catch(e){
+    el.innerHTML='<div class="card"><div style="padding:22px;text-align:center;color:var(--red-t);font-size:13px">⚠ 이벤트 결과 조회 실패: '+escH(e.message||e)+'<br><span style="font-size:11px;color:var(--hint)">event_plays 테이블이 있는지 확인하세요 (생성 SQL은 대화 안내 참고)</span></div></div>'; return;
+  }
+  var today = rows.filter(function(r){return r.play_date===TODAY;});
+  var todayWin = today.filter(function(r){return r.is_win;});
+  var olderWin = rows.filter(function(r){return r.play_date!==TODAY && r.is_win;});
+  var todayDisp = TODAY.slice(5).replace('-','/');
+  function tm(iso){ return iso ? new Date(iso).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : ''; }
+
+  var h='<div class="card"><div class="sec-h"><div><h2>🎈 오늘의 이벤트 결과</h2><div class="sub">행운 풍선 참여·당첨 내역 <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div></div></div>';
+  // 오늘 요약
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--ink);font-weight:600">오늘 참여</div><div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:3px">'+today.length+'명</div></div>';
+  h+='<div style="background:var(--green-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600">당첨</div><div style="font-size:20px;font-weight:700;color:var(--green-t);margin-top:3px">'+todayWin.length+'명</div></div>';
+  h+='<div style="background:var(--soft);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--hint);font-weight:600">꽝</div><div style="font-size:20px;font-weight:700;color:var(--hint);margin-top:3px">'+(today.length-todayWin.length)+'명</div></div>';
+  h+='</div>';
+
+  // 오늘 당첨자 (대응 필요)
+  h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--green-t)">🎁 오늘('+todayDisp+') 당첨자 — 혜택 반영 필요</div>';
+  if(todayWin.length===0){
+    h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--hint);margin-bottom:16px">오늘 당첨자가 아직 없습니다.</div>';
+  } else {
+    todayWin.forEach(function(r){
+      h+='<div style="display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid var(--green);background:var(--green-bg);border-radius:9px;margin-bottom:7px">'
+        +'<span style="font-size:18px">🎉</span>'
+        +'<div style="flex:1"><b style="font-size:13.5px">'+escH(r.emp_name)+'</b> <span style="font-size:11px;color:var(--hint)">'+escH(r.emp_dept||'')+'</span></div>'
+        +'<span style="font-size:12.5px;font-weight:700;color:var(--green-t);background:var(--card);padding:3px 10px;border-radius:9px">'+escH(r.prize)+'</span>'
+        +'<span style="font-size:10.5px;color:var(--hint);margin-left:6px">'+tm(r.created_at)+'</span></div>';
+    });
+    h+='<div style="height:10px"></div>';
+  }
+
+  // 오늘 참여 전체
+  h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">오늘 참여 전체 ('+today.length+'명)</div>';
+  if(today.length===0){
+    h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--hint)">오늘 아직 참여자가 없습니다.</div>';
+  } else {
+    today.forEach(function(r){
+      var win=r.is_win;
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--card)">'
+        +'<b style="font-size:12.5px">'+escH(r.emp_name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(r.emp_dept||'')+'</span>'
+        +'<span style="margin-left:auto;font-size:11.5px;font-weight:600;color:'+(win?'var(--green-t)':'var(--hint)')+'">'+escH(r.prize)+'</span>'
+        +'<span style="font-size:10.5px;color:var(--hint)">'+tm(r.created_at)+'</span></div>';
+    });
+  }
+
+  // 이전 당첨 내역
+  if(olderWin.length){
+    h+='<div style="font-size:13px;font-weight:700;margin:18px 0 8px">이전 당첨 내역 ('+olderWin.length+'건)</div>';
+    olderWin.forEach(function(r){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px">'
+        +'<span style="color:var(--hint);white-space:nowrap">'+escH((r.play_date||'').slice(5).replace('-','/'))+'</span>'
+        +'<b>'+escH(r.emp_name)+'</b><span style="color:var(--hint)">'+escH(r.emp_dept||'')+'</span>'
+        +'<span style="margin-left:auto;font-weight:600;color:var(--green-t)">'+escH(r.prize)+'</span></div>';
+    });
+  }
+
+  h+='<div style="margin-top:16px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--ink);line-height:1.6">💡 당첨 혜택(휴가·반차·조기퇴근)은 이 목록을 보고 대표님이 직접 반영해 주세요. 직원은 하루 1회만 참여할 수 있습니다.</div>';
+  h+='</div>';
+  el.innerHTML=h;
 }
 
 function renderAdminLeave(){
@@ -4541,23 +4616,29 @@ function launchBalloons(){
 // ===== 오늘의 이벤트: 행운 풍선 (50개 중 1번 · 하루 1회) =====
 var EVENT_STATE=null;
 var EVENT_COLORS=['#F96167','#F9A03F','#FFD23F','#3BB273','#3A86FF','#8338EC','#FF6F91','#06D6A0','#EF476F','#118AB2'];
-function openTodayEvent(){
-  var uid = DB_USER ? DB_USER.id : (CUR_EMP ? CUR_EMP.name : 'guest');
-  var key='lihai-event-'+uid+'-'+TODAY;
+async function openTodayEvent(){
+  if(DB_USER){
+    // 하루 1회 확인 (DB) — 시크릿창/콘솔 우회 방지
+    try {
+      var chk = await db.from('event_plays').select('prize').eq('emp_name', DB_USER.name).eq('play_date', TODAY).limit(1);
+      if(chk.data && chk.data.length){ renderEventOverlay('server', chk.data[0].prize); return; }
+    } catch(e){ /* 조회 실패 시 그냥 진행 */ }
+    EVENT_STATE={ mode:'server', picked:false };
+    renderEventOverlay('server', null);
+    return;
+  }
+  // 비로그인 데모: 클라이언트 추첨 (배포 사이트에선 항상 server 모드)
+  var key='lihai-event-'+(CUR_EMP?CUR_EMP.name:'guest')+'-'+TODAY;
   var prev=null; try{ prev=localStorage.getItem(key); }catch(e){}
-  if(prev){ renderEventOverlay(null, key, prev); return; }
-  // 상품 구성: 휴가1 · 반차1 · 2시간2 · 1시간3 = 당첨 7, 꽝 43 (총 50)
+  if(prev){ renderEventOverlay('client', prev); return; }
   var prizes=[];
-  [['휴가 🏝️',1],['반차 🌴',1],['2시간 일찍 퇴근 🕑',2],['1시간 일찍 퇴근 🕐',3]].forEach(function(p){
-    for(var k=0;k<p[1];k++) prizes.push({win:true, label:p[0]});
-  });
-  while(prizes.length<50) prizes.push({win:false, label:'꽝'});
-  // 셔플(Fisher–Yates)
+  [['휴가 🏝️',1],['반차 🌴',1],['2시간 일찍 퇴근 🕑',2],['1시간 일찍 퇴근 🕐',3]].forEach(function(p){ for(var k=0;k<p[1];k++) prizes.push(p[0]); });
+  while(prizes.length<50) prizes.push('꽝');
   for(var i=prizes.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=prizes[i]; prizes[i]=prizes[j]; prizes[j]=t; }
-  EVENT_STATE={prizes:prizes, picked:false, key:key};
-  renderEventOverlay(prizes, key, null);
+  EVENT_STATE={ mode:'client', layout:prizes, picked:false, key:key };
+  renderEventOverlay('client', null);
 }
-function renderEventOverlay(prizes, key, already){
+function renderEventOverlay(mode, already){
   closeEvent();
   var bg=document.createElement('div');
   bg.id='event-bg';
@@ -4572,48 +4653,65 @@ function renderEventOverlay(prizes, key, already){
       +'<div style="font-size:12px;color:var(--hint);margin-bottom:18px">내일 또 만나요 🎈</div>'
       +'<button class="btn btn-pri" onclick="closeEvent()">닫기</button></div>';
   } else {
+    // 풍선 50개는 장식용 — 선물 위치 정보는 브라우저에 전혀 없음(서버가 클릭 후 결정)
     var balloons='';
-    for(var i=0;i<prizes.length;i++){
+    for(var i=0;i<50;i++){
       var c=EVENT_COLORS[i%EVENT_COLORS.length];
       balloons+='<div class="evballoon" data-i="'+i+'" onclick="eventPick('+i+')" style="background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), '+c+' 62%)"><span class="evlabel"></span></div>';
     }
     inner='<div style="font-size:19px;font-weight:800;margin-bottom:3px">🎈 오늘의 행운 풍선</div>'
-      +'<div style="font-size:12.5px;color:var(--hint);margin-bottom:14px;line-height:1.5">딱 <b>한 번</b>만 터뜨릴 수 있어요! 풍선 하나를 골라보세요<br>50개 중 7개에 선물 🎁 (휴가·반차·조기퇴근)</div>'
+      +'<div style="font-size:12.5px;color:var(--hint);margin-bottom:14px;line-height:1.5">딱 <b>한 번</b>만 터뜨릴 수 있어요! 풍선 하나를 골라보세요<br>50개 중 7개에 선물 🎁 (휴가·반차·조기퇴근) · <span style="color:var(--green-t)">추첨은 서버에서 처리돼 미리 알 수 없어요</span></div>'
       +'<div id="ev-grid" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:560px;margin:0 auto">'+balloons+'</div>'
       +'<div id="ev-result" style="min-height:24px;margin-top:16px;font-size:14.5px;font-weight:700"></div>'
       +'<div id="ev-close" style="margin-top:10px;display:none"><button class="btn" onclick="closeEvent()">닫기</button></div>';
   }
   bg.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(0,0,0,.4);padding:24px;text-align:center">'+inner+'</div>';
-  // 배경 클릭 시: 아직 안 뽑았으면 닫기(기회 소진 안 함)
   bg.onclick=function(e){ if(e.target===bg && (!EVENT_STATE || !EVENT_STATE.picked)) closeEvent(); };
   document.body.appendChild(bg);
 }
 function eventPick(i){
   if(!EVENT_STATE || EVENT_STATE.picked) return;
   EVENT_STATE.picked=true;
-  var prize=EVENT_STATE.prizes[i];
-  var resultLabel = prize.win ? prize.label : '꽝';
-  try{ localStorage.setItem(EVENT_STATE.key, resultLabel); }catch(e){}
-  // 모든 풍선 정체 공개 (선물 풍선 위치까지 — 공정성)
+  var res=document.getElementById('ev-result');
+  if(EVENT_STATE.mode==='server'){
+    if(res) res.innerHTML='<span style="color:var(--hint)">추첨 중…</span>';
+    db.rpc('play_event', { picked_index: i }).then(function(r){
+      if(r.error){ EVENT_STATE.picked=false; if(res) res.innerHTML='<span style="color:var(--red-t)">이벤트 처리 실패: '+escH(r.error.message||r.error)+'</span>'; return; }
+      var d=r.data||{};
+      var layout=d.layout||[];
+      revealEvent(layout, i, d.prize||'꽝', !!d.is_win);
+    }).catch(function(e){ EVENT_STATE.picked=false; if(res) res.innerHTML='<span style="color:var(--red-t)">이벤트 처리 실패: '+escH(e.message||e)+'</span>'; });
+    return;
+  }
+  // 데모(비로그인): 클라이언트 layout 사용
+  var layout=EVENT_STATE.layout||[];
+  var prizeLabel=layout[i]||'꽝';
+  var win=prizeLabel!=='꽝';
+  try{ if(EVENT_STATE.key) localStorage.setItem(EVENT_STATE.key, prizeLabel); }catch(e){}
+  revealEvent(layout, i, prizeLabel, win);
+}
+// 결과 공개(풍선 정체 표시 + 결과 배너) — 서버/데모 공용
+function revealEvent(layout, i, prizeLabel, isWin){
   var grid=document.getElementById('ev-grid');
   if(grid){
     var bs=grid.querySelectorAll('.evballoon');
     Array.prototype.forEach.call(bs, function(b){
       var idx=parseInt(b.getAttribute('data-i'),10);
-      var p=EVENT_STATE.prizes[idx];
+      var lab = (layout && layout[idx]!==undefined && layout[idx]!==null) ? layout[idx] : (idx===i ? prizeLabel : '꽝');
+      var win = lab && lab!=='꽝';
       b.style.pointerEvents='none';
       b.classList.add('revealed');
-      var lab=b.querySelector('.evlabel');
-      if(p.win){ b.classList.add('prize'); if(lab) lab.textContent=p.label; }
-      else { b.classList.add('dud'); if(lab) lab.textContent='꽝'; }
+      var el=b.querySelector('.evlabel');
+      if(win){ b.classList.add('prize'); if(el) el.textContent=lab; }
+      else { b.classList.add('dud'); if(el) el.textContent='꽝'; }
       if(idx===i) b.classList.add('picked');
     });
   }
   var res=document.getElementById('ev-result');
   if(res){
-    if(prize.win){
-      res.innerHTML='<span style="color:var(--green-t)">🎉 축하합니다! <b>'+escH(prize.label)+'</b> 당첨!</span>'
-        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">결과를 캡처해서 대표님/관리자에게 알려주세요 😊</div>';
+    if(isWin){
+      res.innerHTML='<span style="color:var(--green-t)">🎉 축하합니다! <b>'+escH(prizeLabel)+'</b> 당첨!</span>'
+        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">대표님이 관리자 탭에서 확인하고 혜택을 반영해 드립니다 😊</div>';
       try { launchBalloons(); } catch(e){}
     } else {
       res.innerHTML='<span style="color:var(--muted)">아쉽게도 <b>꽝</b>! 😅 선물 풍선은 위에 빛나게 표시했어요 — 진짜 있었죠?</span>'
@@ -4621,8 +4719,7 @@ function eventPick(i){
     }
   }
   var cl=document.getElementById('ev-close'); if(cl) cl.style.display='';
-  // 정체 공개를 잠깐 보여준 뒤 페이드아웃
-  setTimeout(function(){ closeEvent(); }, prize.win?7000:6000);
+  setTimeout(function(){ closeEvent(); }, isWin?7000:6000);
 }
 function closeEvent(){
   var bg=document.getElementById('event-bg');
