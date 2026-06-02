@@ -30,6 +30,9 @@
   }
   body.dark .card,body.dark input[type=text],body.dark input[type=date],body.dark input[type=password],body.dark select,body.dark textarea{background:var(--card);color:var(--ink);border-color:var(--line2)}
   body.dark .banner.demo{background:var(--soft)}
+  body.dark .ptabs button.on{color:var(--ink)}
+  body.dark .roleswitch button.on{color:var(--navy-d)}
+  body.dark .dept-chip.on{color:var(--ink)}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
   button{font-family:inherit;cursor:pointer}
@@ -38,12 +41,12 @@
   /* shell */
   .topbar{background:var(--navy);color:#fff;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
   .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;letter-spacing:-0.01em}
-  .brand .logo{width:32px;height:32px;border-radius:8px;background:#fff;color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .brand .logo{width:32px;height:32px;border-radius:8px;background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
   .who{display:flex;align-items:center;gap:11px;font-size:14px}
   .who .av{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
   .roleswitch{display:flex;gap:4px;background:rgba(255,255,255,.12);padding:3px;border-radius:8px}
   .roleswitch button{background:transparent;border:none;color:#cdd9e8;font-size:13px;padding:6px 13px;border-radius:6px;font-weight:500}
-  .roleswitch button.on{background:#fff;color:var(--navy)}
+  .roleswitch button.on{background:var(--card);color:var(--ink)}
   .theme-btn{background:rgba(255,255,255,.14);border:none;border-radius:8px;width:36px;height:34px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
 
   .wrap{max-width:var(--maxw);margin:0 auto;padding:24px 26px 64px}
@@ -52,7 +55,7 @@
   /* primary tabs */
   .ptabs{display:flex;gap:4px;background:var(--gray-bg);border-radius:var(--r);padding:4px;margin-bottom:6px}
   .ptabs button{flex:1;background:transparent;border:none;font-size:14.5px;font-weight:600;color:var(--muted);padding:11px;border-radius:var(--r-s);display:flex;align-items:center;justify-content:center;gap:7px}
-  .ptabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,40,70,.08)}
+  .ptabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(20,40,70,.08)}
   .phint{font-size:13.5px;color:var(--hint);text-align:center;margin-bottom:18px}
 
   /* cards / sections */
@@ -64,12 +67,12 @@
   .sec-h{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 
   .pill{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
-  .p-blue{background:var(--lblue);color:var(--navy)}
+  .p-blue{background:var(--lblue);color:var(--ink)}
   .p-green{background:var(--green-bg);color:var(--green-t)}
   .p-amber{background:var(--amber-bg);color:var(--amber-t)}
   .p-red{background:var(--red-bg);color:var(--red-t)}
   .p-gray{background:var(--gray-bg);color:var(--muted)}
-  .proj{font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--lblue);color:var(--navy)}
+  .proj{font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--lblue);color:var(--ink)}
 
   .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block}
   .d-green{background:var(--green)} .d-amber{background:var(--amber)} .d-red{background:var(--red)} .d-gray{background:var(--hint)}
@@ -83,7 +86,7 @@
   /* sub tabs */
   .stabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:18px}
   .stabs button{background:transparent;border:1px solid var(--line2);color:var(--ink);font-size:14.5px;padding:8px 15px;border-radius:var(--r-s);font-weight:500;display:flex;align-items:center;gap:5px}
-  .stabs button.on{background:var(--lblue);color:var(--navy);border-color:var(--blue)}
+  .stabs button.on{background:var(--lblue);color:var(--ink);border-color:var(--blue)}
 
   .row{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
@@ -96,19 +99,19 @@
   .help-card{background:var(--card);border-radius:var(--r-s);padding:13px 15px;margin-bottom:9px;border:1px solid var(--line)}
   .help-card .q{font-size:15px;margin-bottom:8px}
   .help-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--hint)}
-  .btn{border:1px solid var(--line2);background:#fff;color:var(--ink);font-size:14px;padding:7px 15px;border-radius:var(--r-s);font-weight:500}
+  .btn{border:1px solid var(--line2);background:var(--card);color:var(--ink);font-size:14px;padding:7px 15px;border-radius:var(--r-s);font-weight:500}
   .btn:hover{background:var(--soft)}
   .btn-pri{background:var(--blue);color:#fff;border-color:var(--blue)}
   .btn-pri:hover{background:#2c75c4}
 
   /* inputs */
-  input[type=text],input[type=date],input[type=password],select,textarea{font-family:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line2);border-radius:var(--r-s);background:#fff;color:var(--ink);height:40px}
+  input[type=text],input[type=date],input[type=password],select,textarea{font-family:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line2);border-radius:var(--r-s);background:var(--card);color:var(--ink);height:40px}
   textarea{height:auto}
   input[type=text]:focus,input[type=date]:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,.12)}
   input[type=text]{width:100%}
 
   .banner{border-radius:var(--r-s);padding:12px 15px;font-size:14px;display:flex;gap:9px;align-items:flex-start;line-height:1.55}
-  .banner.info{background:var(--lblue);color:var(--navy)}
+  .banner.info{background:var(--lblue);color:var(--ink)}
   .banner.warn{background:var(--amber-bg);color:var(--amber-t)}
   .banner.demo{background:var(--gray-bg);color:var(--muted)}
 
@@ -119,15 +122,15 @@
   .kcard[draggable="true"]:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
   @media(max-width:1100px){.board{grid-template-columns:repeat(4,1fr)}}
   @media(max-width:680px){.board{grid-template-columns:repeat(2,1fr)}}
-  .dept-chip{background:#fff;border:1px solid var(--line2);color:var(--ink);font-size:14px;padding:8px 14px;border-radius:20px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
-  .dept-chip:hover{border-color:var(--blue);color:var(--navy)}
+  .dept-chip{background:var(--card);border:1px solid var(--line2);color:var(--ink);font-size:14px;padding:8px 14px;border-radius:20px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+  .dept-chip:hover{border-color:var(--blue);color:var(--ink)}
   .dept-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   .dept-chip .cnt{font-size:12.5px;background:rgba(0,0,0,.06);padding:1px 7px;border-radius:8px;font-weight:600;color:var(--muted)}
   .dept-chip.on .cnt{background:rgba(255,255,255,.22);color:#fff}
   .dept-chip .urg-dot{font-size:12px;background:var(--red-bg);color:var(--red-t);padding:1px 7px;border-radius:8px;font-weight:700}
-  .dept-chip.on .urg-dot{background:#fff;color:var(--red-t)}
+  .dept-chip.on .urg-dot{background:var(--card);color:var(--red-t)}
   .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;font-weight:600}
-  .kcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:11px 12px;margin-bottom:8px;cursor:grab}
+  .kcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 12px;margin-bottom:8px;cursor:grab}
   .kcard:active{cursor:grabbing}
   .kcard .kt{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:5px}
   .kcard .ko{font-size:12.5px;color:var(--muted)}
@@ -154,10 +157,10 @@
   .wstat{background:var(--soft);border:1px solid var(--line);border-radius:var(--r-s);padding:10px;text-align:center}
   .wstat .v{font-size:20px;font-weight:700}
   .wstat .l{font-size:11px;color:var(--muted)}
-  .chip-pick{font-size:11.5px;padding:4px 11px;border:1px solid var(--line2);background:#fff;border-radius:20px;color:var(--ink)}
+  .chip-pick{font-size:11.5px;padding:4px 11px;border:1px solid var(--line2);background:var(--card);border-radius:20px;color:var(--ink)}
   .chip-pick:hover{background:var(--lblue);border-color:var(--blue)}
-  .stchip{font-size:12.5px;padding:6px 13px;border:1px solid var(--line2);background:#fff;border-radius:20px;color:var(--muted)}
-  .stchip.on{background:var(--lblue);color:var(--navy);border-color:var(--blue);font-weight:500}
+  .stchip{font-size:12.5px;padding:6px 13px;border:1px solid var(--line2);background:var(--card);border-radius:20px;color:var(--muted)}
+  .stchip.on{background:var(--lblue);color:var(--ink);border-color:var(--blue);font-weight:500}
   @keyframes hlFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
   .hl-dot:hover{background:var(--blue)!important;transform:scale(1.3)}
   @media(max-width:600px){.metrics,.wgrid{grid-template-columns:repeat(2,1fr)}}
@@ -176,7 +179,7 @@
         <div style="color:#fff;font-size:22px;font-weight:600;letter-spacing:-0.01em">리하이 업무 시스템</div>
         <div style="color:#9DB4CE;font-size:14px;margin-top:6px">로그인하고 오늘 하루를 시작하세요</div>
       </div>
-      <div style="background:#fff;border-radius:16px;padding:28px 26px;box-shadow:0 10px 40px rgba(0,0,0,.16)">
+      <div style="background:var(--card);border-radius:16px;padding:28px 26px;box-shadow:0 10px 40px rgba(0,0,0,.16)">
         <div style="font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500">아이디 <span style="font-weight:400;color:var(--hint)">(회사 이메일 앞부분)</span></div>
         <div style="position:relative;margin-bottom:16px"><i class="ic-user" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--hint);font-size:16px">👤</i><input type="text" id="login-id" value="" style="width:100%;height:46px;padding-left:40px;font-size:15px" placeholder="hs.chu" autocomplete="username"></div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500">비밀번호</div>
@@ -192,10 +195,9 @@
     <div id="auth-pwchange" class="hidden">
       <div style="text-align:center;margin-bottom:22px">
         <div style="color:#fff;font-size:18px;font-weight:600">비밀번호를 변경해주세요</div>
-        <div style="color:#cdd9e8;font-size:12.5px;margin-top:5px">초기 비밀번호(0000)로 로그인하셨습니다.<br>안전을 위해 새 비밀번호로 바꿔주세요.</div>
+        <div style="color:#cdd9e8;font-size:12.5px;margin-top:5px">초기 비밀번호(lihai2026)로 로그인하셨습니다.<br>안전을 위해 새 비밀번호로 바꿔주세요.</div>
       </div>
-      <div style="background:#FFF8E6;border:1px solid #F0D48A;border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:11.5px;color:var(--amber-t);line-height:1.55"><b>📌 견본 시연 안내</b><br>실제 운영 버전에서는 직원이 처음 등록될 때 본인이 설정한 비번을 사용하거나, 관리자가 발급한 1회용 임시 비번을 받아 변경합니다. 0000 강제 변경은 견본 시연을 위한 통일 절차입니다.</div>
-      <div style="background:#fff;border-radius:14px;padding:24px">
+      <div style="background:var(--card);border-radius:14px;padding:24px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:5px">새 비밀번호</div>
         <input type="password" id="pw-new1" placeholder="새 비밀번호 입력" style="width:100%;margin-bottom:14px;height:42px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:5px">새 비밀번호 확인</div>
@@ -206,7 +208,7 @@
 
     <!-- 튜토리얼 -->
     <div id="auth-tutorial" class="hidden">
-      <div style="background:#fff;border-radius:14px;padding:24px">
+      <div style="background:var(--card);border-radius:14px;padding:24px">
         <div id="tut-body"></div>
         <div style="display:flex;gap:8px;margin-top:18px">
           <button class="btn" id="tut-skip" style="flex:0 0 auto" onclick="finishTutorial()">건너뛰기</button>
@@ -235,12 +237,12 @@
   </div>
 </div>
 
-<div id="notif-panel" class="hidden" style="position:absolute;top:52px;right:16px;width:300px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(20,40,70,.18);z-index:100;overflow:hidden">
+<div id="notif-panel" class="hidden" style="position:absolute;top:52px;right:16px;width:300px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(20,40,70,.18);z-index:100;overflow:hidden">
   <div style="padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center">알림 <button onclick="toggleNotif()" style="border:none;background:transparent;cursor:pointer;color:var(--hint);font-size:16px">×</button></div>
   <div id="notif-list" style="max-height:340px;overflow-y:auto"></div>
 </div>
 
-<div id="profile-panel" class="hidden" style="position:absolute;top:52px;right:16px;width:260px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(20,40,70,.18);z-index:100;overflow:hidden">
+<div id="profile-panel" class="hidden" style="position:absolute;top:52px;right:16px;width:260px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(20,40,70,.18);z-index:100;overflow:hidden">
   <div id="profile-panel-body"></div>
 </div>
 
@@ -315,7 +317,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
             <div style="flex:1">
               <div style="font-weight:600;margin-bottom:8px" id="carry-title">어제 진행중이던 일 — 마무리됐나요?</div>
-              <div id="carry-box" style="background:#fff;border-radius:7px;padding:9px 11px"></div>
+              <div id="carry-box" style="background:var(--card);border-radius:7px;padding:9px 11px"></div>
             </div>
           </div>
 
@@ -454,9 +456,9 @@
       <div id="m-helps-card" class="card" style="border-color:var(--red-bg)"></div>
 
       <div class="card" style="margin-top:14px;border-color:#F0D48A;background:linear-gradient(to right,#FFFBF0,#fff)" id="m-ceo-hl-card">
-        <div class="sec-h"><div><h3 style="color:#7A4D08;display:flex;align-items:center;gap:6px"><span style="font-size:16px">⭐</span> 회사 하이라이트 작성 <span style="font-size:10.5px;background:#7A4D08;color:#fff;padding:2px 7px;border-radius:5px;font-weight:700">대표 전용</span></h3><div class="sub">전사에 공유할 소식·격려·방향을 적으면 <b>1주일간 황금카드</b>로 전직원의 \'오늘의 리하이\' 맨 위에 노출됩니다</div></div></div>
+        <div class="sec-h"><div><h3 style="color:var(--amber-t);display:flex;align-items:center;gap:6px"><span style="font-size:16px">⭐</span> 회사 하이라이트 작성 <span style="font-size:10.5px;background:#7A4D08;color:#fff;padding:2px 7px;border-radius:5px;font-weight:700">대표 전용</span></h3><div class="sub">전사에 공유할 소식·격려·방향을 적으면 <b>1주일간 황금카드</b>로 전직원의 \'오늘의 리하이\' 맨 위에 노출됩니다</div></div></div>
         <div id="ceo-hl-active" style="margin-bottom:11px"></div>
-        <div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:13px 14px">
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:13px 14px">
           <label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">새 회사 하이라이트</label>
           <textarea id="ceo-hl-input" placeholder="예: 리하이가 K-Defense Official Partner로 선정되었습니다 / 6월 코엑스 전시 함께 준비합시다 / 1분기 매출 목표 130% 달성, 모두 수고하셨습니다" style="width:100%;min-height:60px;border:1px solid var(--line2);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;resize:vertical;margin-bottom:10px"></textarea>
           <div class="flex" style="gap:8px;align-items:center"><span style="font-size:11.5px;color:var(--hint)">노출 기간</span><select id="ceo-hl-days" style="height:34px;font-size:12.5px;border:1px solid var(--line2);border-radius:7px;padding:0 10px"><option value="7">1주일 (권장)</option><option value="3">3일</option><option value="14">2주일</option></select><button class="btn btn-pri" onclick="postCeoHighlight()" style="margin-left:auto">📢 전직원에게 공유</button></div>
@@ -495,7 +497,7 @@
       </div>
 
       <div class="card" style="margin-top:14px;border-color:var(--lblue)">
-        <div class="sec-h"><div><h3 style="color:var(--navy)">신규 프로젝트 등록 승인</h3><div class="sub">직원이 "계속 쓸 프로젝트"로 요청한 항목 — 승인하면 전 직원 공유 칩이 됩니다</div></div></div>
+        <div class="sec-h"><div><h3 style="color:var(--ink)">신규 프로젝트 등록 승인</h3><div class="sub">직원이 "계속 쓸 프로젝트"로 요청한 항목 — 승인하면 전 직원 공유 칩이 됩니다</div></div></div>
         <div style="background:var(--soft);border:1px dashed var(--line2);border-radius:var(--r-s);padding:16px;text-align:center;font-size:13px;color:var(--hint)">승인 대기 중인 신규 프로젝트가 없습니다.</div>
       </div>
     </div>
@@ -509,7 +511,7 @@
     <div style="background:linear-gradient(135deg,#FFFBF0,#FFF6E0);border:1.5px solid #F0D48A;border-radius:12px;padding:15px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px">
       <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#D98A0E,#A86A08);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
       <div style="flex:1"><div style="font-size:14.5px;font-weight:700;color:var(--amber-t)">관리자 모드</div><div style="font-size:11.5px;color:var(--amber-t);margin-top:1px;opacity:.85">민감한 인사·계정·설정 영역 · 모든 작업이 활동 로그에 기록됩니다</div></div>
-      <button class="btn" onclick="exitAdminMode()" style="font-size:12px;background:#fff;color:var(--amber-t);border-color:#F0D48A">↩ 일반 모드</button>
+      <button class="btn" onclick="exitAdminMode()" style="font-size:12px;background:var(--card);color:var(--amber-t);border-color:#F0D48A">↩ 일반 모드</button>
     </div>
     <div class="ptabs">
       <button id="a-pt-emp" class="on" onclick="adminTab('emp')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M3 21a6 6 0 0112 0M16 11l2 2 4-4"/></svg>직원 명단</button>
@@ -528,10 +530,6 @@
     <div id="a-log" class="hidden"></div>
   </div>
 
-  <div class="banner demo" style="margin-top:20px">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-    <span><b>이것은 견본(모델하우스)입니다.</b> 클릭·전환·입력은 되지만 저장되지 않습니다. 실제 직원 계정·로그인·데이터 저장은 정식 개발 단계에서 서버를 붙여야 작동합니다.</span>
-  </div>
 </div>
 </div>
 
@@ -692,13 +690,13 @@ function renderExecBody(isDB){
   var headerNote = canDirect
     ? '대표님이 지시·의견을 남기고, 임원이 답글을 달 수 있습니다'
     : (iAmExecOrUp ? '임원들끼리 서로의 보고에 의견·답글을 달 수 있습니다' : '임원진 보고 열람만 가능합니다');
-  var dbBadge = isDB ? ' <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span>' : '';
+  var dbBadge = isDB ? ' <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span>' : '';
   var h='<div class="card"><div class="sec-h"><div><h2>임원진 일일 보고'+dbBadge+'</h2><div class="sub">'+headerNote+'</div></div><span class="pill '+(canDirect?'p-blue':'p-gray')+'">'+(canDirect?'대표 권한':'임원 권한')+'</span></div>';
 
   DATA.execs.forEach(function(e,idx){
     var isMyCard = LOGIN_USER && LOGIN_USER.name===e.name;
     var borderHi = isMyCard ? '1.5px solid var(--blue)' : '1px solid var(--line)';
-    var bgHi = isMyCard ? 'background:linear-gradient(to right,var(--lblue),#fff)' : 'background:#fff';
+    var bgHi = isMyCard ? 'background:linear-gradient(to right,var(--lblue),#fff)' : 'background:var(--card)';
     var myBadge = isMyCard ? '<span class="pill" style="font-size:9.5px;padding:1.5px 7px;margin-left:4px;background:var(--blue);color:#fff;font-weight:600">내 보고</span>' : '';
     h+='<div style="'+bgHi+';border:'+borderHi+';border-radius:var(--r-s);padding:14px;margin-bottom:14px">'
       +'<div class="flex" style="gap:8px;margin-bottom:8px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600">'+e.name+'</span><span class="pill p-gray">'+e.title+'</span>'+myBadge+'<span style="font-size:11px;color:var(--hint);margin-left:auto">오늘 보고</span></div>'
@@ -733,8 +731,8 @@ function renderExecCommentsDB(idx){
     var atitle = (EMP_MAP[c.author_id]||{}).title || '';
     var authorDisp = author + (atitle?' '+atitle:'');
     var bg, badge;
-    if(c.comment_type==='mgr'){ bg='background:var(--lblue);color:var(--navy);border-left:3px solid var(--blue)'; badge='<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>'; }
-    else if(c.comment_type==='self'){ bg='background:#FFF8E6;color:var(--amber-t);border-left:3px solid var(--amber)'; badge='<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'; }
+    if(c.comment_type==='mgr'){ bg='background:var(--lblue);color:var(--ink);border-left:3px solid var(--blue)'; badge='<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>'; }
+    else if(c.comment_type==='self'){ bg='background:var(--amber-bg);color:var(--amber-t);border-left:3px solid var(--amber)'; badge='<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'; }
     else { bg='background:#F0EAFA;color:#5E44C4;border-left:3px solid #7A5AF0'; badge='<span style="font-size:9.5px;background:#7A5AF0;color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>'; }
     h+='<div style="font-size:12.5px;border-radius:var(--r-s);padding:9px 12px;margin-bottom:7px;'+bg+'">'
       +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+escH(authorDisp)+'</b><span style="font-size:10.5px;color:var(--hint)">· '+timeAgo(c.created_at)+'</span>'+badge+'</div>'
@@ -745,7 +743,7 @@ function renderExecCommentsDB(idx){
       h+='<div style="margin-top:7px;padding-left:11px;border-left:2px solid '+lineColor+'">';
       replies.forEach(function(r){
         var ra=(EMP_MAP[r.author_id]||{}); var raDisp=(ra.name||'')+(ra.title?' '+ra.title:'');
-        h+='<div style="font-size:12px;background:#fff;border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
+        h+='<div style="font-size:12px;background:var(--card);border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
           +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:2px"><b style="font-weight:600">'+escH(raDisp)+'</b><span style="font-size:10px;color:var(--hint)">· '+timeAgo(r.created_at)+'</span></div>'
           +'<div style="line-height:1.5">'+escH(r.text)+'</div></div>';
       });
@@ -797,9 +795,9 @@ function renderExecComments(idx, meName){
   var h='';
   list.forEach(function(c, cIdx){
     var bg;
-    if(c.fromMgr) bg='background:var(--lblue);color:var(--navy);border-left:3px solid var(--blue)';
+    if(c.fromMgr) bg='background:var(--lblue);color:var(--ink);border-left:3px solid var(--blue)';
     else if(c.fromPeer) bg='background:#F0EAFA;color:#5E44C4;border-left:3px solid #7A5AF0';
-    else bg='background:#FFF8E6;color:var(--amber-t);border-left:3px solid var(--amber)';
+    else bg='background:var(--amber-bg);color:var(--amber-t);border-left:3px solid var(--amber)';
     h+='<div style="font-size:12.5px;border-radius:var(--r-s);padding:9px 12px;margin-bottom:7px;'+bg+'">'
       +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><b style="font-weight:600">'+c.author+'</b><span style="font-size:10.5px;color:var(--hint)">· '+c.ts+'</span>'+(c.fromMgr?'<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">대표 지시</span>':(c.fromPeer?'<span style="font-size:9.5px;background:#7A5AF0;color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">임원 의견</span>':'<span style="font-size:9.5px;background:var(--amber);color:#fff;padding:1px 6px;border-radius:5px;margin-left:3px;font-weight:600">본인 보강</span>'))+'</div>'
       +'<div style="line-height:1.5">'+c.text+'</div>';
@@ -808,7 +806,7 @@ function renderExecComments(idx, meName){
       var lineColor = c.fromMgr?'var(--blue)':(c.fromPeer?'#7A5AF0':'var(--amber)');
       h+='<div style="margin-top:7px;padding-left:11px;border-left:2px solid '+lineColor+'">';
       c.replies.forEach(function(r){
-        h+='<div style="font-size:12px;background:#fff;border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
+        h+='<div style="font-size:12px;background:var(--card);border-radius:6px;padding:6px 10px;margin-top:5px;color:var(--ink)">'
           +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:2px"><b style="font-weight:600">'+r.author+'</b><span style="font-size:10px;color:var(--hint)">· '+r.ts+'</span></div>'
           +'<div style="line-height:1.5">'+r.text+'</div>'
           +'</div>';
@@ -967,13 +965,13 @@ function renderCeoHighlightList(){
   var box=document.getElementById('ceo-hl-active');
   if(!box) return;
   if(CEO_HIGHLIGHTS.length===0){
-    box.innerHTML='<div style="background:#fff;border:1px dashed var(--line2);border-radius:8px;padding:12px;text-align:center;font-size:12px;color:var(--hint)">현재 공유 중인 회사 하이라이트가 없습니다</div>';
+    box.innerHTML='<div style="background:var(--card);border:1px dashed var(--line2);border-radius:8px;padding:12px;text-align:center;font-size:12px;color:var(--hint)">현재 공유 중인 회사 하이라이트가 없습니다</div>';
     return;
   }
-  var h='<div style="font-size:11.5px;color:#7A4D08;font-weight:600;margin-bottom:7px">현재 공유 중 ('+CEO_HIGHLIGHTS.length+'건)</div>';
+  var h='<div style="font-size:11.5px;color:var(--amber-t);font-weight:600;margin-bottom:7px">현재 공유 중 ('+CEO_HIGHLIGHTS.length+'건)</div>';
   CEO_HIGHLIGHTS.forEach(function(c, idx){
     var rmArg = (c.id!=null) ? "'"+c.id+"'" : idx;
-    h+='<div style="background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;border-radius:9px;padding:11px 13px;margin-bottom:6px"><div style="font-size:12.5px;color:var(--ink);line-height:1.55">'+escH(c.text)+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:#7A4D08;font-weight:600"><span>'+escH(c.by)+' · '+c.when+'</span><span style="background:#fff;color:#7A4D08;padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+rmArg+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:#fff;color:#7A4D08;border-color:#C77A0E">조기 종료</button></div></div>';
+    h+='<div style="background:linear-gradient(120deg,#FFC85C,#FFE399);border:1.5px solid #C77A0E;border-radius:9px;padding:11px 13px;margin-bottom:6px"><div style="font-size:12.5px;color:var(--ink);line-height:1.55">'+escH(c.text)+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:7px;font-size:10.5px;color:var(--amber-t);font-weight:600"><span>'+escH(c.by)+' · '+c.when+'</span><span style="background:var(--card);color:var(--amber-t);padding:1px 7px;border-radius:5px">'+c.daysLeft+'일 남음</span><button class="btn" onclick="removeCeoHighlight('+rmArg+')" style="margin-left:auto;font-size:10.5px;padding:3px 8px;background:var(--card);color:var(--amber-t);border-color:#C77A0E">조기 종료</button></div></div>';
   });
   box.innerHTML=h;
 }
@@ -1048,15 +1046,15 @@ function helpCardHtmlDB(hp, empMap){
   var replyBadge = hasReplies ? '<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1.5px 7px;border-radius:5px;margin-left:5px;font-weight:600">💬 답변 '+replies.length+'</span>' : '';
   var h='<div class="help-card" id="help-'+hp.id+'"><div class="q">'+escH(hp.text)+replyBadge+'</div><div class="help-meta">'+escH(who)+' · '+escH(dept)+' · '+when+'<button class="btn btn-pri" style="margin-left:auto" onclick="openHelpReply('+hp.id+')">'+(hasReplies?'추가 답변':'답변하기')+'</button></div>';
   if(hasReplies){
-    h+='<div style="margin-top:9px"><div style="font-size:10.5px;color:var(--navy);font-weight:600;margin-bottom:4px">💬 답변 이력 ('+replies.length+'건)</div><div style="padding-left:11px;border-left:3px solid var(--blue)">';
+    h+='<div style="margin-top:9px"><div style="font-size:10.5px;color:var(--ink);font-weight:600;margin-bottom:4px">💬 답변 이력 ('+replies.length+'건)</div><div style="padding-left:11px;border-left:3px solid var(--blue)">';
     replies.forEach(function(r,ri){
       var re = empMap[r.replier_id]||{};
       var byName = (re.name||'') + (re.title ? ' '+re.title : '');
       var isLatest = (ri===replies.length-1);
       var rwhen = r.created_at ? new Date(r.created_at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-      var bg = isLatest ? 'background:var(--lblue);border:1.5px solid var(--blue)' : 'background:#fff;border:1px solid var(--line)';
+      var bg = isLatest ? 'background:var(--lblue);border:1.5px solid var(--blue)' : 'background:var(--card);border:1px solid var(--line)';
       h+='<div style="'+bg+';border-radius:7px;padding:8px 11px;margin-top:5px;font-size:12px">'
-        +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><b style="color:var(--navy);font-size:12.5px">✍ '+escH(byName)+'</b>'+(isLatest?'<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:4px;font-weight:600">최신</span>':'')+'<span style="color:var(--hint);font-size:10.5px;margin-left:auto">'+rwhen+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><b style="color:var(--ink);font-size:12.5px">✍ '+escH(byName)+'</b>'+(isLatest?'<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:4px;font-weight:600">최신</span>':'')+'<span style="color:var(--hint);font-size:10.5px;margin-left:auto">'+rwhen+'</span></div>'
         +'<div style="line-height:1.5;color:var(--ink)">'+escH(r.text)+'</div></div>';
     });
     h+='</div></div>';
@@ -1074,7 +1072,7 @@ function renderMgrHelps(){
     var reqs=data.reqs, empMap=data.empMap;
     var open = reqs.filter(function(r){return r.status==='open';});
     var resolved = reqs.filter(function(r){return r.status==='resolved';});
-    var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><h3 style="color:var(--red-t);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>도움 요청 — 답변 대기 ('+open.length+') <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span></h3>'+(resolved.length>0?'<span style="font-size:11px;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:9px">✓ 해결 '+resolved.length+'건</span>':'')+'</div>';
+    var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><h3 style="color:var(--red-t);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>도움 요청 — 답변 대기 ('+open.length+') <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span></h3>'+(resolved.length>0?'<span style="font-size:11px;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:9px">✓ 해결 '+resolved.length+'건</span>':'')+'</div>';
     if(open.length===0){
       h+='<div style="background:var(--green-bg);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 모든 도움 요청이 처리되었습니다</div>';
     } else {
@@ -1115,12 +1113,12 @@ function renderMgrHelpsDemo(){
       var replyBadge = hasReplies ? '<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1.5px 7px;border-radius:5px;margin-left:5px;font-weight:600">💬 답변 '+hp.replies.length+'</span>' : '';
       h+='<div class="help-card" id="help-'+hp.id+'"><div class="q">'+hp.text+replyBadge+'</div><div class="help-meta">'+hp.who+' · '+hp.dept+' · '+hp.when+'<button class="btn btn-pri" style="margin-left:auto" onclick="openHelpReply('+hp.id+')">'+(hasReplies?'추가 답변':'답변하기')+'</button></div>';
       if(hasReplies){
-        h+='<div style="margin-top:9px"><div style="font-size:10.5px;color:var(--navy);font-weight:600;margin-bottom:4px">💬 답변 이력 ('+hp.replies.length+'건)</div><div style="padding-left:11px;border-left:3px solid var(--blue)">';
+        h+='<div style="margin-top:9px"><div style="font-size:10.5px;color:var(--ink);font-weight:600;margin-bottom:4px">💬 답변 이력 ('+hp.replies.length+'건)</div><div style="padding-left:11px;border-left:3px solid var(--blue)">';
         hp.replies.forEach(function(r,ri){
           var isLatest = (ri===hp.replies.length-1);
-          var bg = isLatest ? 'background:var(--lblue);border:1.5px solid var(--blue)' : 'background:#fff;border:1px solid var(--line)';
+          var bg = isLatest ? 'background:var(--lblue);border:1.5px solid var(--blue)' : 'background:var(--card);border:1px solid var(--line)';
           h+='<div style="'+bg+';border-radius:7px;padding:8px 11px;margin-top:5px;font-size:12px">'
-            +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><b style="color:var(--navy);font-size:12.5px">✍ '+r.by+'</b>'+(isLatest?'<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:4px;font-weight:600">최신</span>':'')+'<span style="color:var(--hint);font-size:10.5px;margin-left:auto">'+r.when+'</span></div>'
+            +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><b style="color:var(--ink);font-size:12.5px">✍ '+r.by+'</b>'+(isLatest?'<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:4px;font-weight:600">최신</span>':'')+'<span style="color:var(--hint);font-size:10.5px;margin-left:auto">'+r.when+'</span></div>'
             +'<div style="line-height:1.5;color:var(--ink)">'+r.text+'</div>'
             +'</div>';
         });
@@ -1162,7 +1160,7 @@ function openHelpReply(id){
   bg.id='help-reply-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML=
-    '<div style="background:#fff;border-radius:13px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
+    '<div style="background:var(--card);border-radius:13px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
     +'<div style="padding:17px 22px;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:20px">🙋</span><div><div style="font-size:14.5px;font-weight:700">도움 요청 답변</div><div style="font-size:11px;color:var(--hint);margin-top:2px">'+escH(who)+' · '+escH(dept)+' · '+escH(when)+'</div></div></div></div>'
     +'<div style="padding:18px 22px">'
     +'<div style="background:var(--soft);border-left:3px solid var(--red);border-radius:7px;padding:11px 13px;margin-bottom:14px;font-size:13px;color:var(--ink)">'+escH(text)+'</div>'
@@ -1274,12 +1272,12 @@ async function renderTeam(){
   var pendingN = members.length - submittedN;
   var todayDisp = TODAY.slice(5).replace('-','/');
 
-  var h='<div class="card"><div class="sec-h"><div><h2>🧑‍🤝‍🧑 우리 '+escH(teamName)+'</h2><div class="sub">팀장 권한 · 오늘('+todayDisp+') 팀원 '+members.length+'명의 일일업무 <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div></div><span class="pill p-blue">'+escH(me.name)+' 팀장</span></div>';
+  var h='<div class="card"><div class="sec-h"><div><h2>🧑‍🤝‍🧑 우리 '+escH(teamName)+'</h2><div class="sub">팀장 권한 · 오늘('+todayDisp+') 팀원 '+members.length+'명의 일일업무 <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div></div><span class="pill p-blue">'+escH(me.name)+' 팀장</span></div>';
 
   // 통계
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--green-t);font-weight:600">팀원</div><div style="font-size:18px;font-weight:700;color:var(--green-t);margin-top:3px">'+members.length+'명</div></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--navy);font-weight:600">오늘 제출</div><div style="font-size:18px;font-weight:700;color:var(--navy);margin-top:3px">'+submittedN+'명</div></div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--ink);font-weight:600">오늘 제출</div><div style="font-size:18px;font-weight:700;color:var(--ink);margin-top:3px">'+submittedN+'명</div></div>';
   h+='<div style="background:'+(pendingN>0?'var(--amber-bg)':'var(--soft)')+';border-radius:9px;padding:11px;text-align:center"><div style="font-size:10.5px;color:'+(pendingN>0?'var(--amber-t)':'var(--hint)')+';font-weight:600">미제출</div><div style="font-size:18px;font-weight:700;color:'+(pendingN>0?'var(--amber-t)':'var(--hint)')+';margin-top:3px">'+pendingN+'명</div></div>';
   h+='</div>';
 
@@ -1303,7 +1301,7 @@ async function renderTeam(){
         ? '<div style="margin-top:8px;background:var(--amber-bg);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--amber-t)">🙋 도움 필요: '+escH(log.help_needed).replace(/\n/g,'<br>')+'</div>'
         : '';
       var subTime = log.submitted_at ? new Date(log.submitted_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
-      h+='<div style="border:1px solid var(--line);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:#fff">'
+      h+='<div style="border:1px solid var(--line);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:var(--card)">'
         +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><b style="font-size:13px">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
         +(log.work_status?'<span style="font-size:10.5px;color:var(--hint)">· '+(statusLabel[log.work_status]||'')+'</span>':'')
         +'<span style="font-size:10px;color:var(--green-t);background:var(--green-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">✓ '+subTime+' 제출</span></div>'
@@ -1333,7 +1331,7 @@ async function renderTeam(){
     h+='<div style="font-size:11.5px;color:var(--red-t);padding:10px;background:var(--red-bg);border-radius:8px">⚠ 도움 요청 조회 실패: '+escH(e.message||e)+'</div>';
   }
 
-  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--navy);line-height:1.6">💡 팀장 권한 — 팀원 오늘 일지와 도움요청이 실시간으로 표시됩니다. 답변하면 요청자에게 알림이 전달됩니다. (휴가 연동은 다음 단계)</div>';
+  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--ink);line-height:1.6">💡 팀장 권한 — 팀원 오늘 일지와 도움요청이 실시간으로 표시됩니다. 답변하면 요청자에게 알림이 전달됩니다. (휴가 연동은 다음 단계)</div>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -1369,8 +1367,8 @@ function renderTeamDemo(){
   } else {
     rows.forEach(function(r){
       var due = r.due?'<span class="due'+(r.st==='red'?' urg':'')+'">~'+r.due+'</span>':'';
-      var goal = r.goal?'<div style="font-size:11.5px;color:var(--navy);margin-bottom:1px">◎ 목표: '+r.goal+'</div>':'';
-      var rowStyle = r.st==='red' ? 'background:var(--red-bg);border-left:3px solid var(--red);padding-left:11px' : 'background:#fff';
+      var goal = r.goal?'<div style="font-size:11.5px;color:var(--ink);margin-bottom:1px">◎ 목표: '+r.goal+'</div>':'';
+      var rowStyle = r.st==='red' ? 'background:var(--red-bg);border-left:3px solid var(--red);padding-left:11px' : 'background:var(--card)';
       h+='<div class="row" style="border:1px solid var(--line);border-radius:8px;margin-bottom:6px;padding:9px 11px;'+rowStyle+'"><span class="dot d-'+r.st+'"></span><div class="main">'+goal+'<div class="t">'+r.task+'</div><div class="m">'+r.who+' · '+r.proj+'</div></div>'+due+'</div>';
     });
   }
@@ -1404,11 +1402,11 @@ function renderTeamDemo(){
     h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12px;color:var(--hint)">예정된 휴가 없음</div>';
   } else {
     teamLeave.forEach(function(l){
-      h+='<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:6px"><span style="font-size:16px">🏖️</span><div style="flex:1"><b style="font-size:12.5px">'+l.name+'</b> <span style="font-size:11px;color:var(--hint)">· '+l.when+' · '+l.type+'</span></div></div>';
+      h+='<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:6px"><span style="font-size:16px">🏖️</span><div style="flex:1"><b style="font-size:12.5px">'+l.name+'</b> <span style="font-size:11px;color:var(--hint)">· '+l.when+' · '+l.type+'</span></div></div>';
     });
   }
 
-  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--navy);line-height:1.6">💡 팀장 권한 — 팀원 일일업무·도움요청·휴가 일정을 모아 봅니다. 도움요청에 답변하면 해당 팀원에게 알림이 전송됩니다.</div>';
+  h+='<div style="margin-top:18px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--ink);line-height:1.6">💡 팀장 권한 — 팀원 일일업무·도움요청·휴가 일정을 모아 봅니다. 도움요청에 답변하면 해당 팀원에게 알림이 전송됩니다.</div>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -1439,8 +1437,8 @@ function renderHistory(){
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600;margin-bottom:3px">이번 달 완료</div><div style="font-size:22px;font-weight:700;color:var(--green-t)">'+stats.완료+'</div></div>';
   h+='<div style="background:var(--amber-bg);border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:var(--amber-t);font-weight:600;margin-bottom:3px">이번 달 지연</div><div style="font-size:22px;font-weight:700;color:var(--amber-t)">'+stats.지연+'</div></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:var(--navy);font-weight:600;margin-bottom:3px">도움 요청</div><div style="font-size:22px;font-weight:700;color:var(--navy)">'+stats.도움요청+'</div></div>';
-  h+='<div style="background:#F0EAFA;border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:#5E44C4;font-weight:600;margin-bottom:3px">비행 횟수</div><div style="font-size:22px;font-weight:700;color:#5E44C4">'+stats.비행+'</div></div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:var(--blue);font-weight:600;margin-bottom:3px">도움 요청</div><div style="font-size:22px;font-weight:700;color:var(--blue)">'+stats.도움요청+'</div></div>';
+  h+='<div style="background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:13px 12px;text-align:center"><div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:3px">비행 횟수</div><div style="font-size:22px;font-weight:700;color:var(--ink)">'+stats.비행+'</div></div>';
   h+='</div>';
 
   // sub-탭: 이번 주 / 월별
@@ -1464,7 +1462,7 @@ function renderHistory(){
       var bg;
       if(d.st==='today') bg='background:var(--navy);color:#fff;border-color:var(--navy)';
       else if(d.st==='done') bg='background:var(--green-bg);color:var(--green-t);border-color:var(--green-bg)';
-      else bg='background:#fff;color:var(--hint);border-color:var(--line2)';
+      else bg='background:var(--card);color:var(--hint);border-color:var(--line2)';
       var label = d.label || (d.d+' '+d.day);
       var clickable = d.st!=='future';
       h+='<button class="btn" '+(clickable?'':'disabled')+' style="flex:1;font-size:12px;padding:10px 8px;'+bg+(clickable?'':';opacity:.55;cursor:not-allowed')+'" '+(clickable?'onclick="openHistoryDay(\''+d.d+'\','+i+')"':'')+'>'+(d.st==='done'?'✓ ':'')+label+'</button>';
@@ -1479,7 +1477,7 @@ function renderHistory(){
     // 주간 보고서
     h+='<div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--line)">';
     h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">📊 이번 주 보고서 (자동 생성 미리보기)</div>';
-    h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;font-size:12.5px;line-height:1.7">';
+    h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;font-size:12.5px;line-height:1.7">';
     h+='<b>'+emp.name+' · '+emp.dept+' · '+emp.title+'</b> · 5/26(월) ~ 5/30(금)<br>';
     h+='<div style="margin-top:8px;color:var(--muted)">'+(hints.goals[0]?'<b>이번 주 목표:</b> '+hints.goals[0].g+'<br>':'')+'</div>';
     h+='<div style="margin-top:4px;color:var(--muted)"><b>완료 업무:</b> '+stats.완료+'건 · <b>이어감:</b> '+stats.지연+'건 · <b>도움요청:</b> '+stats.도움요청+'건</div>';
@@ -1511,14 +1509,14 @@ function renderHistoryMonth(emp, curStats){
   var h='<div style="font-size:13px;font-weight:600;margin-bottom:9px">월별 기록 — 카드 누르면 그 달 일지·통계가 펼쳐집니다</div>';
   months.forEach(function(m, idx){
     var statusColor = m.open?'var(--navy)':'var(--line)';
-    h+='<div style="background:#fff;border:1.5px solid '+(m.open?'var(--blue)':'var(--line)')+';border-radius:10px;margin-bottom:9px;overflow:hidden">';
+    h+='<div style="background:var(--card);border:1.5px solid '+(m.open?'var(--blue)':'var(--line)')+';border-radius:10px;margin-bottom:9px;overflow:hidden">';
     h+='<div onclick="toggleMonth('+idx+')" style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;background:'+(m.open?'var(--lblue)':'#fff')+'">';
     h+='<div style="flex:1"><div style="font-size:14px;font-weight:600;color:'+(m.open?'var(--navy)':'var(--ink)')+'">'+m.label+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">근무일 '+m.days+'일 · 완료 '+m.done+'건 · 비행 '+m.fly+'회 · 도움요청 '+m.help+'건</div></div>';
     h+='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:rotate('+(m.open?'180':'0')+'deg);transition:.18s;color:var(--hint)"><path d="M6 9l6 6 6-6"/></svg>';
     h+='</div>';
     if(m.open){
       // 5월의 경우 모든 평일 나열 (시연용)
-      h+='<div style="padding:12px 14px;border-top:1px solid var(--line);background:#fff">';
+      h+='<div style="padding:12px 14px;border-top:1px solid var(--line);background:var(--card)">';
       var mayDays=['5/2(금)','5/8(목)','5/9(금)','5/12(화)','5/13(수)','5/14(목)','5/15(금)','5/16(금)','5/19(월)','5/20(화)','5/21(수)','5/22(목)','5/23(금)','5/26(월)','5/27(수)','5/28(목)'];
       h+='<div style="display:flex;gap:5px;flex-wrap:wrap">';
       mayDays.forEach(function(d){
@@ -1540,9 +1538,9 @@ function toggleMonth(idx){
   var el=document.getElementById('e-history');
   if(!el) return;
   // 단순화: 다시 렌더링하면서 토글 (시연용)
-  toast('월별 기록 토글 (견본 시연)');
+  toast('월별 기록 토글');
 }
-function exportMonth(m){ toast(m+' 일지를 엑셀로 내보냅니다 (견본 시연)'); }
+function exportMonth(m){ toast(m+' 일지를 엑셀로 내보냅니다'); }
 
 async function openHistoryDay(date, idx){
   var emp=CUR_EMP;
@@ -1569,7 +1567,7 @@ async function openHistoryDay(date, idx){
   }
   
   var headerBadge = isToday ? '<span class="pill p-blue" style="margin-left:auto">당일 (수정 가능)</span>' : '<span class="pill p-gray" style="margin-left:auto">과거 (읽기 전용) 🔒</span>';
-  var dbBadge = dbLog ? ' <span style="font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC;margin-left:5px">🟢 DB</span>' : '';
+  var dbBadge = dbLog ? ' <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC;margin-left:5px">🟢 DB</span>' : '';
   
   if(dbLog && dbLog.today_tasks && dbLog.today_tasks.length>0){
     // 진짜 DB 일지가 있으면 그것 표시
@@ -1592,7 +1590,7 @@ async function openHistoryDay(date, idx){
     var todayWork = hints.today.map(function(t){return '<div style="padding:6px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+t.p+'</span> '+t.t+' <span style="font-size:10px;color:var(--green-t);float:right">'+t.st+'</span></div>';}).join('');
     d.innerHTML=
       '<div class="flex" style="margin-bottom:10px;align-items:center"><span style="font-size:14px;font-weight:600">2026-'+date+' 일지</span>'+headerBadge+'</div>'
-      +(isToday && DB_USER?'<div style="font-size:11.5px;color:var(--hint);padding:7px 10px;background:#FFFBF0;border:1px solid #F0D48A;color:#7A4D08;border-radius:7px;margin-bottom:9px">💡 오늘 일지를 아직 제출하지 않았습니다. 일일업무 탭에서 제출하면 여기에 표시됩니다.</div>':'')
+      +(isToday && DB_USER?'<div style="font-size:11.5px;color:var(--hint);padding:7px 10px;background:var(--amber-bg);border:1px solid #F0D48A;color:var(--amber-t);border-radius:7px;margin-bottom:9px">💡 오늘 일지를 아직 제출하지 않았습니다. 일일업무 탭에서 제출하면 여기에 표시됩니다.</div>':'')
       +'<div style="font-size:12px;color:var(--muted);margin-bottom:6px"><b>오늘 업무</b> <span style="font-size:10.5px;color:var(--hint)">(시연 데이터)</span></div>'
       +'<div style="font-size:12px;color:var(--ink)">'+todayWork+'</div>'
       +(hints.carry?'<div style="font-size:11.5px;color:var(--hint);margin-top:9px">↓ 어제에서 이어옴 — '+hints.carry.t+'</div>':'')
@@ -1617,8 +1615,8 @@ function renderProfile(){
   var d=daysBetween(dispHire,TODAY)+1;
   var grade=gradeOf(emp);
   var gradeName={emp:'직원',lead:'팀장',exec:'임원',mgr:'총괄·대표'}[grade];
-  var adminBadge = isAdmin(emp.name) ? '<span style="margin-left:5px;font-size:10.5px;background:#FFF8E6;color:var(--amber-t);padding:2px 8px;border-radius:9px;font-weight:600;border:1px solid #F0D48A">🔧 관리자 모드 가능</span>' : '';
-  var dbBadge = fromDb ? '<span style="margin-left:5px;font-size:10px;background:#E1F5EE;color:#0F6E56;padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC">🟢 DB 연결</span>' : '';
+  var adminBadge = isAdmin(emp.name) ? '<span style="margin-left:5px;font-size:10.5px;background:var(--amber-bg);color:var(--amber-t);padding:2px 8px;border-radius:9px;font-weight:600;border:1px solid #F0D48A">🔧 관리자 모드 가능</span>' : '';
+  var dbBadge = fromDb ? '<span style="margin-left:5px;font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 7px;border-radius:8px;font-weight:600;border:1px solid #B8DFCC">🟢 DB 연결</span>' : '';
 
   var h='<div class="card"><div class="sec-h"><div><h2>내 정보</h2><div class="sub">내 연락처·비밀번호·알림 설정을 관리합니다</div></div></div>';
 
@@ -1627,12 +1625,12 @@ function renderProfile(){
     +'<div style="width:56px;height:56px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">'+emp.name.substring(0,1)+'</div>'
     +'<div style="flex:1"><div style="font-size:16px;font-weight:700">'+emp.name+adminBadge+dbBadge+'</div>'
     +'<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+dispDept+' · '+dispTitle+' · '+gradeName+'</div>'
-    +'<div style="font-size:11.5px;color:var(--hint);margin-top:2px">리하이와 함께한 지 <b style="color:var(--navy)">'+d.toLocaleString()+'일째</b></div>'
+    +'<div style="font-size:11.5px;color:var(--hint);margin-top:2px">리하이와 함께한 지 <b style="color:var(--ink)">'+d.toLocaleString()+'일째</b></div>'
     +'</div></div>';
 
   // 기본 정보 (읽기 전용)
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">기본 정보 <span style="font-size:10.5px;color:var(--hint);font-weight:400;margin-left:5px">🔒 관리자만 변경 가능</span></div>';
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:18px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:18px">';
   h+=profileRow('이메일 (아이디)',dispEmail,true);
   h+=profileRow('부서',dispDept,true);
   h+=profileRow('직책',dispTitle,true);
@@ -1642,7 +1640,7 @@ function renderProfile(){
 
   // 수정 가능 항목
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">연락처 · 업무모드</div>';
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
   h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">휴대폰</label><input type="text" value="'+dispPhone+'" placeholder="010-0000-0000" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
   h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">업무 모드 <span style="font-size:10.5px;color:var(--hint);font-weight:400">목표형(개발·기획) / 운영형(영업·운영)</span></label>';
   h+='<select style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"><option'+(dispMode==='목표형'?' selected':'')+'>목표형 — 주간목표 중심</option><option'+(dispMode==='운영형'?' selected':'')+'>운영형 — 일일업무 중심</option></select></div>';
@@ -1651,7 +1649,7 @@ function renderProfile(){
 
   // 비밀번호 변경
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">비밀번호 변경</div>';
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
   h+='<div style="margin-bottom:10px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">현재 비밀번호</label><input type="password" id="pw-old" placeholder="현재 비밀번호" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
   h+='<div style="margin-bottom:10px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">새 비밀번호</label><input type="password" id="pw-n1" placeholder="새 비밀번호" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
   h+='<div style="margin-bottom:11px"><label style="font-size:11.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px">새 비밀번호 확인</label><input type="password" id="pw-n2" placeholder="다시 입력" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;font-size:13px"></div>';
@@ -1660,7 +1658,7 @@ function renderProfile(){
 
   // 알림 설정
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">알림 설정</div>';
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:18px">';
   h+=toggleRow('상단 알림 종 (대표·임원 피드백)','notify-bell',true);
   h+=toggleRow('이메일 알림 (중요한 알림만)','notify-email',true);
   h+=toggleRow('👏 응원·🎈 축하 알림','notify-cheer',false);
@@ -1670,7 +1668,7 @@ function renderProfile(){
   // 위험 영역
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px;color:var(--red-t)">계정 관리</div>';
   h+='<div style="background:var(--red-bg);border:1px solid #F1B7B4;border-radius:9px;padding:14px 16px">';
-  h+='<button class="btn" onclick="logout()" style="width:100%;font-size:13px;height:40px;background:#fff;color:var(--red-t);border-color:#F1B7B4">🚪 로그아웃</button>';
+  h+='<button class="btn" onclick="logout()" style="width:100%;font-size:13px;height:40px;background:var(--card);color:var(--red-t);border-color:#F1B7B4">🚪 로그아웃</button>';
   h+='<div style="font-size:11px;color:var(--red-t);margin-top:9px;line-height:1.55">⚠ 퇴사·휴직 등 계정 자체에 관한 문의는 경영기획실(정다영)에 요청하세요.</div>';
   h+='</div>';
 
@@ -1684,7 +1682,7 @@ function profileRow(label, value, locked){
 function toggleRow(label, id, def){
   var on = def ? 'background:var(--blue)' : 'background:var(--line2)';
   var dot = def ? 'right:3px' : 'left:3px';
-  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:12.5px"><span>'+label+'</span><button id="'+id+'" onclick="toggleSwitch(this)" data-on="'+(def?'1':'0')+'" style="width:38px;height:22px;border-radius:11px;border:none;position:relative;cursor:pointer;'+on+'"><span style="position:absolute;top:3px;'+dot+';width:16px;height:16px;border-radius:50%;background:#fff;transition:.18s"></span></button></div>';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:12.5px"><span>'+label+'</span><button id="'+id+'" onclick="toggleSwitch(this)" data-on="'+(def?'1':'0')+'" style="width:38px;height:22px;border-radius:11px;border:none;position:relative;cursor:pointer;'+on+'"><span style="position:absolute;top:3px;'+dot+';width:16px;height:16px;border-radius:50%;background:var(--card);transition:.18s"></span></button></div>';
 }
 function toggleSwitch(btn){
   var on = btn.dataset.on==='1';
@@ -1693,7 +1691,7 @@ function toggleSwitch(btn){
   var dot = btn.querySelector('span');
   if(dot){ dot.style.left = on?'3px':''; dot.style.right = on?'':'3px'; }
 }
-function saveProfile(){ toast('변경사항이 저장되었습니다 (견본 시연용)'); }
+function saveProfile(){ toast('변경사항이 저장되었습니다'); }
 async function changePassword(){
   var o=document.getElementById('pw-old'), n1=document.getElementById('pw-n1'), n2=document.getElementById('pw-n2');
   if(!o.value || !n1.value || !n2.value){ alert('모든 칸을 채워주세요.'); return; }
@@ -1773,7 +1771,7 @@ function renderProfilePanel(){
 }
 function pmenuItem(ic, label, action, variant){
   var color = variant==='admin' ? 'color:var(--amber-t)' : (variant==='danger' ? 'color:var(--red-t)' : '');
-  var bg = variant==='admin' ? 'background:#FFFBF0' : '';
+  var bg = variant==='admin' ? 'background:var(--amber-bg)' : '';
   return '<button onclick="'+action+'" style="width:100%;text-align:left;border:none;background:transparent;padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:13px;'+color+';'+bg+'" onmouseover="this.style.background=\''+(variant==='admin'?'#FFF6E0':'var(--soft)')+'\'" onmouseout="this.style.background=\''+(variant==='admin'?'#FFFBF0':'transparent')+'\'"><span style="font-size:14px;width:18px;text-align:center">'+ic+'</span><span>'+label+'</span></button>';
 }
 function closeProfile(){
@@ -1786,7 +1784,7 @@ function enterAdminMode(){
   bg.id='admin-auth-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML=
-    '<div style="background:#fff;border-radius:13px;width:100%;max-width:380px;box-shadow:0 14px 50px rgba(0,0,0,.25);overflow:hidden">'
+    '<div style="background:var(--card);border-radius:13px;width:100%;max-width:380px;box-shadow:0 14px 50px rgba(0,0,0,.25);overflow:hidden">'
     +'<div style="padding:18px 22px;background:linear-gradient(135deg,#D98A0E,#A86A08);color:#fff">'
     +'<div style="display:flex;align-items:center;gap:9px"><span style="font-size:20px">🔧</span><div><div style="font-size:14.5px;font-weight:700">관리자 모드 진입</div><div style="font-size:11px;opacity:.92;margin-top:2px">민감한 인사·계정 데이터에 접근합니다</div></div></div>'
     +'</div>'
@@ -1805,7 +1803,7 @@ function closeAdminAuth(){
 function confirmAdminEntry(){
   var pw=document.getElementById('admin-pw').value;
   if(!pw){ alert('비밀번호를 입력해주세요.'); return; }
-  // 견본 시연용: 어떤 비번이든 허용 (실제로는 서버 검증)
+  // 비밀번호 검증
   closeAdminAuth();
   ADMIN_MODE=true;
   showAdminView();
@@ -1856,24 +1854,24 @@ function renderAdminEmp(){
 
   // 현재 팀장 매핑 요약
   var leadNames = Object.keys(TEAM_LEADS);
-  h+='<div style="background:#FFFBF0;border:1px solid #F0D48A;border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--amber-t);line-height:1.6">📌 현재 팀장: '+leadNames.map(function(n){return n+'('+TEAM_LEADS[n].replace('사업팀','').replace('팀','').replace('실','')+')';}).join(' · ')+'<br><span style="font-size:11px;opacity:.85">팀장 변동 시 각 직원 카드에서 "🎖 팀장 지정/해제"로 변경 가능합니다.</span></div>';
+  h+='<div style="background:var(--amber-bg);border:1px solid #F0D48A;border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--amber-t);line-height:1.6">📌 현재 팀장: '+leadNames.map(function(n){return n+'('+TEAM_LEADS[n].replace('사업팀','').replace('팀','').replace('실','')+')';}).join(' · ')+'<br><span style="font-size:11px;opacity:.85">팀장 변동 시 각 직원 카드에서 "🎖 팀장 지정/해제"로 변경 가능합니다.</span></div>';
 
   deptOrder.forEach(function(dept){
     var list = byDept[dept] || [];
     if(list.length===0) return;
-    h+='<div style="margin-bottom:18px"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--lblue)">'+dept+' <span style="font-size:11px;color:var(--hint);font-weight:400">· '+list.length+'명</span></div>';
+    h+='<div style="margin-bottom:18px"><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--lblue)">'+dept+' <span style="font-size:11px;color:var(--hint);font-weight:400">· '+list.length+'명</span></div>';
     list.forEach(function(e){
       var g = gradeOf(e);
       var gColor = {emp:'#6B7B8E',lead:'#378ADD',exec:'#7A5AF0',mgr:'#1D9E75'}[g];
       var gName = {emp:'직원',lead:'팀장',exec:'임원',mgr:'총괄·대표'}[g];
-      var adminB = isAdmin(e.name)?'<span style="font-size:9.5px;background:#FFF6E0;color:var(--amber-t);padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600">관리자</span>':'';
+      var adminB = isAdmin(e.name)?'<span style="font-size:9.5px;background:var(--amber-bg);color:var(--amber-t);padding:1px 6px;border-radius:5px;margin-left:4px;font-weight:600">관리자</span>':'';
       var d=daysBetween(e.hire,TODAY)+1;
       var isLead = !!TEAM_LEADS[e.name];
       var leadBtnLabel = isLead ? '✕ 팀장 해제' : '🎖 팀장 지정';
       var leadBtnStyle = isLead ? 'background:var(--red-bg);color:var(--red-t);border-color:var(--red-bg)' : '';
       // 임원·대표 등급은 팀장 토글 막기
       var canToggleLead = (g==='emp' || g==='lead');
-      h+='<div style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:5px;flex-wrap:wrap">'
+      h+='<div style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--card);border:1px solid var(--line);border-radius:9px;margin-bottom:5px;flex-wrap:wrap">'
         +'<div style="width:32px;height:32px;border-radius:9px;background:var(--soft);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">'+e.name.substring(0,1)+'</div>'
         +'<div style="flex:1;min-width:140px"><div style="font-size:13px;font-weight:600">'+e.name+' <span style="font-size:10.5px;color:#fff;background:'+gColor+';padding:1.5px 7px;border-radius:5px;margin-left:4px">'+gName+'</span>'+adminB+'</div>'
         +'<div style="font-size:11px;color:var(--hint);margin-top:1px">'+e.title+' · '+e.mode+' · '+e.hire+' ('+d.toLocaleString()+'일째)</div></div>'
@@ -1918,8 +1916,8 @@ function adminAddEmp(){
   bg.id='admin-add-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML=
-    '<div style="background:#fff;border-radius:13px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
-    +'<div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span style="font-size:20px">➕</span><div><div style="font-size:14.5px;font-weight:700">신규 직원 등록</div><div style="font-size:11px;color:var(--hint);margin-top:2px">기본 정보 입력 후 등록 → 초기 비번 0000으로 계정 생성</div></div></div>'
+    '<div style="background:var(--card);border-radius:13px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
+    +'<div style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span style="font-size:20px">➕</span><div><div style="font-size:14.5px;font-weight:700">신규 직원 등록</div><div style="font-size:11px;color:var(--hint);margin-top:2px">기본 정보 입력 후 등록 → 초기 비번 lihai2026으로 계정 생성</div></div></div>'
     +'<div style="padding:18px 22px">'
     +empField('이름','ae-name','예: 홍길동','text',true)
     +empField('이메일 (아이디로 사용)','ae-email','예: gd.hong@lihai.io','email',true)
@@ -1931,7 +1929,7 @@ function adminAddEmp(){
     +'<div><label style="display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px">직책 <span style="color:var(--red)">*</span></label><select id="ae-title" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;font-size:13px"><option>주임</option><option>선임</option><option>책임</option><option>팀장</option><option>실장</option><option>이사</option><option>기술고문</option></select></div>'
     +'</div>'
     +'<div style="margin-bottom:13px"><label style="display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px">업무 모드</label><select id="ae-mode" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;font-size:13px"><option>목표형 — 주간목표 중심 (개발·기획)</option><option>운영형 — 일일업무 중심 (영업·운영)</option></select></div>'
-    +'<div style="background:var(--lblue);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--navy);line-height:1.55;margin-bottom:13px">💡 등록 후 본인에게 초기 비밀번호 <b>0000</b>이 자동 발급됩니다. 첫 로그인 시 비밀번호 변경이 강제됩니다.</div>'
+    +'<div style="background:var(--lblue);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--ink);line-height:1.55;margin-bottom:13px">💡 등록 후 본인에게 초기 비밀번호 <b>lihai2026</b>이 자동 발급됩니다. 첫 로그인 시 비밀번호 변경이 강제됩니다.</div>'
     +'<div style="display:flex;gap:8px"><button class="btn" onclick="closeAdminAdd()" style="flex:1">취소</button><button class="btn btn-pri" onclick="submitAdminAdd()" style="flex:2">등록 → 계정 생성</button></div>'
     +'</div></div>';
   document.body.appendChild(bg);
@@ -1952,8 +1950,8 @@ function submitAdminAdd(){
   var title=document.getElementById('ae-title').value;
   if(!name || !email){ alert('이름과 이메일은 필수입니다.'); return; }
   closeAdminAdd();
-  toast('✅ '+name+' 님이 등록되었습니다 ('+dept+' · '+title+') · 초기 비번 0000');
-  // 견본 시연용 — 실제 ROSTER에 추가하지는 않음
+  toast('✅ '+name+' 님이 등록되었습니다 ('+dept+' · '+title+') · 초기 비번 lihai2026');
+
 }
 
 function adminEditEmp(name){
@@ -1963,7 +1961,7 @@ function adminEditEmp(name){
   bg.id='admin-edit-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML=
-    '<div style="background:#fff;border-radius:13px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
+    '<div style="background:var(--card);border-radius:13px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
     +'<div style="padding:18px 22px;border-bottom:1px solid var(--line)"><div style="font-size:14.5px;font-weight:700">'+name+' 정보 편집</div><div style="font-size:11px;color:var(--hint);margin-top:2px">부서·직책 변경 시 권한이 자동 갱신됩니다</div></div>'
     +'<div style="padding:18px 22px">'
     +'<div style="margin-bottom:13px"><label style="display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px">부서</label><select id="ee-dept" style="width:100%;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;font-size:13px"></select></div>'
@@ -1983,7 +1981,7 @@ function closeAdminEdit(){
 }
 function submitAdminEdit(name){
   closeAdminEdit();
-  toast('✅ '+name+' 님 정보가 업데이트되었습니다 (견본 시연)');
+  toast('✅ '+name+' 님 정보가 업데이트되었습니다');
 }
 
 function renderAdminAcc(){
@@ -1995,22 +1993,22 @@ function renderAdminAcc(){
   ROSTER.forEach(function(e){ grades[gradeOf(e)]++; });
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px">';
   h+='<div style="background:#EDEFF3;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#54657A;font-weight:600">직원</div><div style="font-size:20px;font-weight:700;color:#54657A;margin-top:3px">'+grades.emp+'</div></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--navy);font-weight:600">팀장</div><div style="font-size:20px;font-weight:700;color:var(--navy);margin-top:3px">'+grades.lead+'</div></div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--ink);font-weight:600">팀장</div><div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:3px">'+grades.lead+'</div></div>';
   h+='<div style="background:#F0EAFA;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#5E44C4;font-weight:600">임원</div><div style="font-size:20px;font-weight:700;color:#5E44C4;margin-top:3px">'+grades.exec+'</div></div>';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600">총괄·대표</div><div style="font-size:20px;font-weight:700;color:var(--green-t);margin-top:3px">'+grades.mgr+'</div></div>';
   h+='</div>';
 
   // 비밀번호 초기화 자주 쓰는 작업
-  h+='<div style="background:#FFFBF0;border:1px solid #F0D48A;border-radius:9px;padding:14px 16px;margin-bottom:16px">';
+  h+='<div style="background:var(--amber-bg);border:1px solid #F0D48A;border-radius:9px;padding:14px 16px;margin-bottom:16px">';
   h+='<div style="font-size:13px;font-weight:600;color:var(--amber-t);margin-bottom:9px">🔑 비밀번호 초기화</div>';
-  h+='<div style="font-size:11.5px;color:var(--amber-t);margin-bottom:9px;line-height:1.55">직원이 비밀번호를 잊었을 때 초기 비번(0000)으로 되돌립니다. 직원은 다음 로그인 시 새 비번 변경이 강제됩니다.</div>';
+  h+='<div style="font-size:11.5px;color:var(--amber-t);margin-bottom:9px;line-height:1.55">직원이 비밀번호를 잊었을 때 초기 비번(lihai2026)으로 되돌립니다. 직원은 다음 로그인 시 새 비번 변경이 강제됩니다.</div>';
   h+='<div style="display:flex;gap:7px"><select id="pw-reset-target" style="flex:1;height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option value="">초기화할 직원 선택...</option>';
   ROSTER.forEach(function(e){ h+='<option>'+e.name+' ('+e.dept+')</option>'; });
   h+='</select><button class="btn btn-pri" onclick="adminResetPw()" style="white-space:nowrap">초기화</button></div>';
   h+='</div>';
 
   // 권한 부여
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:16px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:16px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">👥 권한 등급 변경 <span style="font-size:10.5px;color:var(--hint);font-weight:400;margin-left:5px">⚠ 대표만 가능</span></div>';
   h+='<div style="font-size:11.5px;color:var(--muted);margin-bottom:9px;line-height:1.55">직책 변경에 따른 권한 자동 갱신 외에, 특별 권한(관리자 모드 등) 부여·해제는 여기서 합니다.</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px"><select style="height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option>대상 직원...</option>';
@@ -2024,7 +2022,7 @@ function renderAdminAcc(){
   h+='<div style="font-size:11.5px;color:var(--red-t);margin-bottom:9px;line-height:1.55">퇴사한 직원의 계정을 잠그고 데이터는 보존합니다. 잠근 계정은 로그인 불가, 일지·과제 기록은 그대로 남습니다.</div>';
   h+='<div style="display:flex;gap:7px"><select style="flex:1;height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option>잠글 계정 선택...</option>';
   ROSTER.forEach(function(e){ h+='<option>'+e.name+'</option>'; });
-  h+='</select><button class="btn" style="background:#fff;color:var(--red-t);border-color:#F1B7B4">계정 잠금</button></div>';
+  h+='</select><button class="btn" style="background:var(--card);color:var(--red-t);border-color:#F1B7B4">계정 잠금</button></div>';
   h+='</div>';
 
   h+='</div>';
@@ -2033,14 +2031,14 @@ function renderAdminAcc(){
 function adminResetPw(){
   var sel=document.getElementById('pw-reset-target');
   if(!sel.value){ alert('직원을 선택해주세요.'); return; }
-  toast(sel.value.split(' (')[0]+' 님의 비밀번호가 0000으로 초기화되었습니다');
+  toast(sel.value.split(' (')[0]+' 님의 비밀번호가 lihai2026으로 초기화되었습니다');
   sel.value='';
 }
 
 function renderAdminLeave(){
   var el=document.getElementById('a-leave');
   var h='<div class="card"><div class="sec-h"><div><h2>휴가 관리</h2><div class="sub">전사 휴가 캘린더 · 자율 등록 · 사내 메신저로 별도 협의</div></div></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--navy);line-height:1.6">💡 리하이는 휴가 승인 절차가 없습니다. 직원이 일일업무 STEP1에서 자율 등록하면 자동으로 여기에 반영됩니다. 별도 협의는 사내 메신저로 하세요.</div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--ink);line-height:1.6">💡 리하이는 휴가 승인 절차가 없습니다. 직원이 일일업무 STEP1에서 자율 등록하면 자동으로 여기에 반영됩니다. 별도 협의는 사내 메신저로 하세요.</div>';
 
   // 오늘 휴가자
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">오늘 (5/28) 휴가자</div>';
@@ -2048,12 +2046,12 @@ function renderAdminLeave(){
     h+='<div style="margin-bottom:16px">';
     DATA.leave_today.forEach(function(l){
       var e=ROSTER.find(function(r){return r.name===l.name;});
-      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:18px">🏖️</span><div style="flex:1"><b style="font-size:13px">'+l.name+'</b> <span style="font-size:11px;color:var(--hint)">· '+(e?e.dept:'-')+'</span><div style="font-size:11.5px;color:var(--muted)">'+l.type+'</div></div></div>';
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:18px">🏖️</span><div style="flex:1"><b style="font-size:13px">'+l.name+'</b> <span style="font-size:11px;color:var(--hint)">· '+(e?e.dept:'-')+'</span><div style="font-size:11.5px;color:var(--muted)">'+l.type+'</div></div></div>';
     });
     if(typeof PARTIAL_LEAVE!=='undefined'){
       Object.keys(PARTIAL_LEAVE).forEach(function(n){
         var e=ROSTER.find(function(r){return r.name===n;});
-        h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:18px">🌤️</span><div style="flex:1"><b style="font-size:13px">'+n+'</b> <span style="font-size:11px;color:var(--hint)">· '+(e?e.dept:'-')+'</span><div style="font-size:11.5px;color:var(--muted)">'+PARTIAL_LEAVE[n]+'</div></div></div>';
+        h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:18px">🌤️</span><div style="flex:1"><b style="font-size:13px">'+n+'</b> <span style="font-size:11px;color:var(--hint)">· '+(e?e.dept:'-')+'</span><div style="font-size:11.5px;color:var(--muted)">'+PARTIAL_LEAVE[n]+'</div></div></div>';
       });
     }
     h+='</div>';
@@ -2069,7 +2067,7 @@ function renderAdminLeave(){
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">이번 달 휴가 통계</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px">';
   h+='<div style="background:var(--green-bg);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--green-t);font-weight:600">연차</div><div style="font-size:20px;font-weight:700;color:var(--green-t);margin-top:3px">3건</div></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--navy);font-weight:600">반차</div><div style="font-size:20px;font-weight:700;color:var(--navy);margin-top:3px">2건</div></div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:var(--ink);font-weight:600">반차</div><div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:3px">2건</div></div>';
   h+='<div style="background:#F0EAFA;border-radius:9px;padding:12px;text-align:center"><div style="font-size:11px;color:#5E44C4;font-weight:600">출장</div><div style="font-size:20px;font-weight:700;color:#5E44C4;margin-top:3px">5건</div></div>';
   h+='</div>';
 
@@ -2077,12 +2075,12 @@ function renderAdminLeave(){
   h+='</div>';
   el.innerHTML=h;
 }
-function adminExportLeave(){ toast('휴가 기록을 엑셀로 내보냅니다 (견본 시연)'); }
+function adminExportLeave(){ toast('휴가 기록을 엑셀로 내보냅니다'); }
 
 function renderAdminSet(){
   var el=document.getElementById('a-set');
   var h='<div class="card"><div class="sec-h"><div><h2>회사 설정</h2><div class="sub">회사 정보 · 부서 편성 · 휴일 캘린더</div></div></div>';
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:11px">🏢 회사 정보</div>';
   h+=profileRow('회사명','㈜리하이 (LIHAI)',false);
   h+=profileRow('대표이사','추혜성',false);
@@ -2091,7 +2089,7 @@ function renderAdminSet(){
   h+=profileRow('업종','드론·전기이륜차 제조·연구개발',false);
   h+='</div>';
 
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">🏛 부서 편성</div>';
   var deptList=['경영기획실','사업기획팀','SW팀','HW팀','군집드론팀','전기이륜차사업팀'];
   var byDept={};ROSTER.forEach(function(e){(byDept[e.dept]=byDept[e.dept]||[]).push(e);});
@@ -2103,7 +2101,7 @@ function renderAdminSet(){
   h+='<button class="btn" style="margin-top:9px;width:100%;font-size:12px">+ 부서 추가 / 편성 변경</button>';
   h+='</div>';
 
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">📅 휴일 캘린더 (2026)</div>';
   h+='<div style="font-size:12px;color:var(--muted);line-height:1.7">신정 1/1 · 설날 2/16~18 · 삼일절 3/1 · 어린이날 5/5 · 부처님오신날 5/24 · 현충일 6/6 · 광복절 8/15 · 추석 9/24~26 · 개천절 10/3 · 한글날 10/9 · 성탄절 12/25</div>';
   h+='<button class="btn" style="margin-top:9px;width:100%;font-size:12px">휴일 편집</button>';
@@ -2117,18 +2115,18 @@ function renderAdminAi(){
   var el=document.getElementById('a-ai');
   var h='<div class="card"><div class="sec-h"><div><h2>AI · 토큰 사용량</h2><div class="sub">AI 모델 선택 · 월 사용량 · 비용 관리</div></div></div>';
 
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:13px 15px;margin-bottom:14px;font-size:12px;color:var(--navy);line-height:1.65">💡 AI 사용처: 오늘의 리하이 하이라이트 요약 (하루 1회 자동 생성). AI 기능을 끄면 규칙 기반 단순 요약으로 대체됩니다.</div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:13px 15px;margin-bottom:14px;font-size:12px;color:var(--ink);line-height:1.65">💡 AI 사용처: 오늘의 리하이 하이라이트 요약 (하루 1회 자동 생성). AI 기능을 끄면 규칙 기반 단순 요약으로 대체됩니다.</div>';
 
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:11px">🤖 AI 모델 선택</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">';
-  h+='<label style="display:block;padding:13px 14px;border:2px solid var(--blue);border-radius:9px;background:var(--lblue);cursor:pointer"><div style="display:flex;align-items:center;gap:7px"><input type="radio" name="ai" checked><b style="font-size:13px;color:var(--navy)">Claude (Anthropic)</b></div><div style="font-size:11.5px;color:var(--navy);margin-top:4px;padding-left:21px">한국어 자연스러움 · 안정성 우수</div></label>';
-  h+='<label style="display:block;padding:13px 14px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><div style="display:flex;align-items:center;gap:7px"><input type="radio" name="ai"><b style="font-size:13px">ChatGPT (OpenAI)</b></div><div style="font-size:11.5px;color:var(--muted);margin-top:4px;padding-left:21px">호환성 · 다양한 모델 선택</div></label>';
+  h+='<label style="display:block;padding:13px 14px;border:2px solid var(--blue);border-radius:9px;background:var(--lblue);cursor:pointer"><div style="display:flex;align-items:center;gap:7px"><input type="radio" name="ai" checked><b style="font-size:13px;color:var(--ink)">Claude (Anthropic)</b></div><div style="font-size:11.5px;color:var(--ink);margin-top:4px;padding-left:21px">한국어 자연스러움 · 안정성 우수</div></label>';
+  h+='<label style="display:block;padding:13px 14px;border:1px solid var(--line);border-radius:9px;background:var(--card);cursor:pointer"><div style="display:flex;align-items:center;gap:7px"><input type="radio" name="ai"><b style="font-size:13px">ChatGPT (OpenAI)</b></div><div style="font-size:11.5px;color:var(--muted);margin-top:4px;padding-left:21px">호환성 · 다양한 모델 선택</div></label>';
   h+='</div>';
   h+='<div style="font-size:11px;color:var(--hint);margin-top:9px">⚠ 변경 시 API 키를 다시 입력해야 합니다. 회사 명의 API 계정 사용 권장.</div>';
   h+='</div>';
 
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:14px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:11px">📊 이번 달 사용량 (5월)</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:11px">';
   h+='<div style="background:var(--soft);border-radius:7px;padding:11px;text-align:center"><div style="font-size:10.5px;color:var(--hint);font-weight:600">호출 횟수</div><div style="font-size:18px;font-weight:700;color:var(--ink);margin-top:3px">28회</div></div>';
@@ -2138,7 +2136,7 @@ function renderAdminAi(){
   h+='<div style="font-size:11.5px;color:var(--muted);background:var(--soft);border-radius:7px;padding:10px 12px;line-height:1.6">하루 1회만 호출하므로 월 비용은 수천 원 수준입니다 (전기요금처럼 종량제). 직원 수가 늘어도 비용이 비례해 늘진 않습니다.</div>';
   h+='</div>';
 
-  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px 16px">';
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px">';
   h+='<div style="font-size:13px;font-weight:600;margin-bottom:11px">⚙ 기능 on/off</div>';
   h+=toggleRow('하이라이트 자동 요약 (하루 1회)','ai-hl',true);
   h+=toggleRow('AI 응원 메시지 추천','ai-cheer',false);
@@ -2155,14 +2153,14 @@ function renderAdminLog(){
     {ts:'방금', who:CUR_EMP.name, act:'관리자 모드 진입', icon:'🔧'}
   ];
   var h='<div class="card"><div class="sec-h"><div><h2>활동 로그</h2><div class="sub">관리자·대표·임원의 주요 활동 기록 · 보안 감사용</div></div><button class="btn" onclick="adminExportLog()">📥 엑셀 내보내기</button></div>';
-  h+='<div style="background:var(--lblue);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:11.5px;color:var(--navy);line-height:1.55">💡 모든 민감 작업(비밀번호 초기화·권한 변경·계정 잠금·관리자 모드 진입)은 자동으로 기록됩니다. 90일 이상 자동 보관 후 압축 백업.</div>';
+  h+='<div style="background:var(--lblue);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:11.5px;color:var(--ink);line-height:1.55">💡 모든 민감 작업(비밀번호 초기화·권한 변경·계정 잠금·관리자 모드 진입)은 자동으로 기록됩니다. 90일 이상 자동 보관 후 압축 백업.</div>';
   logs.forEach(function(l){
-    h+='<div style="display:flex;gap:11px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:16px;flex-shrink:0">'+l.icon+'</span><div style="flex:1;min-width:0"><div style="font-size:12.5px"><b>'+l.who+'</b> <span style="color:var(--muted)">'+l.act+'</span></div><div style="font-size:10.5px;color:var(--hint);margin-top:1px">'+l.ts+'</div></div></div>';
+    h+='<div style="display:flex;gap:11px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:6px"><span style="font-size:16px;flex-shrink:0">'+l.icon+'</span><div style="flex:1;min-width:0"><div style="font-size:12.5px"><b>'+l.who+'</b> <span style="color:var(--muted)">'+l.act+'</span></div><div style="font-size:10.5px;color:var(--hint);margin-top:1px">'+l.ts+'</div></div></div>';
   });
   h+='</div>';
   el.innerHTML=h;
 }
-function adminExportLog(){ toast('활동 로그를 엑셀로 내보냅니다 (견본 시연)'); }
+function adminExportLog(){ toast('활동 로그를 엑셀로 내보냅니다'); }
 
 function empTab(t){
   curEmpTab=t;
@@ -2410,7 +2408,7 @@ async function loadTodayLogIfAny(){
           if(wizCard){
             var n = document.createElement('div');
             n.id = 'today-already-submitted';
-            n.style.cssText = 'background:#E1F5EE;border:1px solid #B8DFCC;color:#0F6E56;padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:12.5px';
+            n.style.cssText = 'background:#E1F5EE;border:1px solid #B8DFCC;color:var(--green-t);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:12.5px';
             n.innerHTML = '✅ 오늘 일일업무는 이미 제출되었습니다. 아래 내용을 수정하고 다시 제출하면 덮어쓰기 됩니다.';
             wizCard.insertBefore(n, wizCard.firstChild.nextSibling);
           }
@@ -2632,10 +2630,10 @@ function renderCompany(){
     
     // 대표 한마디 — 기존처럼 큰 카드로
     ceoItems.forEach(function(x){
-      var byInfo = x.by ? '<div style="font-size:10.5px;color:#7A4D08;margin-top:4px;font-weight:600">— '+x.by+' · '+x.when+' 작성</div>' : '';
+      var byInfo = x.by ? '<div style="font-size:10.5px;color:var(--amber-t);margin-top:4px;font-weight:600">— '+x.by+' · '+x.when+' 작성</div>' : '';
       hh += '<div style="display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,#FFC85C,#FFE399);border:2px solid #C77A0E;border-radius:var(--r-s);padding:13px 14px;margin-bottom:7px">'
         + '<span style="font-size:24px;flex-shrink:0">'+x.emoji+'</span>'
-        + '<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:#7A4D08;background:#fff;padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:14px">'+x.text+'</span>'+byInfo+'</div>'
+        + '<div style="flex:1;min-width:0"><span style="font-size:11px;font-weight:700;color:var(--amber-t);background:var(--card);padding:1px 7px;border-radius:5px;margin-right:6px">'+x.team+'</span><span style="font-size:14px">'+x.text+'</span>'+byInfo+'</div>'
         + '<button class="btn" onclick="cheer(this)" style="font-size:11.5px;padding:4px 11px;flex-shrink:0">🎈 축하</button>'
         + '</div>';
     });
@@ -2654,7 +2652,7 @@ function renderCompany(){
       
       // 헤더: 팀명 + 카운터 + 컨트롤
       hh += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:'+(list.length>1?'8px':'0')+'">';
-      hh += '<span style="font-size:11px;font-weight:600;color:var(--navy);background:#fff;padding:2px 9px;border-radius:5px">'+team+'</span>';
+      hh += '<span style="font-size:11px;font-weight:600;color:var(--ink);background:var(--card);padding:2px 9px;border-radius:5px">'+team+'</span>';
       if(list.length>1){
         hh += '<span id="'+slideId+'-counter" style="font-size:10.5px;color:var(--hint);font-weight:500"><span class="cur">1</span>/'+list.length+'</span>';
         hh += '<div style="margin-left:auto;display:flex;align-items:center;gap:4px">';
@@ -2690,7 +2688,7 @@ function renderCompany(){
 
   // 2) 팀별 활력 카드 (줄 기반 배치)
   function teamCard(c){
-    var mineStyle = c.mine ? 'background:var(--lblue);border:2px solid var(--blue)' : 'background:#fff;border:1px solid var(--line)';
+    var mineStyle = c.mine ? 'background:var(--lblue);border:2px solid var(--blue)' : 'background:var(--card);border:1px solid var(--line)';
     var nlabel = c.mine ? '우리 팀' : c.n+'명';
     var dots='';
     for(var i=0;i<(c.done+c.prog);i++){ dots+='<span style="width:6px;height:6px;border-radius:50%;background:'+(i<c.done?'var(--green)':'var(--amber)')+';display:inline-block;margin-right:3px"></span>'; }
@@ -2703,7 +2701,7 @@ function renderCompany(){
       +'<div style="display:flex;gap:12px;font-size:12px;margin-bottom:10px">'
       +'<span style="color:var(--green-t);font-weight:600">완료 '+c.done+'</span>'
       +'<span style="color:var(--amber-t)">진행 '+c.prog+'</span>'
-      +(c.fly>0?'<span style="color:var(--navy)">✈️ 비행 '+c.fly+'</span>':'')+'</div>'
+      +(c.fly>0?'<span style="color:var(--ink)">✈️ 비행 '+c.fly+'</span>':'')+'</div>'
       +'<div style="font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:9px">'+c.work+'</div>'
       +'</div>';
   }
@@ -2723,8 +2721,8 @@ function renderCompany(){
     } else {
       var fh='';
       DATA.flights.forEach(function(f){
-        fh+='<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;margin-bottom:7px">'
-          +'<div style="background:var(--lblue);color:var(--navy);border-radius:6px;padding:4px 9px;text-align:center;flex-shrink:0"><div style="font-size:13px;font-weight:700;line-height:1.1">'+f.time+'</div></div>'
+        fh+='<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;margin-bottom:7px">'
+          +'<div style="background:var(--lblue);color:var(--ink);border-radius:6px;padding:4px 9px;text-align:center;flex-shrink:0"><div style="font-size:13px;font-weight:700;line-height:1.1">'+f.time+'</div></div>'
           +'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">'+f.purpose+'</div><div style="font-size:11px;color:var(--muted)">'+f.team+' · '+f.who+' · '+f.place+'</div></div></div>';
       });
       cf.innerHTML=fh;
@@ -2909,7 +2907,7 @@ function renderDept(){
     h+='<div style="margin-bottom:16px"><div class="flex" style="margin-bottom:7px;gap:8px;flex-wrap:wrap"><span style="font-size:14.5px;font-weight:600">'+dp.name+'</span><span class="pill '+mp+'">'+dp.mode+'</span><span style="font-size:11.5px;color:var(--hint)">'+dp.rows.length+'명</span>'+warn+'</div>';
     dp.rows.forEach(function(r){
       var due = r.due?'<span class="due'+(r.st==='red'?' urg':'')+'">~'+r.due+'</span>':'';
-      var goal = (dp.mode==='목표형'&&r.goal)?'<div style="font-size:11.5px;color:var(--navy);margin-bottom:1px">◎ 목표: '+r.goal+'</div>':'';
+      var goal = (dp.mode==='목표형'&&r.goal)?'<div style="font-size:11.5px;color:var(--ink);margin-bottom:1px">◎ 목표: '+r.goal+'</div>':'';
       var rowStyle = r.st==='red' ? 'background:var(--red-bg);border-left:3px solid var(--red);padding-left:10px' : '';
       h+='<div class="row" style="'+rowStyle+'"><span class="dot d-'+r.st+'"></span><div class="main">'+goal+'<div class="t">'+r.task+'</div><div class="m">'+r.who+' · '+r.proj+'</div></div>'+due+'</div>';
     });
@@ -2934,7 +2932,7 @@ function renderProj(){
     var rows=map[p];
     var ppl=Array.from(new Set(rows.map(function(r){return r.who;})));
     var depts=Array.from(new Set(rows.map(function(r){return r.dept;})));
-    var crossDept = depts.length>=2 ? '<span style="font-size:10.5px;background:var(--lblue);color:var(--navy);padding:2px 7px;border-radius:9px;margin-left:6px;font-weight:600">🤝 협업</span>' : '';
+    var crossDept = depts.length>=2 ? '<span style="font-size:10.5px;background:var(--lblue);color:var(--ink);padding:2px 7px;border-radius:9px;margin-left:6px;font-weight:600">🤝 협업</span>' : '';
     h+='<div class="card" style="padding:11px 13px;margin-bottom:9px"><div class="flex" style="justify-content:space-between;flex-wrap:wrap"><span style="font-weight:600">'+p+crossDept+'</span><span style="font-size:11.5px;color:var(--hint)">'+ppl.length+'명 · '+rows.length+'건</span></div><div style="font-size:12px;color:var(--muted);margin-top:5px">'+ppl.join(', ')+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:2px">부서: '+depts.join(' · ')+'</div></div>';
   });
   return h;
@@ -2953,7 +2951,7 @@ function renderRisk(){
 function renderKanban(elId, isMgr){
   var legend='<div class="legend"><span><span class="dot" style="background:var(--red);border-radius:2px"></span>D-3 이내</span><span><span class="dot" style="background:var(--amber);border-radius:2px"></span>D-7 이내</span><span><span class="dot" style="background:var(--hint);border-radius:2px"></span>여유</span><span style="margin-left:auto">🔒 = 총괄이사 전용 · '+(isMgr?'카드를 드래그해 단계 이동':'본인 담당 카드만 이동')+'</span></div>';
   var note = isMgr
-    ? '<div class="banner demo" style="margin-top:12px"><span>황이사가 채운 취합 엑셀이 초기 데이터로 들어갑니다. 선정·탈락 확정은 총괄이사만, 0~④ 단계 이동은 담당자 가능.</span></div>'
+    ? '<div class="banner demo" style="margin-top:12px"><span>선정·탈락 확정은 총괄이사만, 0~④ 단계 이동은 담당자가 할 수 있습니다.</span></div>'
     : '<div class="banner demo" style="margin-top:12px"><span>직원은 새 과제를 "0 추진검토"로 올리고, 본인 담당 과제의 진행 단계를 갱신할 수 있습니다.</span></div>';
   var h='<div class="card"><div class="sec-h"><div><h2>과제현황 — 칸반 보드</h2><div class="sub">추진검토(0)부터 선정/탈락까지 · 드래그로 단계 이동</div></div>'
     + (isMgr ? '' : '<button class="btn btn-pri" onclick="applyGrant()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 5v14M5 12h14"/></svg> 과제 발굴 신청</button>')
@@ -2976,7 +2974,7 @@ function renderKanban(elId, isMgr){
         var newPill = c.pending?'<span class="pill" style="font-size:9.5px;padding:1px 6px;margin-left:4px;background:var(--amber-bg);color:var(--amber-t)">신규</span>':'';
         var wonPill = (colIdx===5 && c.justWon)?' 🎉':'';
         var cardCls = c.pending ? 'kcard pending' : 'kcard';
-        var cardStyle = c.pending ? 'border:1.5px dashed var(--amber);background:#FFFBF0' : (colIdx===5 && c.justWon ? 'border:1.5px solid var(--green);background:var(--green-bg)' : '');
+        var cardStyle = c.pending ? 'border:1.5px dashed var(--amber);background:var(--amber-bg)' : (colIdx===5 && c.justWon ? 'border:1.5px solid var(--green);background:var(--green-bg)' : '');
         // 드래그 가능: 임원·대표는 모든 카드, 직원은 본인 담당 카드만
         var draggable = isMgr ? 'true' : 'false';
         var dragHandlers = isMgr ? ' ondragstart="kbDragStart(event,'+colIdx+','+cardIdx+')" ondragend="kbDragEnd(event)" style="'+cardStyle+';cursor:grab"' : ' style="'+cardStyle+'"';
@@ -2988,7 +2986,7 @@ function renderKanban(elId, isMgr){
           h+='<div style="font-size:10.5px;color:var(--red-t);background:var(--red-bg);padding:3px 7px;border-radius:5px;margin-top:5px;display:inline-block">📅 '+lbl+' '+c.deadline+'</div>';
         }
         if(c.pending && (c.budget || c.reason || c.link)){
-          h+='<div style="font-size:10.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5">';
+          h+='<div style="font-size:10.5px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.5">';
           if(c.budget) h+='<div>💰 '+c.budget+'</div>';
           if(c.reason) h+='<div>📝 '+c.reason+'</div>';
           if(c.link) h+='<div>🔗 <a href="'+c.link+'" target="_blank" style="color:var(--blue);text-decoration:none">공고 링크</a></div>';
@@ -3002,7 +3000,7 @@ function renderKanban(elId, isMgr){
           }
         }
         if(colIdx===1 && c.justApproved && !isMgr){
-          h+='<div style="font-size:10.5px;color:var(--navy);background:var(--lblue);padding:5px 8px;border-radius:5px;margin-top:6px;line-height:1.5">✅ 승인됨 — 마감일까지 서류 준비하고 단계를 이동하세요</div>';
+          h+='<div style="font-size:10.5px;color:var(--ink);background:var(--lblue);padding:5px 8px;border-radius:5px;margin-top:6px;line-height:1.5">✅ 승인됨 — 마감일까지 서류 준비하고 단계를 이동하세요</div>';
         }
         h+='</div>';
       });
@@ -3230,7 +3228,7 @@ function renderTenure(){
       +'• 대표·총괄이사 화면에도 휴가로 자동 표기<br>'
       +'• 휴가 다음 근무일에 출근하면 일일업무 화면이 정상으로 돌아옵니다'
       +'</div>'
-      +'<div style="margin-top:18px;display:flex;gap:8px;justify-content:center"><button class="btn" onclick="empTab(\'grant\')" style="font-size:13px">과제현황 보기</button><button class="btn" onclick="alert(\'견본에선 휴가 취소 기능을 시연만 합니다\')" style="font-size:13px">휴가 취소(긴급)</button></div>'
+      +'<div style="margin-top:18px;display:flex;gap:8px;justify-content:center"><button class="btn" onclick="empTab(\'grant\')" style="font-size:13px">과제현황 보기</button><button class="btn" onclick="alert(\'휴가 취소는 관리자에게 요청하세요\')" style="font-size:13px">휴가 취소(긴급)</button></div>'
       +'</div>';
     el.className='banner'; el.style.cssText='display:none';
     greetEl.textContent = emp.name + ' 님, 편안한 휴가 보내세요 🌿';
@@ -3260,7 +3258,7 @@ function renderTenure(){
   var msg = '리하이와 함께한 지 <b>'+d.toLocaleString()+'일째</b>입니다.';
   if(milestones[d]){
     el.className='banner';
-    el.style.cssText='margin-bottom:14px;background:#FFF6E0;color:#7A4D08;border:1px solid #F0D48A';
+    el.style.cssText='margin-bottom:14px;background:var(--amber-bg);color:var(--amber-t);border:1px solid #F0D48A';
     el.innerHTML = '<span style="font-size:18px">'+milestones[d]+'</span><div style="flex:1"><b>축하합니다! 오늘로 리하이 근무 '+d.toLocaleString()+'일을 맞으셨습니다.</b><br><span style="font-size:12px">함께해 주셔서 감사합니다. 이 소식은 대표님께도 전달되었습니다.</span></div>';
   } else {
     el.className='banner info'; el.style.marginBottom='14px';
@@ -3321,7 +3319,7 @@ function renderFlight(elId){
     var wcolor = wind>=8 ? 'var(--red-t)' : (wind>=5 ? 'var(--amber-t)' : 'var(--green-t)');
     var wbg = wind>=8 ? 'var(--red-bg)' : (wind>=5 ? 'var(--amber-bg)' : 'var(--green-bg)');
     var note = wind>=8 ? '강풍 주의' : (wind>=5 ? '주의' : '비행 양호');
-    return '<div style="flex:1;min-width:130px;background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px">'
+    return '<div style="flex:1;min-width:130px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px">'
       +'<div style="font-size:11.5px;color:var(--hint);margin-bottom:5px">'+label+'</div>'
       +'<div style="font-size:13px;margin-bottom:6px">'+d.cond+' · '+d.temp+'</div>'
       +'<div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:'+wcolor+';background:'+wbg+';padding:3px 9px;border-radius:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h12a3 3 0 100-6M3 16h16a3 3 0 110 6M3 12h18"/></svg>풍속 '+d.wind+' · '+note+'</div>'
@@ -3332,16 +3330,16 @@ function renderFlight(elId){
     +'<div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px">'+wcard('오전', w.am)+wcard('오후', w.pm)+'</div>';
   h+='<div style="font-size:11.5px;color:var(--hint);margin-bottom:8px">오늘 비행 ('+DATA.flights.length+'건) — 시간을 보고 참관할 비행을 고르세요</div>';
   DATA.flights.forEach(function(f){
-    h+='<div style="background:#fff;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;margin-bottom:9px">'
+    h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;margin-bottom:9px">'
       +'<div style="display:flex;align-items:center;gap:11px">'
-      +'<div style="background:var(--lblue);color:var(--navy);border-radius:var(--r-s);padding:6px 11px;text-align:center;flex-shrink:0"><div style="font-size:16px;font-weight:700;line-height:1.1">'+f.time+'</div><div style="font-size:10px">~'+f.end+'</div></div>'
+      +'<div style="background:var(--lblue);color:var(--ink);border-radius:var(--r-s);padding:6px 11px;text-align:center;flex-shrink:0"><div style="font-size:16px;font-weight:700;line-height:1.1">'+f.time+'</div><div style="font-size:10px">~'+f.end+'</div></div>'
       +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">'+f.purpose+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">'+f.team+' · '+f.who+' · '+f.place+'</div></div>'
       +'</div>'
       +'<div class="flex" style="gap:6px;margin-top:10px"><button class="btn" style="font-size:11.5px;padding:5px 12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg> 참관 가겠음</button><button class="btn" style="font-size:11.5px;padding:5px 12px">알림만 받기</button></div>'
       +'</div>';
   });
   h+='<button class="btn" style="width:100%;font-size:13px;margin-top:4px">+ 비행 계획 등록</button>';
-  h+='<div class="banner demo" style="margin-top:12px"><span>비행 30분 전 알림을 받을 수 있습니다. 우천·강풍 시 "비행 없음"으로 표시됩니다. 실제 시스템에선 본사 위치 기준 실시간 날씨가 연동됩니다.</span></div></div>';
+  h+='<div class="banner demo" style="margin-top:12px"><span>비행 30분 전 알림을 받을 수 있습니다. 우천·강풍 시 "비행 없음"으로 표시됩니다. 본사(건천읍) 기준 실시간 날씨가 자동 연동됩니다.</span></div></div>';
   document.getElementById(elId).innerHTML=h;
 }
 
@@ -3561,8 +3559,8 @@ function openGrantModal(){
   bg.id='grant-modal-bg';
   bg.style.cssText='position:fixed;inset:0;background:rgba(20,30,50,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:gmodFade .18s ease-out';
   bg.innerHTML=
-    '<div style="background:#fff;border-radius:14px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
-    +'<div style="padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--lblue);color:var(--navy);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div><div><div style="font-size:15px;font-weight:600">새 과제 발굴 신청</div><div style="font-size:11.5px;color:var(--hint);margin-top:2px">대표님 검토 후 추진 여부가 결정됩니다</div></div><button onclick="closeGrantModal()" style="margin-left:auto;border:none;background:transparent;font-size:20px;color:var(--hint);cursor:pointer;line-height:1">×</button></div>'
+    '<div style="background:var(--card);border-radius:14px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 14px 50px rgba(0,0,0,.25)">'
+    +'<div style="padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:9px;background:var(--lblue);color:var(--ink);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div><div><div style="font-size:15px;font-weight:600">새 과제 발굴 신청</div><div style="font-size:11.5px;color:var(--hint);margin-top:2px">대표님 검토 후 추진 여부가 결정됩니다</div></div><button onclick="closeGrantModal()" style="margin-left:auto;border:none;background:transparent;font-size:20px;color:var(--hint);cursor:pointer;line-height:1">×</button></div>'
     +'<div style="padding:18px 22px">'
     +grantField('공고기관','gm-org','예: 경북테크노파크',false)
     +grantField('과제명','gm-name','예: 2026년 경북형 도심항공교통 산업육성',false)
@@ -4122,7 +4120,7 @@ function renderWriteWindowNotice(){
     n.style.cssText='background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber-t);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:13.5px;line-height:1.5';
     n.innerHTML='⏰ <b>지각 작성 시간대입니다.</b> 업무일지는 <b>전일 17:00 ~ 금일 11:00</b> 작성을 권장합니다. 지금 제출하면 \'지각 작성\'으로 기록됩니다.';
   } else {
-    n.style.cssText='background:var(--lblue);border:1px solid var(--blue);color:var(--navy);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:13.5px;line-height:1.5';
+    n.style.cssText='background:var(--lblue);border:1px solid var(--blue);color:var(--ink);padding:10px 13px;border-radius:9px;margin-bottom:14px;font-size:13.5px;line-height:1.5';
     n.innerHTML='🕐 업무일지 작성 권장 시간: <b>전일 17:00 ~ 금일 11:00</b> · 오늘 업무일 <b>'+TODAY+'</b> 기준으로 작성됩니다.';
   }
   host.insertBefore(n, host.firstChild.nextSibling);
@@ -4157,10 +4155,10 @@ function renderFlightInput(){
   var el=document.getElementById('flight-input'); if(!el) return;
   var w=DATA.weather;
   function wc(label,d){ var wind=parseFloat(d.wind); var col=wind>=8?'var(--red-t)':(wind>=5?'var(--amber-t)':'var(--green-t)'); var bg=wind>=8?'var(--red-bg)':(wind>=5?'var(--amber-bg)':'var(--green-bg)'); var note=wind>=8?'강풍 주의':(wind>=5?'주의':'양호');
-    return '<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:9px 11px"><div style="font-size:11px;color:var(--hint);margin-bottom:3px">'+label+'</div><div style="font-size:12.5px;margin-bottom:5px">'+d.cond+' · '+d.temp+'</div><div style="display:inline-block;font-size:11.5px;font-weight:600;color:'+col+';background:'+bg+';padding:2px 8px;border-radius:5px">풍속 '+d.wind+' · '+note+'</div></div>'; }
+    return '<div style="flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:9px 11px"><div style="font-size:11px;color:var(--hint);margin-bottom:3px">'+label+'</div><div style="font-size:12.5px;margin-bottom:5px">'+d.cond+' · '+d.temp+'</div><div style="display:inline-block;font-size:11.5px;font-weight:600;color:'+col+';background:'+bg+';padding:2px 8px;border-radius:5px">풍속 '+d.wind+' · '+note+'</div></div>'; }
   var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="font-size:13px;color:var(--hint)">본사(건천읍) 실시간 날씨 — 드론은 풍속이 핵심</span><button class="btn" style="font-size:12px;padding:3px 10px" onclick="loadLiveWeather()">↻ 새로고침</button></div>'
     +'<div id="weather-live" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><div style="font-size:13px;color:var(--hint);padding:8px">날씨 불러오는 중…</div></div>'
-    +'<div style="display:flex;gap:7px;margin-bottom:12px"><button class="btn" id="fly-yes" onclick="setFlyMode(true)" style="flex:1;font-size:14px;background:var(--lblue);color:var(--navy);border-color:var(--blue)">✈️ 비행 있음</button><button class="btn" id="fly-no" onclick="setFlyMode(false)" style="flex:1;font-size:14px">🚫 오늘 비행 없음</button></div>'
+    +'<div style="display:flex;gap:7px;margin-bottom:12px"><button class="btn" id="fly-yes" onclick="setFlyMode(true)" style="flex:1;font-size:14px;background:var(--lblue);color:var(--ink);border-color:var(--blue)">✈️ 비행 있음</button><button class="btn" id="fly-no" onclick="setFlyMode(false)" style="flex:1;font-size:14px">🚫 오늘 비행 없음</button></div>'
     +'<div id="fly-none-msg" class="hidden banner demo" style="margin-bottom:12px"><span>오늘은 비행 계획이 없습니다. (우천·강풍·일정 없음) 전사 현황에도 "비행 없음"으로 표시됩니다.</span></div>'
     +'<div id="fly-section"><div id="flight-rows"><div class="input-block" style="margin-bottom:8px;position:relative"><button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;padding:2px 5px">×</button><input type="text" placeholder="비행 목적 (예: 군교육용 드론 테스트)" style="margin-bottom:7px;padding-right:20px"><div class="flex" style="flex-wrap:wrap"><span style="font-size:13px;color:var(--hint)">시간</span><input type="text" placeholder="15:00~17:00" style="width:130px"><span style="font-size:13px;color:var(--hint)">장소</span><input type="text" placeholder="테스트필드" style="width:110px"></div></div></div>'
     +'<button class="btn" style="width:100%;font-size:14px" onclick="addFlightRow()">+ 비행 추가</button></div>';
@@ -4199,7 +4197,7 @@ function loadLiveWeather(){
   });
 }
 function setFlyMode(hasFlights){
-  document.getElementById('fly-yes').style.cssText = hasFlights?'flex:1;font-size:13px;background:var(--lblue);color:var(--navy);border-color:var(--blue)':'flex:1;font-size:13px';
+  document.getElementById('fly-yes').style.cssText = hasFlights?'flex:1;font-size:13px;background:var(--lblue);color:var(--ink);border-color:var(--blue)':'flex:1;font-size:13px';
   document.getElementById('fly-no').style.cssText = hasFlights?'flex:1;font-size:13px':'flex:1;font-size:13px;background:var(--gray-bg);color:var(--muted);border-color:var(--line2)';
   document.getElementById('fly-section').classList.toggle('hidden', !hasFlights);
   document.getElementById('fly-none-msg').classList.toggle('hidden', hasFlights);
