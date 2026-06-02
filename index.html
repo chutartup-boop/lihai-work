@@ -261,6 +261,10 @@
 
   <!-- ============ EMPLOYEE VIEW ============ -->
   <div id="view-emp">
+    <div id="date-banner" style="text-align:center;margin:2px 0 14px">
+      <div id="date-banner-title" style="font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.3px"></div>
+      <div id="date-banner-clock" style="font-size:13px;color:var(--hint);margin-top:2px;font-variant-numeric:tabular-nums"></div>
+    </div>
     <div class="ptabs">
       <button id="e-pt-daily" class="on" onclick="empTab('daily')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>일일업무</button>
       <button id="e-pt-grant" onclick="empTab('grant')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h6l2 2h10v9a2 2 0 01-2 2H3z"/></svg>과제현황</button>
@@ -272,7 +276,8 @@
 
     <!-- daily -->
     <div id="e-daily">
-      <div class="card">
+      <div id="holiday-banner" style="display:none"></div>
+      <div class="card" id="daily-card">
         <div class="sec-h"><div><h2 id="greet">좋은 아침입니다</h2><div class="sub" id="greet-sub">로그인 중…</div></div><span class="pill p-gray" id="step-badge">STEP 1 / 4</span></div>
         <div id="tenure-banner" class="banner info" style="margin-bottom:14px"></div>
 
@@ -2210,15 +2215,25 @@ async function renderAdminEvent(elId){
     });
   }
 
-  // 이전 당첨 내역
-  if(olderWin.length){
-    h+='<div style="font-size:13px;font-weight:700;margin:18px 0 8px">이전 당첨 내역 ('+olderWin.length+'건)</div>';
-    olderWin.forEach(function(r){
+  // 최근 3일 당첨 내역 (오늘 제외, 어제·그제)
+  var d3=new Date(TODAY+'T00:00:00'); d3.setDate(d3.getDate()-3);
+  function ymd(dd){ return dd.getFullYear()+'-'+('0'+(dd.getMonth()+1)).slice(-2)+'-'+('0'+dd.getDate()).slice(-2); }
+  var since3=ymd(d3);
+  var recentWin = olderWin.filter(function(r){ return r.play_date && r.play_date>=since3; });
+  if(recentWin.length){
+    h+='<div style="font-size:13px;font-weight:700;margin:18px 0 8px">최근 3일 당첨 내역 ('+recentWin.length+'건)</div>';
+    recentWin.forEach(function(r){
+      var pp=(r.play_date||'').split('-');
+      var wd = pp.length===3 ? ['일','월','화','수','목','금','토'][new Date(parseInt(pp[0]),parseInt(pp[1])-1,parseInt(pp[2])).getDay()] : '';
       h+='<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px">'
-        +'<span style="color:var(--hint);white-space:nowrap">'+escH((r.play_date||'').slice(5).replace('-','/'))+'</span>'
+        +'<span style="color:var(--hint);white-space:nowrap">'+escH((r.play_date||'').slice(5).replace('-','/'))+(wd?'('+wd+')':'')+'</span>'
         +'<b>'+escH(r.emp_name)+'</b><span style="color:var(--hint)">'+escH(r.emp_dept||'')+'</span>'
-        +'<span style="margin-left:auto;font-weight:600;color:var(--green-t)">'+escH(r.prize)+'</span></div>';
+        +'<span style="margin-left:auto;font-weight:600;color:var(--green-t)">'+escH(r.prize)+'</span>'
+        +'<span style="font-size:10.5px;color:var(--hint);white-space:nowrap">'+tm(r.created_at)+'</span></div>';
     });
+  } else {
+    h+='<div style="font-size:13px;font-weight:700;margin:18px 0 8px">최근 3일 당첨 내역</div>';
+    h+='<div style="background:var(--soft);border:1px dashed var(--line2);border-radius:9px;padding:12px;text-align:center;font-size:12px;color:var(--hint)">최근 3일간 당첨자가 없습니다.</div>';
   }
 
   h+='<div style="margin-top:16px;background:var(--lblue);border-radius:8px;padding:11px 13px;font-size:11.5px;color:var(--ink);line-height:1.6">💡 당첨 혜택(휴가·반차·조기퇴근)은 이 목록을 보고 대표님이 직접 반영해 주세요. 직원은 하루 1회만 참여할 수 있습니다.</div>';
@@ -2307,10 +2322,68 @@ function renderAdminSet(){
   h+='</div>';
 
   h+='</div>';
+
+  // 🏖️ 휴무일(공휴일) 관리
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-top:14px">';
+  h+='<div style="font-size:13px;font-weight:600;margin-bottom:4px">🏖️ 휴무일 관리</div>';
+  h+='<div style="font-size:11.5px;color:var(--hint);margin-bottom:10px;line-height:1.5">선거일·임시공휴일·회사 휴무일 등을 추가하면, 그날은 전 직원에게 &#x2018;오늘은 휴무일입니다&#x2019; 안내가 뜨고 작성이 기본 차단돼요. (법정 공휴일은 이미 등록돼 있어요)</div>';
+  h+='<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<input type="date" id="hol-date" style="width:160px">'
+    +'<input type="text" id="hol-reason" placeholder="사유 (예: 창립기념일)" style="flex:1;min-width:140px">'
+    +'<button class="btn btn-pri" style="font-size:12px;padding:6px 14px" onclick="addHoliday()">+ 휴무일 추가</button></div>';
+  h+='<div id="hol-list" style="font-size:12px;color:var(--hint)">불러오는 중…</div>';
+  h+='</div>';
+
+  h+='</div>';
   el.innerHTML=h;
   if(typeof loadEmailSettings==='function') loadEmailSettings();
+  if(typeof renderHolidayList==='function') renderHolidayList();
 }
-// 메일 발송 설정 로드/저장 (app_settings 테이블)
+// 휴무일 목록 표시 (관리자 추가분 + 다가오는 법정공휴일)
+async function renderHolidayList(){
+  var box=document.getElementById('hol-list');
+  if(!box) return;
+  await loadExtraHolidays();
+  var keys=Object.keys(EXTRA_HOLIDAYS).sort();
+  var h='';
+  if(keys.length){
+    h+='<div style="font-weight:600;color:var(--ink);margin-bottom:5px">관리자 추가 휴무일</div>';
+    keys.forEach(function(d){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)">'
+        +'<b style="color:var(--ink)">'+escH(d)+'</b><span>'+escH(EXTRA_HOLIDAYS[d])+'</span>'
+        +'<button class="btn" style="margin-left:auto;font-size:11px;padding:3px 9px;color:var(--red-t)" onclick="removeHoliday(\''+d+'\',\''+escH(EXTRA_HOLIDAYS[d]).replace(/'/g,'')+'\')">삭제</button></div>';
+    });
+  } else {
+    h+='<div style="color:var(--hint)">추가한 휴무일이 없습니다. (법정 공휴일은 자동 적용 중)</div>';
+  }
+  box.innerHTML=h;
+}
+async function addHoliday(){
+  var d=document.getElementById('hol-date'), r=document.getElementById('hol-reason');
+  var date=d?d.value:'', reason=r?(r.value||'휴무일').trim():'휴무일';
+  if(!date){ alert('날짜를 선택해 주세요.'); return; }
+  if(!DB_USER){ alert('로그인(DB) 상태에서만 추가됩니다.'); return; }
+  try {
+    var key='holiday:'+date+'|'+reason;
+    var res=await db.from('app_settings').upsert({ key:key, enabled:true }, { onConflict:'key' });
+    if(res.error) throw res.error;
+    EXTRA_HOLIDAYS[date]=reason;
+    if(r) r.value=''; if(d) d.value='';
+    try{ toast(date+' 휴무일로 추가됨'); }catch(e){}
+    renderHolidayList(); applyHolidayState();
+  } catch(e){ alert('추가 실패: '+(e.message||e)); }
+}
+async function removeHoliday(date, reason){
+  if(!confirm(date+' 휴무일을 삭제할까요?')) return;
+  try {
+    var key='holiday:'+date+'|'+(reason||'휴무일');
+    var res=await db.from('app_settings').delete().eq('key', key);
+    if(res.error) throw res.error;
+    delete EXTRA_HOLIDAYS[date];
+    try{ toast('삭제됨'); }catch(e){}
+    renderHolidayList(); applyHolidayState();
+  } catch(e){ alert('삭제 실패: '+(e.message||e)); }
+}
 async function loadEmailSettings(){
   var box=document.getElementById('email-settings-box');
   if(!box) return;
@@ -2805,6 +2878,7 @@ function restartHighlightAutoSlide(){
 }
 
 function renderCompany(){
+  try{ renderDateBanner(); tickClock(); }catch(e){}
   var icons={code:'M16 18l6-6-6-6M8 6l-6 6 6 6',tool:'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-2.4z',drone:'M3 3l5 5M21 3l-5 5M3 21l5-5M21 21l-5-5M9 9h6v6H9z',bike:'M5 18a3 3 0 100-6 3 3 0 000 6zM19 18a3 3 0 100-6 3 3 0 000 6zM9 18h6l-2-7h4',brief:'M3 8h18v12H3zM8 8V5h8v3',clip:'M9 4h6v2H9zM7 6h10v14H7z',star:'M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z','user-check':'M9 11a4 4 0 100-8 4 4 0 000 8zM3 20a6 6 0 0112 0M16 11l2 2 4-4'};
 
   // 1) 오늘의 하이라이트 (대표 회사 하이라이트 → 선정 축하 → 개인 경사 → 업무 성과)
@@ -3689,6 +3763,45 @@ function computeWorkDate(){
   return y+'-'+m+'-'+day;
 }
 var TODAY = computeWorkDate();   // 실제 업무일 (배포용)
+
+// ===== 대한민국 공휴일 (2026 고정 + 관리자 추가분) =====
+var KR_HOLIDAYS = {
+  '2026-01-01':'신정',
+  '2026-02-16':'설날 연휴', '2026-02-17':'설날', '2026-02-18':'설날 연휴',
+  '2026-03-01':'삼일절', '2026-03-02':'대체공휴일(삼일절)',
+  '2026-05-01':'근로자의 날', '2026-05-05':'어린이날',
+  '2026-05-24':'부처님오신날', '2026-05-25':'대체공휴일(부처님오신날)',
+  '2026-06-03':'제9회 전국동시지방선거', '2026-06-06':'현충일',
+  '2026-07-17':'제헌절',
+  '2026-08-15':'광복절', '2026-08-17':'대체공휴일(광복절)',
+  '2026-09-24':'추석 연휴', '2026-09-25':'추석', '2026-09-26':'추석 연휴',
+  '2026-10-03':'개천절', '2026-10-05':'대체공휴일(개천절)',
+  '2026-10-09':'한글날', '2026-12-25':'성탄절'
+};
+// 관리자 추가 공휴일/휴무일 (app_settings에 holiday: 형태로 저장 → loadExtraHolidays가 채움)
+var EXTRA_HOLIDAYS = {};
+// 날짜(YYYY-MM-DD)가 휴무일이면 사유 문자열, 아니면 null
+function holidayReason(dateStr){
+  if(EXTRA_HOLIDAYS[dateStr]) return EXTRA_HOLIDAYS[dateStr];
+  if(KR_HOLIDAYS[dateStr]) return KR_HOLIDAYS[dateStr];
+  return null;
+}
+// 관리자 추가 휴무일 로드 (app_settings: key가 'holiday:YYYY-MM-DD', enabled=true, 사유는 key 뒤 '|사유')
+async function loadExtraHolidays(){
+  if(!DB_USER) return;
+  try {
+    var r = await db.from('app_settings').select('key, enabled');
+    if(r.data){
+      r.data.forEach(function(s){
+        if(s.key && s.key.indexOf('holiday:')===0 && s.enabled){
+          var rest = s.key.slice(8); // YYYY-MM-DD|사유
+          var parts = rest.split('|');
+          if(parts[0]) EXTRA_HOLIDAYS[parts[0]] = parts[1] || '휴무일';
+        }
+      });
+    }
+  } catch(e){ /* app_settings 없으면 무시 */ }
+}
 // YYYY-MM-DD → "2026-06-01 (월)" 한국어 표시
 function fmtTodayKo(){
   var p = TODAY.split('-');
@@ -3696,6 +3809,55 @@ function fmtTodayKo(){
   var wd = ['일','월','화','수','목','금','토'][d.getDay()];
   return TODAY + ' (' + wd + ')';
 }
+// 상단 날짜 배너 + 실시간 시계
+function renderDateBanner(){
+  var t=document.getElementById('date-banner-title');
+  if(t){
+    var p=TODAY.split('-');
+    var d=new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+    var wd=['일','월','화','수','목','금','토'][d.getDay()];
+    t.textContent='📅 '+parseInt(p[0])+'년 '+p[1]+'월 '+p[2]+'일 '+wd+'요일 · 리하이 업무일지';
+  }
+  try{ applyHolidayState(); }catch(e){}
+}
+// 휴무일이면 배너 표시 + 작성 카드 가림 ('그래도 작성' 허용)
+var HOLIDAY_OVERRIDE=false;
+function applyHolidayState(){
+  var reason = holidayReason(TODAY);
+  var banner=document.getElementById('holiday-banner');
+  var card=document.getElementById('daily-card');
+  if(!reason){
+    if(banner){ banner.style.display='none'; banner.innerHTML=''; }
+    if(card) card.style.display='';
+    return;
+  }
+  var p=TODAY.split('-');
+  var wd=['일','월','화','수','목','금','토'][new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];
+  if(banner){
+    banner.style.display='';
+    banner.innerHTML='<div class="card" style="text-align:center;border-color:#F4C7C7;background:linear-gradient(180deg,#FFF5F5,var(--card))">'
+      +'<div style="font-size:40px;margin-bottom:6px">🏖️</div>'
+      +'<div style="font-size:20px;font-weight:800;color:#C0392B;margin-bottom:4px">오늘은 휴무일입니다</div>'
+      +'<div style="font-size:14px;color:var(--ink);font-weight:600;margin-bottom:6px">'+parseInt(p[1])+'월 '+parseInt(p[2])+'일 ('+wd+') · '+escH(reason)+'</div>'
+      +'<div style="font-size:12.5px;color:var(--hint);line-height:1.6;margin-bottom:16px">오늘은 일일업무일지를 작성하지 않아도 됩니다. 푹 쉬세요! 🙌<br>출근·비행 등으로 근무하셨다면 아래 버튼으로 작성할 수 있어요.</div>'
+      +(HOLIDAY_OVERRIDE
+         ? '<div style="font-size:12px;color:var(--green-t);font-weight:600">✍ 작성 모드입니다. 아래에서 기록하세요.</div>'
+         : '<button class="btn" onclick="overrideHoliday()" style="font-size:12.5px">그래도 오늘 업무를 작성할게요</button>')
+      +'</div>';
+  }
+  if(card) card.style.display = HOLIDAY_OVERRIDE ? '' : 'none';
+}
+function overrideHoliday(){ HOLIDAY_OVERRIDE=true; applyHolidayState(); try{ document.getElementById('daily-card').scrollIntoView({behavior:'smooth'}); }catch(e){} }
+function tickClock(){
+  var c=document.getElementById('date-banner-clock');
+  if(!c) return;
+  var n=new Date();
+  var hh=n.getHours(), ap=hh<12?'오전':'오후', h12=hh%12; if(h12===0) h12=12;
+  var mm=('0'+n.getMinutes()).slice(-2), ss=('0'+n.getSeconds()).slice(-2);
+  var ww=['일','월','화','수','목','금','토'][n.getDay()];
+  c.textContent='🕐 지금 '+ap+' '+h12+':'+mm+':'+ss+' ('+ (n.getMonth()+1) +'/'+n.getDate()+' '+ww+')';
+}
+setInterval(tickClock, 1000);
 // 일지 작성 가능 시간대 판정: 전일 17:00 ~ 금일 11:00 권장, 그 외는 '지각 작성'
 function getWriteWindowState(){
   var now = new Date();
@@ -4442,6 +4604,8 @@ function enterApp(){
   loadMyNotifs();
   // 대표 하이라이트 로드 → 직원 오늘의 리하이에 반영
   loadCeoHighlights().then(function(){ try { renderCompany(); } catch(e){} });
+  // 관리자 추가 휴무일 로드 → 휴무일 배너 반영
+  loadExtraHolidays().then(function(){ try { applyHolidayState(); } catch(e){} });
   if(NOTIF_POLL) clearInterval(NOTIF_POLL);
   NOTIF_POLL = setInterval(function(){
     var p=document.getElementById('notif-panel');
@@ -4482,6 +4646,7 @@ renderTenure();
 mgrSub('dept');
 initWizard();
 initTheme();
+try{ renderDateBanner(); tickClock(); }catch(e){}
 
 // ============================================
 // DB에서 grants(과제) 데이터 불러와서 칸반 채우기
