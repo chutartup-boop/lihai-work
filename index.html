@@ -3255,20 +3255,18 @@ async function renderPendingDB(el){
   var membersByDept={}; ROSTER.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
   var deptOrder=DATA.depts.map(function(dp){return dp.name;});
   Object.keys(membersByDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
-  var submitted={}, emailByName={};
+  var submitted={};
   try {
     var res = await db.from('daily_logs').select('employees!inner(name)').eq('work_date', TODAY);
     if(res.error) throw res.error;
     (res.data||[]).forEach(function(l){ if(l.employees&&l.employees.name) submitted[l.employees.name]=true; });
-    var er = await db.from('employees').select('name, email');
-    if(er.data){ er.data.forEach(function(e){ emailByName[e.name]=e.email; }); }
   } catch(e){
     el.innerHTML='<div style="padding:20px;text-align:center;color:var(--red-t);font-size:12.5px">⚠ 조회 실패: '+escH(e.message||e)+'</div>'; return;
   }
   var pend=[]; deptOrder.forEach(function(d){ (membersByDept[d]||[]).forEach(function(m){ if(!submitted[m.name]) pend.push(m); }); });
   var todayDisp = TODAY.slice(5).replace('-','/');
   var h='<div style="font-size:13px;margin-bottom:8px;color:var(--ink)">오늘('+todayDisp+') 일일업무 <b style="color:var(--amber-t)">미제출 '+pend.length+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
-  h+='<div style="font-size:11px;color:var(--hint);background:var(--soft);border-radius:7px;padding:8px 11px;margin-bottom:13px;line-height:1.5">📩 <b>독려</b>는 앱 알림으로 즉시 전송돼요(메일 연동을 켜두면 같은 내용이 <b>메일로도 자동 발송</b>). <b>메일</b> 버튼은 수동으로 메일 앱을 여는 보조 수단입니다. · <b>오늘 휴가/반차인 분은 보내지 마세요.</b></div>';
+  h+='<div style="font-size:11px;color:var(--hint);background:var(--soft);border-radius:7px;padding:8px 11px;margin-bottom:13px;line-height:1.5">📩 <b>독려</b>를 누르면 해당 직원에게 앱 알림이 가고, <b>메일로도 자동 발송</b>됩니다(금일 일일업무일지 작성 안내). · <b>오늘 휴가/반차인 분은 보내지 마세요.</b></div>';
   if(pend.length===0){ h+='<div style="background:var(--green-bg);border-radius:9px;padding:16px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 전원 제출 완료</div>'; el.innerHTML=h; return; }
   deptOrder.forEach(function(d){
     var list=(membersByDept[d]||[]).filter(function(m){ return !submitted[m.name]; });
@@ -3276,14 +3274,10 @@ async function renderPendingDB(el){
     h+='<div style="margin-bottom:13px"><div style="font-size:12.5px;font-weight:600;margin-bottom:6px">'+escH(d)+' <span style="font-size:11px;color:var(--hint);font-weight:400">· 미제출 '+list.length+'명</span></div>';
     list.forEach(function(m){
       var nm=(m.name||'').replace(/'/g,'\\\'');
-      var email=emailByName[m.name]||'';
-      var mailBtn = email
-        ? '<button class="btn" style="font-size:11px;padding:4px 10px" onclick="mailtoSubmit(\''+email.replace(/'/g,'')+'\',\''+nm+'\')">✉ 메일</button>'
-        : '';
       h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px dashed var(--line2);border-radius:8px;margin-bottom:5px;background:var(--soft)">'
         +'<b style="font-size:12.5px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
         +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">미제출</span>'
-        +'<button class="btn btn-pri" style="font-size:11px;padding:4px 10px" onclick="nudgeSubmit(\''+nm+'\')">📩 독려</button>'+mailBtn
+        +'<button class="btn btn-pri" style="font-size:11px;padding:4px 10px" onclick="nudgeSubmit(\''+nm+'\')">📩 독려</button>'
         +'</div>';
     });
     h+='</div>';
