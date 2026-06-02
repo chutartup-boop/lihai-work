@@ -119,12 +119,12 @@
   .banner.demo{background:var(--gray-bg);color:var(--muted)}
 
   /* kanban */
-  .board{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;padding-bottom:8px;align-items:start}
-  .col{background:var(--gray-bg);border-radius:var(--r-s);padding:11px;transition:background .15s;min-width:0}
+  .board{display:flex;flex-direction:column;gap:14px;padding-bottom:8px}
+  .col{background:var(--gray-bg);border-radius:var(--r-s);padding:14px 16px;transition:background .15s;min-height:84px}
   .col.drop-over{background:var(--lblue);outline:2px dashed var(--blue);outline-offset:-2px}
+  .lane-cards{display:flex;flex-wrap:wrap;gap:11px}
   .kcard[draggable="true"]:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
-  @media(max-width:1100px){.board{grid-template-columns:repeat(4,1fr)}}
-  @media(max-width:680px){.board{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){.kcard{width:100%;flex:1 1 100%}}
   .dept-chip{background:var(--card);border:1px solid var(--line2);color:var(--ink);font-size:14px;padding:8px 14px;border-radius:20px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
   .dept-chip:hover{border-color:var(--blue);color:var(--ink)}
   .dept-chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -132,8 +132,8 @@
   .dept-chip.on .cnt{background:rgba(255,255,255,.22);color:#fff}
   .dept-chip .urg-dot{font-size:12px;background:var(--red-bg);color:var(--red-t);padding:1px 7px;border-radius:8px;font-weight:700}
   .dept-chip.on .urg-dot{background:var(--card);color:var(--red-t)}
-  .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;font-weight:600}
-  .kcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 12px;margin-bottom:8px;cursor:grab}
+  .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;font-size:15px;font-weight:600}
+  .kcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;cursor:grab;width:236px;flex:0 0 236px;box-sizing:border-box}
   .kcard:active{cursor:grabbing}
   .kcard .kt{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:5px}
   .kcard .ko{font-size:12.5px;color:var(--muted)}
@@ -2069,13 +2069,11 @@ function renderAdminAcc(){
   h+='</select><button class="btn btn-pri" onclick="adminResetPw()" style="white-space:nowrap">초기화</button></div>';
   h+='</div>';
 
-  // 권한 부여
+  // 과제현황 수정·이동 권한 (실제 DB 연동)
   h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:16px">';
-  h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">👥 권한 등급 변경 <span style="font-size:10.5px;color:var(--hint);font-weight:400;margin-left:5px">⚠ 대표만 가능</span></div>';
-  h+='<div style="font-size:11.5px;color:var(--muted);margin-bottom:9px;line-height:1.55">직책 변경에 따른 권한 자동 갱신 외에, 특별 권한(관리자 모드 등) 부여·해제는 여기서 합니다.</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px"><select style="height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option>대상 직원...</option>';
-  ROSTER.forEach(function(e){ h+='<option>'+e.name+'</option>'; });
-  h+='</select><select style="height:38px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-size:12.5px"><option>권한 부여/해제...</option><option>관리자 모드 권한</option></select><button class="btn">적용</button></div>';
+  h+='<div style="font-size:13px;font-weight:600;margin-bottom:5px">📋 과제현황 수정·이동 권한</div>';
+  h+='<div style="font-size:11.5px;color:var(--muted);margin-bottom:11px;line-height:1.55">권한을 켜면 해당 직원은 과제현황(칸반)에서 <b>과제 정보를 수정</b>하고 <b>0~④ 단계 카드를 드래그로 이동</b>할 수 있습니다. (선정·탈락 확정은 총괄이사만)</div>';
+  h+='<div id="grant-perm-host"><div style="padding:14px;text-align:center;color:var(--hint);font-size:12px">권한 목록 불러오는 중…</div></div>';
   h+='</div>';
 
   // 계정 잠금
@@ -2089,6 +2087,51 @@ function renderAdminAcc(){
 
   h+='</div>';
   el.innerHTML=h;
+  loadGrantPerms();
+}
+// 과제 권한 목록 로드 (employees.can_edit_grants)
+async function loadGrantPerms(){
+  var host=document.getElementById('grant-perm-host');
+  if(!host) return;
+  if(!DB_USER){ host.innerHTML='<div style="font-size:11.5px;color:var(--hint);padding:10px">로그인(DB 연결) 상태에서만 권한을 변경할 수 있습니다.</div>'; return; }
+  try {
+    var res = await db.from('employees').select('id, name, dept, title, can_edit_grants').order('dept');
+    if(res.error) throw res.error;
+    var rows = res.data||[];
+    var on = rows.filter(function(e){return e.can_edit_grants;});
+    var off = rows.filter(function(e){return !e.can_edit_grants;});
+    var h='';
+    if(on.length){
+      h+='<div style="font-size:11px;color:var(--green-t);font-weight:600;margin-bottom:6px">권한 보유 ('+on.length+'명)</div>';
+      on.forEach(function(e){ h+=grantPermRow(e, true); });
+      h+='<div style="height:10px"></div>';
+    }
+    h+='<div style="font-size:11px;color:var(--hint);font-weight:600;margin-bottom:6px">권한 없음 ('+off.length+'명)</div>';
+    off.forEach(function(e){ h+=grantPermRow(e, false); });
+    host.innerHTML=h;
+  } catch(e){
+    host.innerHTML='<div style="font-size:11.5px;color:var(--red-t);padding:10px;background:var(--red-bg);border-radius:8px">⚠ 권한 목록 조회 실패: '+escH(e.message||e)+'<br><span style="color:var(--hint)">employees 테이블에 can_edit_grants 컬럼이 있는지 확인하세요.</span></div>';
+  }
+}
+function grantPermRow(e, isOn){
+  var nm=(e.name||'').replace(/'/g,'\\\'');
+  return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:'+(isOn?'var(--green-bg)':'var(--card)')+'">'
+    +'<b style="font-size:13px">'+escH(e.name||'')+'</b>'
+    +'<span style="font-size:11px;color:var(--hint)">'+escH(e.dept||'')+' · '+escH(e.title||'')+'</span>'
+    +'<button class="btn'+(isOn?'':' btn-pri')+'" style="margin-left:auto;font-size:11.5px;padding:5px 12px'+(isOn?';background:var(--red-bg);color:var(--red-t);border-color:var(--red-bg)':'')+'" onclick="toggleGrantPerm('+e.id+',\''+nm+'\','+(isOn?'false':'true')+')">'+(isOn?'권한 해제':'권한 부여')+'</button>'
+    +'</div>';
+}
+async function toggleGrantPerm(empId, name, turnOn){
+  try {
+    var up = await db.from('employees').update({ can_edit_grants: turnOn }).eq('id', empId);
+    if(up.error) throw up.error;
+    toast(name+' 님 과제 권한이 '+(turnOn?'부여':'해제')+'되었습니다 🟢');
+    // 본인 권한이 바뀐 경우 즉시 반영
+    if(DB_USER && DB_USER.id===empId){ DB_USER.can_edit_grants = turnOn; }
+    loadGrantPerms();
+  } catch(e){
+    alert('권한 변경 실패: '+(e.message||e)+'\n(employees 테이블 업데이트 RLS 정책 문제일 수 있어요. SQL로 직접 설정도 가능합니다.)');
+  }
 }
 function adminResetPw(){
   var sel=document.getElementById('pw-reset-target');
@@ -2935,16 +2978,123 @@ function mgrSub(s){
   curMgrSub=s;
   ['dept','proj','risk'].forEach(function(k){ document.getElementById('ms-'+k).classList.toggle('on', k===s); });
   var el=document.getElementById('m-subpanel');
-  if(s==='dept') el.innerHTML=renderDept();
+  if(s==='dept') renderDeptDB(el);
   else if(s==='proj') el.innerHTML=renderProj();
   else el.innerHTML=renderRisk();
 }
 var DEPT_FILTER = 'all';
 function setDeptFilter(name){
   DEPT_FILTER = name;
-  document.getElementById('m-subpanel').innerHTML = renderDept();
+  renderDeptDB(document.getElementById('m-subpanel'));
 }
-function renderDept(){
+
+// ============================================
+// 전직원 업무 — 부서별 (daily_logs 실시간 조회)
+// ============================================
+async function renderDeptDB(el){
+  if(!el) return;
+  // DB 미연결(순수 시연) 상태면 기존 시연 화면
+  if(!DB_USER){ el.innerHTML = renderDeptDemo(); return; }
+
+  el.innerHTML='<div style="padding:26px;text-align:center;color:var(--hint);font-size:13px">전직원 오늘 일지를 불러오는 중…</div>';
+
+  // 부서 순서/모드 (시연 메타 재사용)
+  var deptMeta = {};
+  DATA.depts.forEach(function(dp){ deptMeta[dp.name]=dp.mode; });
+  var deptOrder = DATA.depts.map(function(dp){ return dp.name; });
+
+  // 부서별 직원 명단 (ROSTER 기준)
+  var membersByDept = {};
+  ROSTER.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
+  // ROSTER에만 있고 deptOrder에 없는 부서도 뒤에 추가
+  Object.keys(membersByDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
+
+  // 오늘 전직원 일지 조회 (부서 필터 없음)
+  var logByName={};
+  try {
+    var res = await db.from('daily_logs')
+      .select('id, employee_id, work_date, today_tasks, help_needed, work_status, submitted_at, employees!inner(name, dept, title)')
+      .eq('work_date', TODAY);
+    if(res.error) throw res.error;
+    (res.data||[]).forEach(function(l){
+      var nm = l.employees ? l.employees.name : '';
+      if(nm) logByName[nm]=l;
+    });
+  } catch(e){
+    el.innerHTML='<div style="padding:22px;text-align:center;color:var(--red-t);font-size:13px">⚠ 전직원 일지를 불러오지 못했습니다.<br><span style="font-size:11px;color:var(--hint)">'+escH(e.message||e)+'</span><br><span style="font-size:11px;color:var(--hint)">(임원·대표의 daily_logs 조회 RLS 정책 문제일 수 있어요)</span></div>';
+    return;
+  }
+
+  var statusLabel={office:'🏢 사무실', home:'🏠 재택', field:'🚗 외근', trip:'✈️ 출장'};
+  // 전체 통계
+  var totalAll=0, totalSubmitted=0;
+  deptOrder.forEach(function(d){
+    (membersByDept[d]||[]).forEach(function(m){ totalAll++; if(logByName[m.name]) totalSubmitted++; });
+  });
+
+  // 필터 칩
+  var h='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px">';
+  var allActive = DEPT_FILTER==='all';
+  h+='<button class="dept-chip'+(allActive?' on':'')+'" onclick="setDeptFilter(\'all\')">전체 <span class="cnt">'+totalSubmitted+'/'+totalAll+'</span></button>';
+  deptOrder.forEach(function(d){
+    var list=membersByDept[d]||[]; if(list.length===0) return;
+    var sub=list.filter(function(m){return logByName[m.name];}).length;
+    var pend=list.length-sub;
+    var act = DEPT_FILTER===d;
+    var urg = pend>0 ? ' <span class="urg-dot">미'+pend+'</span>' : '';
+    h+='<button class="dept-chip'+(act?' on':'')+'" onclick="setDeptFilter(\''+d+'\')">'+escH(d)+' <span class="cnt">'+sub+'/'+list.length+'</span>'+urg+'</button>';
+  });
+  h+='</div>';
+
+  // 상단 요약
+  var todayDisp = TODAY.slice(5).replace('-','/');
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:13px">오늘('+todayDisp+') 기준 · 제출 <b style="color:var(--green-t)">'+totalSubmitted+'명</b> / 미제출 <b style="color:var(--amber-t)">'+(totalAll-totalSubmitted)+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB 실시간</span></div>';
+
+  // 부서별 렌더
+  var depts = deptOrder.filter(function(d){ return (DEPT_FILTER==='all' || d===DEPT_FILTER) && (membersByDept[d]||[]).length>0; });
+  depts.forEach(function(d){
+    var list=membersByDept[d];
+    var mode=deptMeta[d]||'운영형';
+    var mp = mode==='목표형'?'p-blue':'p-gray';
+    var sub=list.filter(function(m){return logByName[m.name];}).length;
+    h+='<div style="margin-bottom:18px"><div class="flex" style="margin-bottom:8px;gap:8px;flex-wrap:wrap"><span style="font-size:14.5px;font-weight:600">'+escH(d)+'</span><span class="pill '+mp+'">'+escH(mode)+'</span><span style="font-size:11.5px;color:var(--hint)">'+sub+'/'+list.length+'명 제출</span></div>';
+    list.forEach(function(m){
+      var log=logByName[m.name];
+      if(log){
+        var tasks = Array.isArray(log.today_tasks)?log.today_tasks:[];
+        var taskHtml = tasks.length
+          ? tasks.map(function(t){
+              var st=t.status||'진행중';
+              var stColor = st==='완료'?'var(--green-t)':((st==='막힘'||st==='지연')?'var(--red-t)':'var(--amber-t)');
+              return '<div style="padding:5px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+escH(t.project||'')+'</span> '+escH(t.task||'')+' <span style="font-size:10px;color:'+stColor+';float:right">'+escH(st)+'</span></div>';
+            }).join('')
+          : '<div style="font-size:11.5px;color:var(--hint);padding:4px 0">작성된 업무 항목 없음</div>';
+        var helpHtml = log.help_needed
+          ? '<div style="margin-top:8px;background:var(--amber-bg);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--amber-t)">🙋 도움 필요: '+escH(log.help_needed).replace(/\n/g,'<br>')+'</div>'
+          : '';
+        var subTime = log.submitted_at ? new Date(log.submitted_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) : '';
+        h+='<div style="border:1px solid var(--line);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:var(--card)">'
+          +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><b style="font-size:13px">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
+          +(log.work_status?'<span style="font-size:10.5px;color:var(--hint)">· '+(statusLabel[log.work_status]||'')+'</span>':'')
+          +'<span style="font-size:10px;color:var(--green-t);background:var(--green-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">✓ '+subTime+' 제출</span></div>'
+          +taskHtml+helpHtml+'</div>';
+      } else {
+        h+='<div style="border:1px dashed var(--line2);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:var(--soft)">'
+          +'<div style="display:flex;align-items:center;gap:7px"><b style="font-size:13px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
+          +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">아직 미제출</span></div></div>';
+      }
+    });
+    h+='</div>';
+  });
+
+  // risk-badge: 일지 기반에서는 미제출 인원으로 갱신
+  var badge=document.getElementById('risk-badge');
+  if(badge){ var pendAll=totalAll-totalSubmitted; if(pendAll>0){ badge.textContent=pendAll; badge.style.display=''; } else { badge.style.display='none'; } }
+
+  el.innerHTML=h;
+}
+
+function renderDeptDemo(){
   // 부서별 임박/총원 집계
   var totalAll=0, totalRed=0;
   DATA.depts.forEach(function(dp){ totalAll+=dp.rows.length; totalRed += dp.rows.filter(function(r){return r.st==='red';}).length; });
@@ -3012,17 +3162,22 @@ function renderRisk(){
 }
 
 function renderKanban(elId, isMgr){
-  var legend='<div class="legend"><span><span class="dot" style="background:var(--red);border-radius:2px"></span>D-3 이내</span><span><span class="dot" style="background:var(--amber);border-radius:2px"></span>D-7 이내</span><span><span class="dot" style="background:var(--hint);border-radius:2px"></span>여유</span><span style="margin-left:auto">🔒 = 총괄이사 전용 · '+(isMgr?'카드를 드래그해 단계 이동':'본인 담당 카드만 이동')+'</span></div>';
+  // 이동 권한: 임원·대표(isMgr) 또는 과제권한 부여받은 직원(can_edit_grants)
+  var CAN_MOVE = isMgr || (DB_USER && DB_USER.can_edit_grants);
+  var moveHint = isMgr ? '카드를 드래그해 단계 이동' : (CAN_MOVE ? '0~④ 단계 카드를 드래그해 이동(권한 부여됨)' : '본인 담당 카드만 이동');
+  var legend='<div class="legend"><span><span class="dot" style="background:var(--red);border-radius:2px"></span>D-3 이내</span><span><span class="dot" style="background:var(--amber);border-radius:2px"></span>D-7 이내</span><span><span class="dot" style="background:var(--hint);border-radius:2px"></span>여유</span><span style="margin-left:auto">🔒 = 총괄이사 전용 · '+moveHint+'</span></div>';
   var note = isMgr
     ? '<div class="banner demo" style="margin-top:12px"><span>선정·탈락 확정은 총괄이사만, 0~④ 단계 이동은 담당자가 할 수 있습니다.</span></div>'
-    : '<div class="banner demo" style="margin-top:12px"><span>직원은 새 과제를 "0 추진검토"로 올리고, 본인 담당 과제의 진행 단계를 갱신할 수 있습니다.</span></div>';
+    : (CAN_MOVE
+      ? '<div class="banner demo" style="margin-top:12px"><span>과제현황 수정·이동 권한이 부여되어 0~④ 단계 카드를 드래그로 이동할 수 있습니다. (선정·탈락 확정은 총괄이사만)</span></div>'
+      : '<div class="banner demo" style="margin-top:12px"><span>직원은 새 과제를 "0 추진검토"로 올리고, 본인 담당 과제의 진행 단계를 갱신할 수 있습니다.</span></div>');
   var h='<div class="card"><div class="sec-h"><div><h2>과제현황 — 칸반 보드</h2><div class="sub">추진검토(0)부터 선정/탈락까지 · 드래그로 단계 이동</div></div>'
     + (isMgr ? '' : '<button class="btn btn-pri" onclick="applyGrant()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 5v14M5 12h14"/></svg> 과제 발굴 신청</button>')
     + '</div>'+legend+'<div class="board">';
   DATA.kanban.forEach(function(col, colIdx){
-    var canDrop = isMgr && !col.lock ? ' ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'+colIdx+')"' : '';
-    var lockColDrop = isMgr && col.lock ? ' ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'+colIdx+')"' : ''; // 선정·탈락도 총괄은 드롭 가능
-    h+='<div class="col" data-col="'+colIdx+'"'+(canDrop||lockColDrop)+'><div class="col-h"><span>'+col.t+(col.lock?' 🔒':'')+'</span><span style="color:var(--hint);font-weight:400">'+col.cards.length+'</span></div>';
+    var canDrop = CAN_MOVE && !col.lock ? ' ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'+colIdx+','+(isMgr?1:0)+')"' : '';
+    var lockColDrop = isMgr && col.lock ? ' ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,'+colIdx+',1)"' : ''; // 선정·탈락은 총괄만 드롭 가능
+    h+='<div class="col" data-col="'+colIdx+'"'+(canDrop||lockColDrop)+'><div class="col-h"><span>'+col.t+(col.lock?' 🔒':'')+'</span><span style="color:var(--hint);font-weight:400">'+col.cards.length+'건</span></div><div class="lane-cards">';
     if(col.cards.length){
       col.cards.forEach(function(c, cardIdx){
         var dd='';
@@ -3038,9 +3193,10 @@ function renderKanban(elId, isMgr){
         var wonPill = (colIdx===5 && c.justWon)?' 🎉':'';
         var cardCls = c.pending ? 'kcard pending' : 'kcard';
         var cardStyle = c.pending ? 'border:1.5px dashed var(--amber);background:var(--amber-bg)' : (colIdx===5 && c.justWon ? 'border:1.5px solid var(--green);background:var(--green-bg)' : '');
-        // 드래그 가능: 임원·대표는 모든 카드, 직원은 본인 담당 카드만
-        var draggable = isMgr ? 'true' : 'false';
-        var dragHandlers = isMgr ? ' ondragstart="kbDragStart(event,'+colIdx+','+cardIdx+')" ondragend="kbDragEnd(event)" style="'+cardStyle+';cursor:grab"' : ' style="'+cardStyle+'"';
+        // 드래그 가능: 임원·대표는 모든 카드, 권한 직원은 0~④(비잠금) 카드
+        var canDragThis = isMgr || (CAN_MOVE && !col.lock);
+        var draggable = canDragThis ? 'true' : 'false';
+        var dragHandlers = canDragThis ? ' ondragstart="kbDragStart(event,'+colIdx+','+cardIdx+')" ondragend="kbDragEnd(event)" style="'+cardStyle+';cursor:grab"' : ' style="'+cardStyle+'"';
         var clickH = (c._dbId!=null) ? ' onclick="openGrantDetail(\''+c._dbId+'\')"' : '';
         var cursorH = (c._dbId!=null) ? 'cursor:pointer' : '';
         h+='<div class="'+cardCls+'" draggable="'+draggable+'"'+dragHandlers+clickH+'><div class="kt">'+dd+c.n+collab+newPill+wonPill+'</div><div class="ko">'+c.o+'</div><div class="kw">👤 '+c.w+'</div>';
@@ -3067,8 +3223,8 @@ function renderKanban(elId, isMgr){
         }
         h+='</div>';
       });
-    } else { h+='<div class="kb-empty" style="text-align:center;color:var(--hint);font-size:11px;padding:14px 0">—</div>'; }
-    h+='</div>';
+    } else { h+='<div class="kb-empty" style="color:var(--hint);font-size:12px;padding:10px 2px">— 해당 단계 과제 없음</div>'; }
+    h+='</div></div>';
   });
   h+='</div>'+note+'</div>';
   document.getElementById(elId).innerHTML=h;
@@ -3096,26 +3252,51 @@ function kbDragOver(e){
 function kbDragLeave(e){
   e.currentTarget.classList.remove('drop-over');
 }
-function kbDrop(e, toCol){
+function kbDrop(e, toCol, isMgrDrop){
   e.preventDefault();
   e.currentTarget.classList.remove('drop-over');
   if(!DRAG_FROM) return;
   var fromCol=DRAG_FROM.col, fromCard=DRAG_FROM.card;
-  if(fromCol===toCol){ DRAG_FROM=null; return; }
-  var card = DATA.kanban[fromCol].cards.splice(fromCard,1)[0];
-  // 선정 단계로 이동하면 축하 표시
+  DRAG_FROM=null;
+  if(fromCol===toCol){ return; }
+  var card = DATA.kanban[fromCol] && DATA.kanban[fromCol].cards[fromCard];
+  if(!card){ return; }
+  // 잠금 단계(⑤선정·⑥탈락)로의 이동/이동출발은 총괄(isMgrDrop)만
+  if((toCol>=5 || fromCol>=5) && !isMgrDrop){
+    toast('선정·탈락 확정은 총괄이사만 변경할 수 있습니다');
+    return;
+  }
+  var reRender = function(){
+    if(MY_GRADE==='mgr'){ try{ renderKanban('m-grant', true); }catch(_){} }
+    else { try{ renderKanban('e-grant', false); }catch(_){} }
+  };
+  // DB 연결 상태면 grants.stage 영구 저장 (단계 = 컬럼 인덱스)
+  if(DB_USER && card._dbId!=null){
+    (async function(){
+      try {
+        var up = await db.from('grants').update({ stage: toCol }).eq('id', card._dbId);
+        if(up.error) throw up.error;
+        var stageName = DATA.kanban[toCol] ? DATA.kanban[toCol].t : '';
+        toast('\''+card.n+'\' → '+stageName+' 단계로 이동·저장 🟢');
+        if(card.w){ try{ notify(card.w.split('·')[0].split(' ')[0], '📋 \''+card.n+'\'가 \''+stageName+'\' 단계로 이동했습니다.'); }catch(_){} }
+        await loadGrantsFromDB();
+        reRender();
+        if(toCol===5){ try{ renderCompany(); }catch(_){} }
+      } catch(err){
+        alert('단계 이동 저장 실패: '+(err.message||err)+'\n(과제 단계 변경 권한(RLS) 문제일 수 있어요)');
+        reRender(); // 원상 복구
+      }
+    })();
+    return;
+  }
+  // 시연(DB 미연결) 모드: 메모리에서만 이동
+  DATA.kanban[fromCol].cards.splice(fromCard,1);
   if(toCol===5){ card.justWon=true; card.wonAt=TODAY; }
   DATA.kanban[toCol].cards.push(card);
-  // 담당자에게 알림
-  if(card.w){
-    var stageName = DATA.kanban[toCol].t;
-    notify(card.w.split('·')[0].split(' ')[0], '📋 \''+card.n+'\'가 \''+stageName+'\' 단계로 이동했습니다.');
-  }
+  if(card.w){ var sn=DATA.kanban[toCol].t; notify(card.w.split('·')[0].split(' ')[0], '📋 \''+card.n+'\'가 \''+sn+'\' 단계로 이동했습니다.'); }
   toast('\''+card.n+'\' → '+DATA.kanban[toCol].t+' 단계로 이동');
-  DRAG_FROM=null;
-  renderKanban('m-grant', true);
-  // 선정 시 하이라이트 갱신
-  if(toCol===5){ renderCompany(); }
+  reRender();
+  if(toCol===5){ try{ renderCompany(); }catch(_){} }
 }
 
 function approveGrantCard(btn, colIdx, cardIdx){
@@ -4043,7 +4224,7 @@ async function openGrantDetail(dbId){
   else if(g.pm_id){ var r=ROSTER.find(function(x){return false;}); }
   if(pmName==='미지정' && card && card.w) pmName = card.w;
 
-  var canEdit = MY_GRADE==='mgr' || MY_GRADE==='exec' || (LOGIN_USER && (LOGIN_USER.name===pmName.split('·')[0]));
+  var canEdit = MY_GRADE==='mgr' || MY_GRADE==='exec' || (DB_USER && DB_USER.can_edit_grants) || (LOGIN_USER && (LOGIN_USER.name===pmName.split('·')[0]));
   var rows = [
     ['과제명', g.name||''],
     ['발주처/기관', g.org||'—'],
