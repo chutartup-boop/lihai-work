@@ -135,6 +135,14 @@
   .col-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;font-size:15px;font-weight:600}
   .kcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;cursor:grab;width:236px;flex:0 0 236px;box-sizing:border-box}
   .kcard:active{cursor:grabbing}
+  /* 오늘의 이벤트 행운 풍선 */
+  .evballoon{width:46px;height:56px;border-radius:50% 50% 48% 48%;cursor:pointer;position:relative;box-shadow:0 2px 7px rgba(0,0,0,.14);transition:transform .12s, opacity .35s, box-shadow .25s;display:flex;align-items:center;justify-content:center}
+  .evballoon:hover{transform:scale(1.09)}
+  .evballoon .evlabel{font-size:8.5px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);opacity:0;text-align:center;line-height:1.05;padding:1px;transition:opacity .3s}
+  .evballoon.revealed .evlabel{opacity:1}
+  .evballoon.dud{opacity:.3}
+  .evballoon.prize{box-shadow:0 0 0 2px #fff,0 0 16px rgba(255,210,60,.95);transform:scale(1.06)}
+  .evballoon.picked{outline:3px solid #fff;outline-offset:1px}
   .kcard .kt{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:5px}
   .kcard .ko{font-size:12.5px;color:var(--muted)}
   .kcard .kw{font-size:12.5px;color:var(--hint);margin-top:4px}
@@ -373,7 +381,7 @@
           </div>
         </div>
         <div class="card" style="margin-top:14px">
-          <div class="sec-h"><div><h3>오늘의 리하이 ☀️</h3><div class="sub">서로의 일을 알고 함께 응원하는 공간</div></div><span class="pill p-blue">함께 보기</span></div>
+          <div class="sec-h"><div><h3>오늘의 리하이 ☀️</h3><div class="sub">서로의 일을 알고 함께 응원하는 공간</div></div><button class="btn btn-pri" onclick="openTodayEvent()" style="font-size:12.5px;padding:7px 14px">🎉 오늘의 이벤트</button></div>
 
           <div style="font-size:11.5px;color:var(--hint);margin-bottom:8px">오늘의 하이라이트</div>
           <div id="company-highlights" style="margin-bottom:18px"></div>
@@ -457,6 +465,7 @@
         <div class="stabs">
           <button id="ms-dept" class="on" onclick="mgrSub('dept')">부서별</button>
           <button id="ms-proj" onclick="mgrSub('proj')" title="여러 부서가 같이 하는 협업 과제(예: DCP)에 누가 붙어있는지 한눈에 — 인력 분배 점검용">프로젝트별</button>
+          <button id="ms-pending" onclick="mgrSub('pending')" style="position:relative">🙋 미제출 <span id="pending-badge" style="background:var(--amber-t);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:4px;display:none">0</span></button>
           <button id="ms-risk" onclick="mgrSub('risk')" style="position:relative">⚠ 기한·리스크 <span id="risk-badge" style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:4px;display:none">0</span></button>
         </div>
         <div id="m-subpanel"></div>
@@ -2976,11 +2985,12 @@ function renderMgrFlightsDemo(){
 
 function mgrSub(s){
   curMgrSub=s;
-  ['dept','proj','risk'].forEach(function(k){ document.getElementById('ms-'+k).classList.toggle('on', k===s); });
+  ['dept','proj','pending','risk'].forEach(function(k){ var b=document.getElementById('ms-'+k); if(b) b.classList.toggle('on', k===s); });
   var el=document.getElementById('m-subpanel');
   if(s==='dept') renderDeptDB(el);
   else if(s==='proj') el.innerHTML=renderProj();
-  else el.innerHTML=renderRisk();
+  else if(s==='pending') renderPendingDB(el);
+  else renderRiskDB(el);
 }
 var DEPT_FILTER = 'all';
 function setDeptFilter(name){
@@ -3087,13 +3097,113 @@ async function renderDeptDB(el){
     h+='</div>';
   });
 
-  // risk-badge: 일지 기반에서는 미제출 인원으로 갱신
+  // 상단 통계 + 배지: 실제 오늘 일지 업무 기반
+  var totalTasks=0, progCnt=0, blockCnt=0, delayCnt=0;
+  Object.keys(logByName).forEach(function(nm){
+    var lg=logByName[nm];
+    var tk=Array.isArray(lg.today_tasks)?lg.today_tasks:[];
+    tk.forEach(function(t){
+      totalTasks++;
+      var st=t.status||'진행중';
+      if(st==='진행중') progCnt++;
+      else if(st==='막힘') blockCnt++;
+      else if(st==='지연') delayCnt++;
+    });
+  });
+  var pendAll = totalAll-totalSubmitted;
+  var riskCnt = blockCnt+delayCnt;
+  function setMet(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  setMet('m-met-total', totalTasks);
+  setMet('m-met-prog', progCnt);
+  setMet('m-met-urg', delayCnt);   // 기한임박 ≈ 지연
+  setMet('m-met-block', blockCnt);
+  // 기한·리스크 배지 = 막힘+지연 업무 건수 (미제출 아님)
   var badge=document.getElementById('risk-badge');
-  if(badge){ var pendAll=totalAll-totalSubmitted; if(pendAll>0){ badge.textContent=pendAll; badge.style.display=''; } else { badge.style.display='none'; } }
+  if(badge){ if(riskCnt>0){ badge.textContent=riskCnt; badge.style.display=''; } else { badge.style.display='none'; } }
+  // 미제출 배지 = 미제출 인원
+  var pbadge=document.getElementById('pending-badge');
+  if(pbadge){ if(pendAll>0){ pbadge.textContent=pendAll; pbadge.style.display=''; } else { pbadge.style.display='none'; } }
 
   el.innerHTML=h;
 }
 
+// 미제출 탭 — 오늘 일지 미제출자 (부서별)
+async function renderPendingDB(el){
+  if(!el) return;
+  if(!DB_USER){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--hint);font-size:12.5px">로그인 후 확인 가능합니다.</div>'; return; }
+  el.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">미제출자 확인 중…</div>';
+  var membersByDept={}; ROSTER.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
+  var deptOrder=DATA.depts.map(function(dp){return dp.name;});
+  Object.keys(membersByDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
+  var submitted={};
+  try {
+    var res = await db.from('daily_logs').select('employees!inner(name)').eq('work_date', TODAY);
+    if(res.error) throw res.error;
+    (res.data||[]).forEach(function(l){ if(l.employees&&l.employees.name) submitted[l.employees.name]=true; });
+  } catch(e){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--red-t);font-size:12.5px">⚠ 조회 실패: '+escH(e.message||e)+'</div>'; return;
+  }
+  var pend=[]; deptOrder.forEach(function(d){ (membersByDept[d]||[]).forEach(function(m){ if(!submitted[m.name]) pend.push(m); }); });
+  var todayDisp = TODAY.slice(5).replace('-','/');
+  var h='<div style="font-size:13px;margin-bottom:12px;color:var(--ink)">오늘('+todayDisp+') 일일업무 <b style="color:var(--amber-t)">미제출 '+pend.length+'명</b> <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
+  if(pend.length===0){ h+='<div style="background:var(--green-bg);border-radius:9px;padding:16px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 전원 제출 완료</div>'; el.innerHTML=h; return; }
+  deptOrder.forEach(function(d){
+    var list=(membersByDept[d]||[]).filter(function(m){ return !submitted[m.name]; });
+    if(list.length===0) return;
+    h+='<div style="margin-bottom:13px"><div style="font-size:12.5px;font-weight:600;margin-bottom:6px">'+escH(d)+' <span style="font-size:11px;color:var(--hint);font-weight:400">· 미제출 '+list.length+'명</span></div>';
+    list.forEach(function(m){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px dashed var(--line2);border-radius:8px;margin-bottom:5px;background:var(--soft)"><b style="font-size:12.5px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span><span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">미제출</span></div>';
+    });
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+// 기한·리스크 탭 — 업무 내용 기반(막힘/지연 업무 + 마감 임박 과제)
+async function renderRiskDB(el){
+  if(!el) return;
+  if(!DB_USER){ el.innerHTML=renderRisk(); return; }
+  el.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">리스크 항목 확인 중…</div>';
+  var risks=[];
+  try {
+    var res = await db.from('daily_logs').select('today_tasks, employees!inner(name, dept)').eq('work_date', TODAY);
+    if(res.error) throw res.error;
+    (res.data||[]).forEach(function(l){
+      var who=l.employees?l.employees.name:''; var dept=l.employees?l.employees.dept:'';
+      var tk=Array.isArray(l.today_tasks)?l.today_tasks:[];
+      tk.forEach(function(t){
+        var st=t.status||'';
+        if(st==='막힘'||st==='지연'){ risks.push({type:st, who:who, dept:dept, project:t.project||'', task:t.task||''}); }
+      });
+    });
+  } catch(e){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--red-t);font-size:12.5px">⚠ 조회 실패: '+escH(e.message||e)+'</div>'; return;
+  }
+  // 마감 임박 과제(D-3 이내) 추가
+  var deadlineRisks=[];
+  try {
+    var TD=new Date(TODAY+'T00:00:00');
+    DATA.kanban.forEach(function(col){
+      (col.cards||[]).forEach(function(c){
+        if(c.dd!==undefined && c.dd<=3){ deadlineRisks.push({name:c.n, who:c.w, dd:c.dd, deadline:c.deadline||''}); }
+      });
+    });
+  } catch(e){}
+  var blocked=risks.filter(function(r){return r.type==='막힘';});
+  var delayed=risks.filter(function(r){return r.type==='지연';});
+  var h='<div style="font-size:12px;color:var(--muted);margin-bottom:12px">오늘 업무 중 <b style="color:var(--red-t)">막힘 '+blocked.length+'</b> · <b style="color:var(--red-t)">지연 '+delayed.length+'</b> · 마감임박 과제 <b style="color:var(--red-t)">'+deadlineRisks.length+'</b>건 <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div>';
+  if(risks.length===0 && deadlineRisks.length===0){ h+='<div style="background:var(--green-bg);border-radius:9px;padding:16px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 막힘·지연·마감임박 항목이 없습니다</div>'; el.innerHTML=h; return; }
+  function riskRow(label, color, r){
+    return '<div class="banner" style="background:var(--red-bg);margin-bottom:8px;align-items:center"><span style="font-size:11px;font-weight:700;color:'+color+';white-space:nowrap;background:var(--card);padding:2px 8px;border-radius:8px">'+label+'</span><div style="flex:1"><div style="font-size:13px;color:var(--ink)">'+escH(r.task||r.name||'')+'</div><div style="font-size:11.5px;color:var(--muted)">'+escH([r.who, r.dept, r.project].filter(Boolean).join(' · '))+'</div></div></div>';
+  }
+  blocked.forEach(function(r){ h+=riskRow('🚫 막힘','var(--red-t)',r); });
+  delayed.forEach(function(r){ h+=riskRow('⏳ 지연','var(--red-t)',r); });
+  deadlineRisks.sort(function(a,b){return a.dd-b.dd;}).forEach(function(r){
+    var lab = r.dd<0?'마감임박':('D-'+r.dd);
+    h+='<div class="banner" style="background:var(--red-bg);margin-bottom:8px;align-items:center"><span style="font-size:11px;font-weight:700;color:var(--red-t);white-space:nowrap;background:var(--card);padding:2px 8px;border-radius:8px">📅 '+lab+'</span><div style="flex:1"><div style="font-size:13px;color:var(--ink)">'+escH(r.name)+'</div><div style="font-size:11.5px;color:var(--muted)">'+escH([r.who, r.deadline].filter(Boolean).join(' · '))+'</div></div></div>';
+  });
+  el.innerHTML=h;
+}
 function renderDeptDemo(){
   // 부서별 임박/총원 집계
   var totalAll=0, totalRed=0;
@@ -3756,6 +3866,8 @@ function notifVisible(n){
   return false;
 }
 function toggleNotif(){
+  // 프로필 드롭다운은 닫기 (중첩 방지)
+  var pp=document.getElementById('profile-panel'); if(pp) pp.classList.add('hidden');
   var p=document.getElementById('notif-panel');
   var willShow=p.classList.contains('hidden');
   p.classList.toggle('hidden');
@@ -3794,7 +3906,7 @@ function renderNotifList(){
   if(DB_USER){
     if(DB_NOTIFS.length===0){ list.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">새 알림이 없습니다</div>'; return; }
     list.innerHTML=DB_NOTIFS.map(function(n){
-      return '<div style="padding:11px 14px;border-bottom:1px solid var(--line);'+(n.is_read?'':'background:var(--lblue)')+'"><div style="font-size:12.5px;line-height:1.5">'+escH(n.text)+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:3px">'+timeAgo(n.created_at)+'</div></div>';
+      return '<div data-ntext="'+escH(n.text)+'" onclick="notifGoto(this)" style="padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;'+(n.is_read?'':'background:var(--lblue)')+'" onmouseover="this.style.filter=\'brightness(.97)\'" onmouseout="this.style.filter=\'\'"><div style="font-size:12.5px;line-height:1.5">'+escH(n.text)+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:3px">'+timeAgo(n.created_at)+' <span style="color:var(--blue)">· 클릭해서 이동 →</span></div></div>';
     }).join('');
     return;
   }
@@ -3802,8 +3914,33 @@ function renderNotifList(){
   var mine=NOTIFS.filter(notifVisible);
   if(mine.length===0){ list.innerHTML='<div style="padding:22px;text-align:center;color:var(--hint);font-size:12.5px">새 알림이 없습니다</div>'; return; }
   list.innerHTML=mine.map(function(n){
-    return '<div style="padding:11px 14px;border-bottom:1px solid var(--line);'+(n.read?'':'background:var(--lblue)')+'"><div style="font-size:12.5px;line-height:1.5">'+n.text+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:3px">'+n.time+'</div></div>';
+    return '<div data-ntext="'+escH(n.text)+'" onclick="notifGoto(this)" style="padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;'+(n.read?'':'background:var(--lblue)')+'" onmouseover="this.style.filter=\'brightness(.97)\'" onmouseout="this.style.filter=\'\'"><div style="font-size:12.5px;line-height:1.5">'+n.text+'</div><div style="font-size:10.5px;color:var(--hint);margin-top:3px">'+n.time+' <span style="color:var(--blue)">· 클릭해서 이동 →</span></div></div>';
   }).join('');
+}
+// 알림 텍스트 내용에 따라 해당 화면으로 이동
+function notifGoto(el){
+  var t = (el && el.getAttribute) ? (el.getAttribute('data-ntext')||'') : (el||'');
+  var p=document.getElementById('notif-panel'); if(p) p.classList.add('hidden');
+  var canMgrView = (MY_GRADE==='mgr' || MY_GRADE==='exec');
+  var mgrRole = (MY_GRADE==='mgr') ? 'mgr' : 'exec';
+  var isComment = /답글|댓글|의견을 남겼/.test(t);
+  var isGrant = /과제|발굴|신청|추진|승인|반려|단계로 이동|선정/.test(t);
+  var isHelp = /도움/.test(t);
+  var isMeeting = /회의/.test(t);
+  try {
+    if(isComment && canMgrView){ setRole(mgrRole); mgrTab('exec'); return; }
+    if(isGrant){
+      if(canMgrView){ setRole(mgrRole); mgrTab('grant'); }
+      else { setRole('emp'); empTab('grant'); }
+      return;
+    }
+    if(isHelp){
+      if(canMgrView){ setRole(mgrRole); mgrTab('daily'); }
+      else { setRole('emp'); empTab('daily'); }
+      return;
+    }
+    if(isMeeting && canMgrView){ setRole(mgrRole); mgrTab('daily'); return; }
+  } catch(e){ console.log('알림 이동 오류:', e); }
 }
 
 // ===== 양방향 흐름 1: 대표가 회의 참석 표시 → 주관 직원에게 알림 =====
@@ -4350,6 +4487,148 @@ function openGrantEdit(dbId){
     var footer=body.parentElement.querySelector('div:last-child');
     footer.innerHTML='<button class="btn btn-pri" onclick="confirmSaveGrantEdit('+dbId+')">💾 저장</button><button class="btn" onclick="openGrantDetail(\''+dbId+'\')">취소</button>';
   })();
+}
+
+// ===== 당첨 축하 연출: 가벼운 풍선 (6~8개) 🎈 =====
+function launchBalloons(){
+  if(document.getElementById('balloon-layer')) return; // 중복 방지
+  var layer=document.createElement('div');
+  layer.id='balloon-layer';
+  layer.style.cssText='position:fixed;inset:0;z-index:700;pointer-events:none;overflow:hidden';
+  document.body.appendChild(layer);
+  try { toast('🎉 축하합니다! 풍선을 클릭해보세요'); } catch(e){}
+  var colors=['#F96167','#F9A03F','#FFD23F','#3BB273','#3A86FF','#8338EC','#FF6F91','#06D6A0'];
+  var W=window.innerWidth, H=window.innerHeight;
+  var n=6+Math.floor(Math.random()*3); // 6~8개 (가벼운 축하 연출)
+  for(var i=0;i<n;i++){
+    (function(){
+      var color=colors[Math.floor(Math.random()*colors.length)];
+      var size=32+Math.random()*28;
+      var x=Math.random()*(W-70)+10;
+      var dur=3000+Math.random()*2200;
+      var delay=Math.random()*1000;
+      var sway=(Math.random()*70-35);
+      var b=document.createElement('div');
+      b.style.cssText='position:absolute;left:'+x+'px;top:'+(H+70)+'px;width:'+size+'px;height:'+(size*1.22)+'px;background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.65), '+color+' 62%);border-radius:50% 50% 48% 48%;pointer-events:auto;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.12)';
+      b.innerHTML='<div style="position:absolute;bottom:-13px;left:50%;width:1px;height:14px;background:rgba(0,0,0,.18);transform:translateX(-50%)"></div>';
+      layer.appendChild(b);
+      b.addEventListener('click', function(){
+        if(b._popped) return; b._popped=true;
+        var rect=b.getBoundingClientRect();
+        b.remove();
+        var pf=document.createElement('div');
+        pf.textContent='펑!';
+        pf.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;font-size:16px;font-weight:800;color:'+color+';pointer-events:none;z-index:501';
+        document.body.appendChild(pf);
+        try { pf.animate([{transform:'scale(.5)',opacity:1},{transform:'scale(1.7) translateY(-20px)',opacity:0}],{duration:430,easing:'ease-out',fill:'forwards'}); } catch(e){}
+        setTimeout(function(){ if(pf.parentNode) pf.remove(); },450);
+      });
+      try {
+        b.animate([
+          {transform:'translate(0,0) rotate(0deg)'},
+          {transform:'translate('+sway+'px,-'+(H+180)+'px) rotate('+(sway/4)+'deg)'}
+        ], {duration:dur, delay:delay, easing:'ease-in', fill:'forwards'});
+      } catch(e){ b.style.transition='transform '+dur+'ms ease-in'; setTimeout(function(){ b.style.transform='translate('+sway+'px,-'+(H+180)+'px)'; }, delay+20); }
+    })();
+  }
+  // 약 5초 후 정리
+  setTimeout(function(){
+    var l=document.getElementById('balloon-layer');
+    if(l){ l.style.transition='opacity .5s'; l.style.opacity='0'; setTimeout(function(){ if(l.parentNode) l.remove(); },520); }
+  }, 5000);
+}
+
+// ===== 오늘의 이벤트: 행운 풍선 (50개 중 1번 · 하루 1회) =====
+var EVENT_STATE=null;
+var EVENT_COLORS=['#F96167','#F9A03F','#FFD23F','#3BB273','#3A86FF','#8338EC','#FF6F91','#06D6A0','#EF476F','#118AB2'];
+function openTodayEvent(){
+  var uid = DB_USER ? DB_USER.id : (CUR_EMP ? CUR_EMP.name : 'guest');
+  var key='lihai-event-'+uid+'-'+TODAY;
+  var prev=null; try{ prev=localStorage.getItem(key); }catch(e){}
+  if(prev){ renderEventOverlay(null, key, prev); return; }
+  // 상품 구성: 휴가1 · 반차1 · 2시간2 · 1시간3 = 당첨 7, 꽝 43 (총 50)
+  var prizes=[];
+  [['휴가 🏝️',1],['반차 🌴',1],['2시간 일찍 퇴근 🕑',2],['1시간 일찍 퇴근 🕐',3]].forEach(function(p){
+    for(var k=0;k<p[1];k++) prizes.push({win:true, label:p[0]});
+  });
+  while(prizes.length<50) prizes.push({win:false, label:'꽝'});
+  // 셔플(Fisher–Yates)
+  for(var i=prizes.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=prizes[i]; prizes[i]=prizes[j]; prizes[j]=t; }
+  EVENT_STATE={prizes:prizes, picked:false, key:key};
+  renderEventOverlay(prizes, key, null);
+}
+function renderEventOverlay(prizes, key, already){
+  closeEvent();
+  var bg=document.createElement('div');
+  bg.id='event-bg';
+  bg.style.cssText='position:fixed;inset:0;background:rgba(15,25,45,.78);z-index:600;display:flex;align-items:center;justify-content:center;padding:18px;opacity:1;transition:opacity .5s';
+  var inner='';
+  if(already){
+    var won = already!=='꽝';
+    inner='<div style="text-align:center;padding:8px 6px">'
+      +'<div style="font-size:34px;margin-bottom:8px">🙌</div>'
+      +'<div style="font-size:17px;font-weight:800;margin-bottom:6px">오늘은 이미 참여했어요</div>'
+      +'<div style="font-size:13px;color:var(--hint);margin-bottom:4px">오늘 결과: <b style="color:'+(won?'var(--green-t)':'var(--muted)')+'">'+escH(already)+'</b></div>'
+      +'<div style="font-size:12px;color:var(--hint);margin-bottom:18px">내일 또 만나요 🎈</div>'
+      +'<button class="btn btn-pri" onclick="closeEvent()">닫기</button></div>';
+  } else {
+    var balloons='';
+    for(var i=0;i<prizes.length;i++){
+      var c=EVENT_COLORS[i%EVENT_COLORS.length];
+      balloons+='<div class="evballoon" data-i="'+i+'" onclick="eventPick('+i+')" style="background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), '+c+' 62%)"><span class="evlabel"></span></div>';
+    }
+    inner='<div style="font-size:19px;font-weight:800;margin-bottom:3px">🎈 오늘의 행운 풍선</div>'
+      +'<div style="font-size:12.5px;color:var(--hint);margin-bottom:14px;line-height:1.5">딱 <b>한 번</b>만 터뜨릴 수 있어요! 풍선 하나를 골라보세요<br>50개 중 7개에 선물 🎁 (휴가·반차·조기퇴근)</div>'
+      +'<div id="ev-grid" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:560px;margin:0 auto">'+balloons+'</div>'
+      +'<div id="ev-result" style="min-height:24px;margin-top:16px;font-size:14.5px;font-weight:700"></div>'
+      +'<div id="ev-close" style="margin-top:10px;display:none"><button class="btn" onclick="closeEvent()">닫기</button></div>';
+  }
+  bg.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(0,0,0,.4);padding:24px;text-align:center">'+inner+'</div>';
+  // 배경 클릭 시: 아직 안 뽑았으면 닫기(기회 소진 안 함)
+  bg.onclick=function(e){ if(e.target===bg && (!EVENT_STATE || !EVENT_STATE.picked)) closeEvent(); };
+  document.body.appendChild(bg);
+}
+function eventPick(i){
+  if(!EVENT_STATE || EVENT_STATE.picked) return;
+  EVENT_STATE.picked=true;
+  var prize=EVENT_STATE.prizes[i];
+  var resultLabel = prize.win ? prize.label : '꽝';
+  try{ localStorage.setItem(EVENT_STATE.key, resultLabel); }catch(e){}
+  // 모든 풍선 정체 공개 (선물 풍선 위치까지 — 공정성)
+  var grid=document.getElementById('ev-grid');
+  if(grid){
+    var bs=grid.querySelectorAll('.evballoon');
+    Array.prototype.forEach.call(bs, function(b){
+      var idx=parseInt(b.getAttribute('data-i'),10);
+      var p=EVENT_STATE.prizes[idx];
+      b.style.pointerEvents='none';
+      b.classList.add('revealed');
+      var lab=b.querySelector('.evlabel');
+      if(p.win){ b.classList.add('prize'); if(lab) lab.textContent=p.label; }
+      else { b.classList.add('dud'); if(lab) lab.textContent='꽝'; }
+      if(idx===i) b.classList.add('picked');
+    });
+  }
+  var res=document.getElementById('ev-result');
+  if(res){
+    if(prize.win){
+      res.innerHTML='<span style="color:var(--green-t)">🎉 축하합니다! <b>'+escH(prize.label)+'</b> 당첨!</span>'
+        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">결과를 캡처해서 대표님/관리자에게 알려주세요 😊</div>';
+      try { launchBalloons(); } catch(e){}
+    } else {
+      res.innerHTML='<span style="color:var(--muted)">아쉽게도 <b>꽝</b>! 😅 선물 풍선은 위에 빛나게 표시했어요 — 진짜 있었죠?</span>'
+        +'<div style="font-size:11.5px;color:var(--hint);font-weight:400;margin-top:4px">내일 또 도전해보세요 🎈</div>';
+    }
+  }
+  var cl=document.getElementById('ev-close'); if(cl) cl.style.display='';
+  // 정체 공개를 잠깐 보여준 뒤 페이드아웃
+  setTimeout(function(){ closeEvent(); }, prize.win?7000:6000);
+}
+function closeEvent(){
+  var bg=document.getElementById('event-bg');
+  if(!bg) return;
+  bg.style.opacity='0';
+  setTimeout(function(){ if(bg.parentNode) bg.remove(); }, 520);
 }
 
 function confirmSaveGrantEdit(dbId){
