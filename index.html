@@ -2044,15 +2044,47 @@ function closeAdminAdd(){
   var bg=document.getElementById('admin-add-bg');
   if(bg) bg.remove();
 }
-function submitAdminAdd(){
-  var name=document.getElementById('ae-name').value.trim();
-  var email=document.getElementById('ae-email').value.trim();
-  var dept=document.getElementById('ae-dept').value;
-  var title=document.getElementById('ae-title').value;
-  if(!name || !email){ alert('이름과 이메일은 필수입니다.'); return; }
-  closeAdminAdd();
-  toast('✅ '+name+' 님이 등록되었습니다 ('+dept+' · '+title+') · 초기 비번 lihai2026');
+async function submitAdminAdd(){
+  var name  = document.getElementById('ae-name').value.trim();
+  var email = document.getElementById('ae-email').value.trim();
+  var phone = document.getElementById('ae-phone').value.trim();
+  var birth = document.getElementById('ae-birth').value.trim();
+  var hire  = document.getElementById('ae-hire').value.trim();
+  var dept  = document.getElementById('ae-dept').value;
+  var title = document.getElementById('ae-title').value;
+  var modeRaw = document.getElementById('ae-mode').value;
+  var mode  = modeRaw.startsWith('목표형') ? '목표형' : '운영형';
 
+  if(!name || !email){ alert('이름과 이메일은 필수입니다.'); return; }
+  if(!hire){ alert('입사일을 입력해주세요.'); return; }
+
+  // 버튼 비활성화 (중복 클릭 방지)
+  var btn = document.querySelector('#admin-add-bg .btn-pri');
+  if(btn){ btn.disabled=true; btn.textContent='등록 중…'; }
+
+  try {
+    // Edge Function 호출 — create-employee
+    var res = await fetch(SUPABASE_URL+'/functions/v1/create-employee', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+SUPABASE_KEY
+      },
+      body: JSON.stringify({ name, email, phone, birth, hire_date:hire, dept, title, mode })
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+
+    closeAdminAdd();
+    toast('✅ '+name+' 님 등록 완료 ('+dept+' · '+title+') · 초기 비번 lihai2026');
+
+    // 직원 명단 새로고침
+    setTimeout(function(){ adminTab('emp'); }, 400);
+
+  } catch(e) {
+    if(btn){ btn.disabled=false; btn.textContent='등록 → 계정 생성'; }
+    alert('등록 실패: '+e.message);
+  }
 }
 
 function adminEditEmp(name){
