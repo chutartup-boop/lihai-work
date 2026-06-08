@@ -688,9 +688,11 @@ async function loadExecComments(){
   EXEC_CMT_CACHE = {};
   if(!execIds.length) return;
   try {
+    // 당일 댓글만 — work_date 컬럼 기준 TODAY 필터
     var res = await db.from('exec_comments')
-      .select('id, exec_id, author_id, text, comment_type, parent_id, created_at')
+      .select('id, exec_id, author_id, text, comment_type, parent_id, created_at, work_date')
       .in('exec_id', execIds)
+      .eq('work_date', TODAY)
       .order('created_at', {ascending:true});
     if(res.error) throw res.error;
     (res.data||[]).forEach(function(c){
@@ -827,7 +829,7 @@ async function submitReplyDB(idx, cid){
   var txt=inp.value.trim();
   var execId=execNameToId(DATA.execs[idx].name);
   try {
-    var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'peer', parent_id:cid });
+    var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'peer', parent_id:cid, work_date:TODAY });
     if(ins.error) throw ins.error;
     // 원 댓글 작성자에게 알림
     var parent=(EXEC_CMT_CACHE[execId]||[]).find(function(c){return String(c.id)===String(cid);});
@@ -888,7 +890,7 @@ async function execComment(idx){
   if(DB_USER){
     var execId=execNameToId(execName);
     try {
-      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'mgr' });
+      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:'mgr', work_date:TODAY });
       if(ins.error) throw ins.error;
       notify(execName, '💬 '+(LOGIN_USER?LOGIN_USER.name:'대표')+'님이 회원님의 업무 보고에 의견을 남겼습니다: "'+txt+'"');
       toast(execName+' 님에게 피드백이 전달되었습니다 🟢');
@@ -923,7 +925,7 @@ async function execExecComment(idx){
   if(DB_USER){
     var execId=execNameToId(execName);
     try {
-      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:(isMyCard?'self':'peer') });
+      var ins=await db.from('exec_comments').insert({ exec_id:execId, author_id:DB_USER.id, text:txt, comment_type:(isMyCard?'self':'peer'), work_date:TODAY });
       if(ins.error) throw ins.error;
       if(!isMyCard){ notify(execName, '💬 '+meName+' '+meTitle+'님이 회원님의 보고에 의견을 남겼습니다: "'+txt+'"'); toast(execName+' 님에게 의견이 전달되었습니다 🟢'); }
       else { toast('본인 보고에 보강 코멘트를 추가했습니다 🟢'); }
