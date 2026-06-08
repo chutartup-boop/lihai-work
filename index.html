@@ -418,7 +418,10 @@
           <div style="font-size:11.5px;color:var(--hint);margin-bottom:8px">팀별 오늘의 활력 <span style="color:var(--hint)">— 다른 팀의 열정과 우리 팀의 열정이 더해져 더욱 성장하는 리하이</span></div>
           <div class="grid2" id="company-grid"></div>
 
-          <div style="font-size:11.5px;color:var(--hint);margin:16px 0 8px">오늘 전사 비행 ✈️ <span style="color:var(--hint)">— 본사 오후 풍속 6.8m/s(주의)</span></div>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:16px 0 8px">
+            <span style="font-size:11.5px;color:var(--hint);font-weight:600">오늘 전사 비행 ✈️</span>
+            <div id="emp-weather-inline" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          </div>
           <div id="company-flights"></div>
 
           <div class="banner demo" style="margin-top:14px">
@@ -3059,48 +3062,143 @@ function renderCompany(){
     startHighlightAutoSlide();
   }
 
-  // 2) 팀별 활력 카드 (줄 기반 배치)
-  function teamCard(c){
-    var mineStyle = c.mine ? 'background:var(--lblue);border:2px solid var(--blue)' : 'background:var(--card);border:1px solid var(--line)';
-    var nlabel = c.mine ? '우리 팀' : c.n+'명';
-    var dots='';
-    for(var i=0;i<(c.done+c.prog);i++){ dots+='<span style="width:6px;height:6px;border-radius:50%;background:'+(i<c.done?'var(--green)':'var(--amber)')+';display:inline-block;margin-right:3px"></span>'; }
-    return '<div style="'+mineStyle+';border-radius:var(--r-s);padding:13px 15px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
-      +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" style="flex-shrink:0"><path d="'+icons[c.ic]+'"/></svg>'
-      +'<span style="font-size:14px;font-weight:600;white-space:nowrap">'+c.team+'</span>'
-      +'<span style="font-size:11px;color:var(--hint);margin-left:auto;white-space:nowrap">'+nlabel+' · '+c.hours+'</span></div>'
-      +'<div style="margin-bottom:9px">'+dots+'</div>'
-      +'<div style="display:flex;gap:12px;font-size:12px;margin-bottom:10px">'
-      +'<span style="color:var(--green-t);font-weight:600">완료 '+c.done+'</span>'
-      +'<span style="color:var(--amber-t)">진행 '+c.prog+'</span>'
-      +(c.fly>0?'<span style="color:var(--ink)">✈️ 비행 '+c.fly+'</span>':'')+'</div>'
-      +'<div style="font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:9px">'+c.work+'</div>'
-      +'</div>';
-  }
-  function rowGrid(cards){ var g='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:12px">'; cards.forEach(function(c){g+=teamCard(c);}); return g+'</div>'; }
-  var r1=DATA.company.filter(function(c){return c.row===1;});
-  var r2=DATA.company.filter(function(c){return c.row===2;});
-  var h='';
-  h+=rowGrid(r1);
-  h+=rowGrid(r2);
-  document.getElementById('company-grid').innerHTML=h;
-
-  // 3) 비행
-  var cf=document.getElementById('company-flights');
-  if(cf){
-    if(DATA.flights.length===0){
-      cf.innerHTML='<div style="font-size:12px;color:var(--hint);background:var(--soft);border-radius:var(--r-s);padding:11px 13px">오늘은 예정된 비행이 없습니다.</div>';
+  // 2) 팀별 활력 카드 — DB 실시간
+  var grid=document.getElementById('company-grid');
+  if(grid){
+    if(!DB_USER){
+      function teamCardS(c){
+        var mineStyle=c.mine?'background:var(--lblue);border:2px solid var(--blue)':'background:var(--card);border:1px solid var(--line)';
+        return '<div style="'+mineStyle+';border-radius:var(--r-s);padding:13px 15px">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+          +'<span style="font-size:14px;font-weight:600">'+c.team+'</span>'
+          +(c.mine?'<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1.5px 6px;border-radius:5px">우리 팀</span>':'')
+          +'<span style="font-size:11px;color:var(--hint);margin-left:auto">'+c.n+'명</span></div>'
+          +'<div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">'
+          +'<span style="color:var(--green-t);font-weight:600">✓ 완료 '+c.done+'</span>'
+          +'<span style="color:var(--amber-t)">▶ 진행 '+c.prog+'</span>'
+          +(c.fly>0?'<span style="color:var(--ink)">✈️ '+c.fly+'</span>':'')+'</div>'
+          +'<div style="font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:8px">'+c.work+'</div>'
+          +'</div>';
+      }
+      var hg='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">';
+      DATA.company.forEach(function(c){hg+=teamCardS(c);}); hg+='</div>';
+      grid.innerHTML=hg;
     } else {
-      var fh='';
-      DATA.flights.forEach(function(f){
-        fh+='<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;margin-bottom:7px">'
-          +'<div style="background:var(--lblue);color:var(--ink);border-radius:6px;padding:4px 9px;text-align:center;flex-shrink:0"><div style="font-size:13px;font-weight:700;line-height:1.1">'+f.time+'</div></div>'
-          +'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">'+f.purpose+'</div><div style="font-size:11px;color:var(--muted)">'+f.team+' · '+f.who+' · '+f.place+'</div></div></div>';
-      });
-      cf.innerHTML=fh;
+      grid.innerHTML='<div style="padding:14px;text-align:center;color:var(--hint);font-size:12px">팀별 업무 불러오는 중…</div>';
+      (async function(){
+        try {
+          var empMap=await loadEmpMap();
+          var res=await db.from('daily_logs').select('employee_id,today_tasks,flight_plan').eq('work_date',TODAY);
+          if(res.error) throw res.error;
+          var byDept={};
+          (res.data||[]).forEach(function(log){
+            var e=empMap[log.employee_id]||{};
+            var dept=e.dept||'기타';
+            if(!byDept[dept]) byDept[dept]={dept:dept,cnt:0,done:0,prog:0,tasks:[],fly:0};
+            byDept[dept].cnt++;
+            var tasks=Array.isArray(log.today_tasks)?log.today_tasks:[];
+            tasks.forEach(function(t){
+              if(t.status==='완료') byDept[dept].done++;
+              else byDept[dept].prog++;
+              if(t.task) byDept[dept].tasks.push({task:t.task,status:t.status,project:t.project||''});
+            });
+            var fp=Array.isArray(log.flight_plan)?log.flight_plan:[];
+            byDept[dept].fly+=fp.filter(function(f){return f&&f.purpose;}).length;
+          });
+          var depts=Object.keys(byDept);
+          if(!depts.length){
+            grid.innerHTML='<div style="padding:14px;text-align:center;color:var(--hint);font-size:12px;background:var(--soft);border-radius:var(--r-s)">아직 오늘 일지를 제출한 팀원이 없습니다.</div>';
+            return;
+          }
+          var myDept=(empMap[DB_USER.id]||{}).dept||'';
+          var hg='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">';
+          depts.sort().forEach(function(dept){
+            var c=byDept[dept];
+            var isMine=(dept===myDept);
+            var border=isMine?'2px solid var(--blue)':'1px solid var(--line)';
+            var bg=isMine?'background:linear-gradient(135deg,var(--lblue),var(--card))':'background:var(--card)';
+            var keyTasks=c.tasks.filter(function(t){return t.status!=='완료';}).slice(0,3);
+            if(!keyTasks.length) keyTasks=c.tasks.slice(0,3);
+            var taskHtml=keyTasks.map(function(t){
+              var stColor=t.status==='완료'?'var(--green-t)':(t.status==='진행중'?'var(--amber-t)':'var(--hint)');
+              var pj=t.project?'<span style="font-size:9.5px;background:var(--lblue);color:var(--blue);padding:1px 5px;border-radius:4px;margin-right:4px">'+escH(t.project)+'</span>':'';
+              return '<div style="font-size:11.5px;color:var(--ink);display:flex;align-items:flex-start;gap:5px;padding:3px 0;border-bottom:1px dashed var(--line)">'
+                +'<span style="color:'+stColor+';font-size:11px;margin-top:1px;flex-shrink:0">●</span><span>'+pj+escH(t.task)+'</span></div>';
+            }).join('');
+            if(!taskHtml) taskHtml='<div style="font-size:11.5px;color:var(--hint);padding:4px 0">업무 항목 없음</div>';
+            hg+='<div style="'+bg+';border:'+border+';border-radius:var(--r-s);padding:13px 14px">'
+              +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+              +'<span style="font-size:13.5px;font-weight:700">'+escH(dept)+'</span>'
+              +(isMine?'<span style="font-size:9.5px;background:var(--blue);color:#fff;padding:1.5px 6px;border-radius:5px;font-weight:600">우리 팀</span>':'')
+              +'<span style="font-size:11px;color:var(--hint);margin-left:auto">'+c.cnt+'명 제출</span></div>'
+              +'<div style="display:flex;gap:10px;font-size:12px;margin-bottom:9px">'
+              +'<span style="color:var(--green-t);font-weight:600">✓ 완료 '+c.done+'</span>'
+              +'<span style="color:var(--amber-t)">▶ 진행 '+c.prog+'</span>'
+              +(c.fly>0?'<span style="color:var(--ink)">✈️ '+c.fly+'</span>':'')+'</div>'
+              +'<div style="border-top:1px solid var(--line);padding-top:8px">'
+              +'<div style="font-size:10.5px;font-weight:600;color:var(--muted);margin-bottom:4px">핵심 업무</div>'
+              +taskHtml+'</div></div>';
+          });
+          hg+='</div>';
+          grid.innerHTML=hg;
+        } catch(e){
+          grid.innerHTML='<div style="padding:13px;text-align:center;color:var(--red-t);font-size:12px">⚠ 조회 실패: '+escH(e.message||'')+'</div>';
+        }
+      })();
     }
   }
+
+  // 3) 비행 — DB 실시간
+  var cf=document.getElementById('company-flights');
+  if(cf){
+    if(!DB_USER){
+      if(!DATA.flights||DATA.flights.length===0){
+        cf.innerHTML='<div style="font-size:12px;color:var(--hint);background:var(--soft);border-radius:var(--r-s);padding:11px 13px">오늘은 예정된 비행이 없습니다.</div>';
+      } else {
+        var fh='';
+        DATA.flights.forEach(function(f){
+          fh+='<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;margin-bottom:7px">'
+            +'<div style="background:var(--lblue);color:var(--ink);border-radius:6px;padding:4px 9px;text-align:center;flex-shrink:0"><div style="font-size:13px;font-weight:700">'+f.time+'</div></div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">'+f.purpose+'</div><div style="font-size:11px;color:var(--muted)">'+f.team+' · '+f.who+' · '+f.place+'</div></div></div>';
+        });
+        cf.innerHTML=fh;
+      }
+    } else {
+      cf.innerHTML='<div style="padding:10px;text-align:center;color:var(--hint);font-size:12px">비행 일정 불러오는 중…</div>';
+      (async function(){
+        try {
+          var map=await loadEmpMap();
+          var res=await db.from('daily_logs').select('employee_id,flight_plan').eq('work_date',TODAY);
+          if(res.error) throw res.error;
+          var flights=[];
+          (res.data||[]).forEach(function(log){
+            var fp=log.flight_plan;
+            if(Array.isArray(fp)) fp.forEach(function(f){
+              if(f&&(f.purpose||f.time)){
+                var e=map[log.employee_id]||{};
+                flights.push({purpose:f.purpose||'(목적 미입력)',time:f.time||'',place:f.place||'',who:e.name||'',team:e.dept||''});
+              }
+            });
+          });
+          if(!flights.length){
+            cf.innerHTML='<div style="font-size:12px;color:var(--hint);background:var(--soft);border-radius:var(--r-s);padding:11px 13px">오늘 예정된 비행이 없습니다. (직원이 STEP4에서 등록하면 자동 표시) 🟢</div>';
+          } else {
+            var fh='';
+            flights.forEach(function(f){
+              var tc=f.team.indexOf('SW')>=0?'var(--blue)':(f.team.indexOf('HW')>=0?'var(--amber)':'var(--green)');
+              fh+='<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;margin-bottom:7px">'
+                +'<div style="background:'+tc+';color:#fff;border-radius:6px;padding:5px 9px;text-align:center;flex-shrink:0;min-width:54px"><div style="font-size:11px;font-weight:700">✈️</div><div style="font-size:10px;margin-top:1px">'+escH(f.time||'미정')+'</div></div>'
+                +'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">'+escH(f.purpose)+'</div><div style="font-size:11px;color:var(--muted)">'+escH(f.team)+' · '+escH(f.who)+(f.place?' · '+escH(f.place):'')+'</div></div></div>';
+            });
+            cf.innerHTML=fh;
+          }
+        } catch(e){
+          cf.innerHTML='<div style="font-size:12px;color:var(--red-t);padding:8px">⚠ 비행 조회 실패</div>';
+        }
+      })();
+    }
+  }
+  loadEmpWeatherInline();
 }
 function cheer(btn){
   var special = btn.textContent.indexOf('축하')>=0;
@@ -5504,6 +5602,36 @@ function renderFlightInput(){
   el.innerHTML=h;
   loadLiveWeather();
 }
+// ===== 직원탭 비행 옆 날씨 인라인 =====
+function loadEmpWeatherInline(){
+  var box=document.getElementById('emp-weather-inline');
+  if(!box) return;
+  box.innerHTML='<span style="font-size:11px;color:var(--hint)">날씨 불러오는 중…</span>';
+  var lat=35.8438, lon=129.1300;
+  var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+    +'&current=temperature_2m,wind_speed_10m,weather_code&timezone=Asia%2FSeoul&wind_speed_unit=ms&forecast_days=1';
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    var cur=d.current||{};
+    var temp=Math.round(cur.temperature_2m||0);
+    var wind=parseFloat(cur.wind_speed_10m||0);
+    var code=cur.weather_code||0;
+    function wcode(c){
+      if(c===0) return '☀️ 맑음'; if(c<=3) return '⛅ 구름'; if(c<=48) return '🌫️ 안개';
+      if(c<=67) return '🌧️ 비'; if(c<=77) return '❄️ 눈'; if(c<=82) return '🌦️ 소나기'; return '⛈️ 뇌우';
+    }
+    var windCol=wind>=8?'#FF4444':(wind>=5?'#FF9500':'#00C853');
+    var windBg=wind>=8?'rgba(255,68,68,.12)':(wind>=5?'rgba(255,149,0,.12)':'rgba(0,200,83,.12)');
+    var windNote=wind>=8?'🚫 강풍':(wind>=5?'⚠️ 주의':'✅ 양호');
+    box.innerHTML=
+      '<span style="font-size:15px;font-weight:700;color:var(--ink)">'+wcode(code)+'</span>'
+      +'<span style="font-size:15px;font-weight:700;color:var(--ink);margin:0 4px">'+temp+'°C</span>'
+      +'<span style="font-size:13.5px;font-weight:700;color:'+windCol+';background:'+windBg+';padding:3px 10px;border-radius:7px;border:1px solid '+windCol+'33">'
+      +'💨 '+wind.toFixed(1)+'m/s '+windNote+'</span>';
+  }).catch(function(){
+    box.innerHTML='<span style="font-size:11px;color:var(--hint)">날씨 정보 없음</span>';
+  });
+}
+
 // 실시간 날씨 (Open-Meteo, 키 불필요) — 본사 경주 건천읍
 function loadLiveWeather(){
   var box=document.getElementById('weather-live');
