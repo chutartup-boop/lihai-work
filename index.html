@@ -2595,6 +2595,17 @@ function empTab(t){
   document.getElementById('e-team').classList.toggle('hidden', t!=='team');
   document.getElementById('e-history').classList.toggle('hidden', t!=='history');
   document.getElementById('e-profile').classList.toggle('hidden', t!=='profile');
+  if(t==='daily'){
+    // 일일업무 탭으로 이동 시 항상 기존 데이터 다시 로드
+    var aftersubmit = document.getElementById('e-aftersubmit');
+    var dailyCard = document.querySelector('#e-daily > .card');
+    // 제출 완료 화면이 떠있으면 숨기고 폼 보이기
+    if(aftersubmit && !aftersubmit.classList.contains('hidden')){
+      aftersubmit.classList.add('hidden');
+      if(dailyCard) dailyCard.style.display='';
+    }
+    loadTodayLogIfAny();
+  }
   if(t==='grant'){ renderKanban('e-grant', false); }
   if(t==='team'){ renderTeam(); }
   if(t==='history'){ renderHistory(); }
