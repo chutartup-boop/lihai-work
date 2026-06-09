@@ -2902,10 +2902,12 @@ async function loadTodayLogIfAny(){
         }
         // 저장된 일지로 마법사 입력칸 복원 (A)
         fillWizardFromLog(result.data);
-        // 기존 제출 일지 있으면 체크리스트 사이드바도 즉시 표시
+        // 기존 제출 일지 있으면 체크리스트 사이드바 — 직원 일일업무 탭일 때만
         if(Array.isArray(result.data.today_tasks) && result.data.today_tasks.length){
           CL_TASKS_CACHE = JSON.parse(JSON.stringify(result.data.today_tasks));
-          renderChecklistPopup(CL_TASKS_CACHE);
+          var isEmpDailyTab = document.getElementById('view-emp') && !document.getElementById('view-emp').classList.contains('hidden')
+            && document.getElementById('e-daily') && !document.getElementById('e-daily').classList.contains('hidden');
+          if(isEmpDailyTab) renderChecklistPopup(CL_TASKS_CACHE);
         }
       }
     }
@@ -6030,7 +6032,7 @@ function editDay(){
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft=''; wrap.style.maxWidth=''; }
+  if(wrap){ wrap.style.marginLeft=''; wrap.style.maxWidth=''; wrap.style.paddingLeft=''; }
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6169,7 +6171,7 @@ function renderChecklistPopup(tasks){
 
   // wrap marginLeft — 업무일지 크기 그대로, 위치만 오른쪽으로
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft='430px'; wrap.style.maxWidth='calc(100% - 430px)'; }
+  if(wrap){ wrap.style.marginLeft='430px'; wrap.style.maxWidth='calc(100% - 456px)'; }
 }
 
 function toggleChecklist(i){
