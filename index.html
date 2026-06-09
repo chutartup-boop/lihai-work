@@ -6112,9 +6112,9 @@ function renderChecklistPopup(tasks){
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:10px">'
     +'<div style="flex:1;height:8px;background:var(--soft);border-radius:4px;overflow:hidden">'
-    +'<div style="height:100%;width:'+pct+'%;background:var(--blue);border-radius:4px;transition:width .3s"></div>'
+    +'<div class="ck-progress-bar" style="height:100%;width:'+pct+'%;background:var(--blue);border-radius:4px;transition:width .3s"></div>'
     +'</div>'
-    +'<span style="font-size:14px;font-weight:700;color:var(--blue);white-space:nowrap">'+done+'/'+total+'</span>'
+    +'<span class="ck-counter" style="font-size:14px;font-weight:700;color:var(--blue);white-space:nowrap">'+done+'/'+total+'</span>'
     +'</div>'
     +'</div>';
 
@@ -6177,8 +6177,40 @@ function renderChecklistPopup(tasks){
 function toggleChecklist(i){
   if(!CL_TASKS_CACHE[i]) return;
   CL_TASKS_CACHE[i].status = CL_TASKS_CACHE[i].status==='완료' ? '진행중' : '완료';
-  renderChecklistPopup(CL_TASKS_CACHE);
-  // DB에 변경 반영
+
+  // 패널 전체 재렌더 대신 해당 아이템 + 진행률만 업데이트
+  var t = CL_TASKS_CACHE[i];
+  var isDone = (t.status==='완료');
+  var isExtra = !!t._extra;
+  var checkColor = isDone ? 'var(--green-t)' : (isExtra ? 'var(--red)' : 'var(--line2)');
+  var lineStyle = isDone ? 'text-decoration:line-through;color:var(--hint)' : 'color:var(--ink)';
+  var itemBg = isDone ? 'background:var(--soft);' : (isExtra ? 'background:linear-gradient(90deg,rgba(255,107,107,.08),var(--card));border-color:var(--red);' : 'background:var(--card);');
+
+  var item = document.querySelector('.ck-item[data-ck-idx="'+i+'"]');
+  if(item){
+    item.style.cssText = 'cursor:pointer;display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:12px;margin-bottom:8px;'+itemBg+'border:1px solid var(--line);transition:all .15s';
+    // 체크박스 업데이트
+    var box = item.querySelector('.ck-box');
+    if(box){
+      box.style.border = '2px solid '+checkColor;
+      box.style.background = isDone ? checkColor : 'transparent';
+      box.innerHTML = isDone ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>' : '';
+    }
+    // 텍스트 취소선
+    var txt = item.querySelector('div[style*="font-size:15px"]');
+    if(txt) txt.style.cssText = 'flex:1;font-size:15px;line-height:1.5;'+lineStyle;
+  }
+
+  // 진행률 바 업데이트
+  var done = CL_TASKS_CACHE.filter(function(t){return t.status==='완료';}).length;
+  var total = CL_TASKS_CACHE.length;
+  var pct = total ? Math.round(done/total*100) : 0;
+  var bar = document.querySelector('#checklist-popup .ck-progress-bar');
+  if(bar) bar.style.width = pct+'%';
+  var counter = document.querySelector('#checklist-popup .ck-counter');
+  if(counter) counter.textContent = done+'/'+total;
+
+  // DB 저장
   saveChecklistToDb();
 }
 
