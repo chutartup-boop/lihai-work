@@ -6032,7 +6032,7 @@ function editDay(){
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft=''; wrap.style.maxWidth=''; wrap.style.paddingLeft=''; }
+  if(wrap){ wrap.style.marginLeft=''; wrap.style.marginRight=''; wrap.style.maxWidth=''; wrap.style.paddingLeft=''; }
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6171,7 +6171,7 @@ function renderChecklistPopup(tasks){
 
   // wrap marginLeft — 업무일지 크기 그대로, 위치만 오른쪽으로
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft='430px'; wrap.style.maxWidth='calc(100% - 456px)'; }
+  if(wrap){ wrap.style.marginLeft='430px'; wrap.style.marginRight='430px'; wrap.style.maxWidth=''; }
 }
 
 function toggleChecklist(i){
