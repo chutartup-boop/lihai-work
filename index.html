@@ -5118,3 +5118,115 @@ async function openGrantDetail(dbId){
         ? '<button class="btn" onclick="reopenGrant('+dbId+')">↩ 종료 해제</button>'
         : '<button class="btn" style="color:var(--hint);border-color:var(--hint)" onclick="closeGrant('+dbId+',\''+gnameJs+'\')">✅ 과제 종료</button>')
       : '')
+    +(canEdit ? '<button class="btn" style="border-color:var(--red);color:var(--red-t)" onclick="deleteGrantDetail('+dbId+',\''+gnameJs+'\')">🗑 삭제</button>' : '')
+    +'<div style="flex:1"></div>'
+    +(canEdit
+      ? '<button class="btn btn-pri" id="grant-save-btn" style="display:none" onclick="saveGrantEdit('+dbId+')">💾 저장</button>'
+        +'<button class="btn" id="grant-cancel-btn" style="display:none" onclick="openGrantDetail('+dbId+')">취소</button>'
+        +'<button class="btn" id="grant-edit-toggle" onclick="switchToGrantEdit('+dbId+')" style="border-color:var(--blue);color:var(--blue)">✏️ 편집</button>'
+      : '<span style="font-size:12px;color:var(--hint)">수정·삭제 권한 없음</span>')
+    +'<button class="btn" onclick="closeGrantDetail()">닫기</button>'
+    +'</div></div>';
+  document.body.appendChild(bg);
+}
+
+function switchToGrantEdit(dbId){
+  openGrantEdit(dbId);
+  var editBtn = document.getElementById('grant-edit-toggle');
+  var saveBtn = document.getElementById('grant-save-btn');
+  var cancelBtn = document.getElementById('grant-cancel-btn');
+  if(editBtn) editBtn.style.display='none';
+  if(saveBtn) saveBtn.style.display='';
+  if(cancelBtn) cancelBtn.style.display='';
+}
+
+function closeGrantDetail(){ var b=document.getElementById('grant-detail-bg'); if(b) b.remove(); }
+
+async function deleteGrantDetail(dbId, name){
+  if(!DB_USER){ alert('로그인 후 사용 가능합니다.'); return; }
+  if(!confirm('"'+(name||'이 과제')+'" 과제를 정말 삭제할까요?\n삭제하면 되돌릴 수 없습니다.')) return;
+  try {
+    var r = await db.from('grants').delete().eq('id', dbId);
+    if(r.error) throw r.error;
+    closeGrantDetail();
+    toast('🗑 과제가 삭제되었습니다');
+    renderKanban('m-grant', true);
+  } catch(e){ alert('삭제 실패: '+(e.message||e)); }
+}
+
+async function closeGrant(dbId, name){
+  if(!confirm('"'+(name||'이 과제')+'" 을 종료 처리할까요?')) return;
+  try {
+    var r = await db.from('grants').update({ closed:true }).eq('id', dbId);
+    if(r.error) throw r.error;
+    closeGrantDetail();
+    toast('✅ 과제가 종료 처리되었습니다');
+    renderKanban('m-grant', true);
+  } catch(e){ alert('종료 실패: '+(e.message||e)); }
+}
+
+async function reopenGrant(dbId){
+  try {
+    var r = await db.from('grants').update({ closed:false }).eq('id', dbId);
+    if(r.error) throw r.error;
+    closeGrantDetail();
+    toast('↩ 과제 종료가 해제되었습니다');
+    renderKanban('m-grant', true);
+  } catch(e){ alert('종료 해제 실패: '+(e.message||e)); }
+}
+
+function openGrantEdit(dbId){
+  (async function(){
+    var g=null;
+    try { var res=await db.from('grants').select('*').eq('id',dbId).single(); g=res.data; } catch(e){}
+    if(!g){ var c=findGrantCard(dbId); g=c&&c._raw; }
+    if(!g) return;
+    var body=document.getElementById('grant-detail-body');
+    function f(label,id,val,type){
+      type=type||'text';
+      return '<div style="margin-bottom:11px"><div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">'+label+'</div><input type="'+type+'" id="ge-'+id+'" value="'+escH(val==null?'':val)+'" style="width:100%"></div>';
+    }
+    var stageOpts=Object.keys(GRANT_STAGE_LABEL).map(function(k){return '<option value="'+k+'"'+(String(g.stage)===k?' selected':'')+'>'+k+' '+GRANT_STAGE_LABEL[k]+'</option>';}).join('');
+    body.innerHTML=
+      f('과제명','name',g.name)
+      +f('발주처/기관','org',g.org)
+      +'<div style="margin-bottom:11px"><div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">단계</div><select id="ge-stage" style="width:100%">'+stageOpts+'</select></div>'
+      +f('유형','grant_type',g.grant_type)
+      +f('주관부서','main_dept',g.main_dept)
+      +f('사업규모(원)','budget',g.budget,'number')
+      +f('사업 시작일','start_date',g.start_date,'date')
+      +f('사업 종료일','end_date',g.end_date,'date')
+      +f('신청마감','apply_deadline',g.apply_deadline,'date')
+      +f('발표일','presentation_date',g.presentation_date,'date')
+      +f('키워드','keywords',g.keywords)
+      +f('비고','notes',g.notes);
+  })();
+}
+
+function confirmSaveGrantEdit(dbId){ saveGrantEdit(dbId); }
+
+async function saveGrantEdit(dbId){
+  function v(id){ var el=document.getElementById('ge-'+id); return el?el.value.trim():null; }
+  var payload={
+    name:v('name'), org:v('org'),
+    stage: parseInt(document.getElementById('ge-stage').value)||0,
+    grant_type:v('grant_type'), main_dept:v('main_dept'),
+    budget: v('budget')?parseInt(v('budget')):null,
+    start_date:v('start_date')||null, end_date:v('end_date')||null,
+    apply_deadline:v('apply_deadline')||null,
+    presentation_date:v('presentation_date')||null,
+    keywords:v('keywords'), notes:v('notes')
+  };
+  try {
+    var up=await db.from('grants').update(payload).eq('id',dbId);
+    if(up.error) throw up.error;
+    toast('✅ 과제 정보가 저장되었습니다');
+    closeGrantDetail();
+    renderKanban('m-grant', true);
+  } catch(e){ alert('저장 실패: '+(e.message||e)); }
+}
+
+function closeSaveConfirm(){ var el=document.getElementById('save-confirm-bg'); if(el) el.remove(); }
+</script>
+</body>
+</html>
