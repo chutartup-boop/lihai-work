@@ -2683,6 +2683,62 @@ async function submitDay(){
   document.getElementById('e-aftersubmit').scrollIntoView({behavior:'smooth'});
   // 내 기록 탭 캐시 무효화 — 다음 진입 시 DB에서 최신 로드
   HISTORY_SUB_DIRTY = true;
+  // 이벤트 팝업 — 오늘 미참여자에게만 자동 표시 (2초 딜레이)
+  setTimeout(function(){ showEventPopupIfEligible(); }, 2000);
+}
+
+async function showEventPopupIfEligible(){
+  // 이벤트가 활성화 상태인지 확인
+  try {
+    var evRes = await db.from('app_settings').select('value').eq('key','event_active').maybeSingle();
+    var isActive = evRes.data && evRes.data.value === 'true';
+    if(!isActive) return; // 이벤트 비활성 상태면 팝업 안 띄움
+  } catch(e){ return; }
+
+  if(!DB_USER) return;
+  // 오늘 이미 참여했는지 확인
+  try {
+    var chk = await db.from('event_plays')
+      .select('id').eq('emp_name', DB_USER.name).eq('play_date', TODAY).limit(1);
+    if(chk.data && chk.data.length > 0) return; // 이미 참여
+  } catch(e){ return; }
+
+  // 참여 유도 팝업 표시
+  var bg = document.createElement('div');
+  bg.id = 'event-nudge-bg';
+  bg.style.cssText = 'position:fixed;inset:0;background:rgba(10,22,40,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease';
+  bg.innerHTML =
+    '<div style="background:var(--card);border-radius:20px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">'
+    // 헤더
+    +'<div style="background:linear-gradient(135deg,#0A1628,#1a3a6b);padding:24px 22px 20px;text-align:center">'
+    +'<div style="font-size:36px;margin-bottom:8px">🎈</div>'
+    +'<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">오늘의 이벤트!</div>'
+    +'<div style="font-size:13px;color:rgba(255,255,255,.7)">수고하셨어요 '+escH(DB_USER.name)+'님 · 오늘의 행운을 확인해보세요</div>'
+    +'</div>'
+    // 경품 안내
+    +'<div style="padding:18px 22px 14px">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-align:center">🎁 오늘의 경품</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:18px">'
+    +'<span style="background:var(--amber-bg);color:var(--amber-t);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">반차 🌴 × 1</span>'
+    +'<span style="background:var(--blue)22;color:var(--blue);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">2시간 조기퇴근 × 1</span>'
+    +'<span style="background:var(--green-bg);color:var(--green-t);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">1시간 조기퇴근 × 2</span>'
+    +'<span style="background:var(--soft);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">30분 조기퇴근 × 2</span>'
+    +'</div>'
+    // 버튼
+    +'<button onclick="closeEventNudge();startEventGame();" '
+    +'style="width:100%;height:50px;background:linear-gradient(90deg,var(--blue),#3a7bd5);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:9px">'
+    +'🎰 지금 바로 참여하기</button>'
+    +'<button onclick="closeEventNudge()" '
+    +'style="width:100%;height:40px;background:var(--soft);color:var(--hint);border:none;border-radius:10px;font-size:13px;cursor:pointer">'
+    +'오늘은 그냥 넘어갈게요</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(bg);
+}
+
+function closeEventNudge(){
+  var el = document.getElementById('event-nudge-bg');
+  if(el) el.remove();
 }
 
 // 문자열 안전 이스케이프 (HTML 본문·속성 공용)
@@ -5974,7 +6030,7 @@ function editDay(){
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft=''; wrap.style.marginRight=''; wrap.style.maxWidth=''; }
+  if(wrap){ wrap.style.marginLeft=''; wrap.style.maxWidth=''; }
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6075,8 +6131,8 @@ function renderChecklistPopup(tasks){
     var pj = t.project
       ? '<span style="font-size:12px;background:var(--lblue);color:var(--blue);padding:2px 8px;border-radius:6px;margin-right:6px">'+escH(t.project)+'</span>'
       : (isExtra ? '<span style="font-size:12px;background:rgba(255,107,107,.15);color:var(--red);padding:2px 8px;border-radius:6px;margin-right:6px">추가</span>' : '');
-    h+='<div id="ck-item-'+i+'" onclick="toggleChecklist('+i+')" style="cursor:pointer;display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:12px;margin-bottom:8px;'+itemBg+'border:1px solid var(--line);transition:all .15s">'
-      +'<div style="width:24px;height:24px;border-radius:7px;border:2px solid '+checkColor+';background:'+(isDone?checkColor:'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .15s">'
+    h+='<div class="ck-item" data-ck-idx="'+i+'" style="cursor:pointer;display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:12px;margin-bottom:8px;'+itemBg+'border:1px solid var(--line);transition:all .15s">'
+      +'<div class="ck-box" style="width:24px;height:24px;border-radius:7px;border:2px solid '+checkColor+';background:'+(isDone?checkColor:'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .15s">'
       +(isDone?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>':'')
       +'</div>'
       +'<div style="flex:1;font-size:15px;line-height:1.5;'+lineStyle+'">'+pj+escH(t.task||'')+'</div>'
@@ -6086,21 +6142,34 @@ function renderChecklistPopup(tasks){
 
   // 추가하기 영역
   h += '<div style="padding:14px 14px 18px;border-top:1px solid var(--line);flex-shrink:0">'
-    +'<div style="display:flex;gap:8px;margin-bottom:8px">'
-    +'<input id="ck-add-input" type="text" placeholder="추가 업무 입력…" '
+    +'<div style="display:flex;gap:7px;margin-bottom:6px">'
+    +'<input id="ck-add-proj" type="text" placeholder="프로젝트명 (선택)" '
+    +'style="width:130px;flex-shrink:0;height:42px;border:1.5px solid var(--line2);border-radius:10px;padding:0 11px;font-size:13px;background:var(--card);color:var(--ink);outline:none">'
+    +'<input id="ck-add-input" type="text" placeholder="업무 내용 입력…" '
     +'onkeydown="if(event.key===\'Enter\') addChecklistTask()" '
     +'style="flex:1;height:42px;border:2px solid var(--red);border-radius:10px;padding:0 13px;font-size:14px;background:var(--card);color:var(--ink);outline:none">'
-    +'<button onclick="addChecklistTask()" style="height:42px;padding:0 18px;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">+ 추가</button>'
+    +'<button onclick="addChecklistTask()" style="height:42px;padding:0 16px;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ 추가</button>'
     +'</div>'
-    +'<div style="font-size:13px;color:var(--hint);line-height:1.6">💡 갑자기 생긴 업무나 추가 업무를 넣어주셔도 됩니다.<br>추가한 내용은 오늘 일지에 자동 반영됩니다.</div>'
+    +'<div style="font-size:13px;color:var(--hint);line-height:1.6">💡 갑자기 생긴 업무나 추가 업무를 넣어주셔도 됩니다. 추가한 내용은 오늘 일지에 자동 반영됩니다.</div>'
     +'</div>';
 
   panel.innerHTML = h;
   document.body.appendChild(panel);
 
-  // wrap 패딩으로 업무일지 중앙 유지
+  // 이벤트 위임 — ck-item 클릭
+  var ckList = panel.querySelector('#checklist-list');
+  if(ckList){
+    ckList.addEventListener('click', function(e){
+      var item = e.target.closest('.ck-item');
+      if(!item) return;
+      var idx = parseInt(item.getAttribute('data-ck-idx'));
+      if(!isNaN(idx)) toggleChecklist(idx);
+    });
+  }
+
+  // wrap marginLeft — 업무일지 크기 그대로, 위치만 오른쪽으로
   var wrap = document.querySelector('.wrap');
-  if(wrap){ wrap.style.marginLeft='420px'; wrap.style.marginRight='0'; wrap.style.maxWidth=''; }
+  if(wrap){ wrap.style.marginLeft='430px'; wrap.style.maxWidth='calc(100% - 430px)'; }
 }
 
 function toggleChecklist(i){
@@ -6112,16 +6181,33 @@ function toggleChecklist(i){
 }
 
 async function addChecklistTask(){
-  var inp = document.getElementById('ck-add-input');
+  var inp  = document.getElementById('ck-add-input');
+  var proj = document.getElementById('ck-add-proj');
   if(!inp) return;
-  var val = inp.value.trim();
+  var val  = inp.value.trim();
+  var pval = proj ? proj.value.trim() : '';
   if(!val){ inp.focus(); return; }
-  inp.value = '';
-  // 추가 업무는 _extra 플래그
-  CL_TASKS_CACHE.push({ task: val, project:'', status:'진행중', hours:'', _extra:true });
+  inp.value  = '';
+  if(proj) proj.value = '';
+
+  // CL_TASKS_CACHE에 추가
+  var newTask = { task:val, project:pval, status:'진행중', hours:'', _extra:true };
+  CL_TASKS_CACHE.push(newTask);
+
+  // 체크리스트 사이드바 즉시 갱신
   renderChecklistPopup(CL_TASKS_CACHE);
+
+  // 일일업무 폼 today-list에도 즉시 행 추가
+  var todayList = document.getElementById('today-list');
+  if(todayList){
+    var div = document.createElement('div');
+    div.innerHTML = buildTodayRowHtml(pval, val, '진행중', '');
+    todayList.appendChild(div.firstChild);
+  }
+
   // 포커스 유지
-  setTimeout(function(){ var i2=document.getElementById('ck-add-input'); if(i2) i2.focus(); },80);
+  setTimeout(function(){ var i2=document.getElementById('ck-add-input'); if(i2) i2.focus(); }, 80);
+
   // DB 반영
   await saveChecklistToDb();
   toast('✅ 추가 업무가 일지에 반영됐습니다');
