@@ -1571,7 +1571,7 @@ function renderHistory(){
       if(iso===TODAY) st='today';
       else if(dd<td) st='past';   // 지난 날 — 일지 있으면 done으로 갱신(DB)
       else st='future';
-      weekDays.push({d:md, iso:iso, day:dayNames[wi], st:st, label:(iso===TODAY?'오늘':null)});
+      weekDays.push({d:md, iso:iso, day:dayNames[wi], st:st, label:(iso===TODAY?md+' 오늘':null)});
     }
     var wkStart=weekDays[0].d, wkEnd=weekDays[4].d;
     h+='<div style="font-size:13px;font-weight:600;margin-bottom:9px">이번 주 — '+wkStart+'(월) ~ '+wkEnd+'(금)</div>';
@@ -5974,7 +5974,7 @@ function editDay(){
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
   var wrap = document.querySelector('.wrap');
-  if(wrap) wrap.style.paddingLeft = '';
+  if(wrap){ wrap.style.marginLeft=''; wrap.style.marginRight=''; wrap.style.maxWidth=''; }
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6100,7 +6100,7 @@ function renderChecklistPopup(tasks){
 
   // wrap 패딩으로 업무일지 중앙 유지
   var wrap = document.querySelector('.wrap');
-  if(wrap) wrap.style.paddingLeft = '446px';
+  if(wrap){ wrap.style.marginLeft='420px'; wrap.style.marginRight='0'; wrap.style.maxWidth=''; }
 }
 
 function toggleChecklist(i){
