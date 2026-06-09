@@ -5973,7 +5973,8 @@ function editDay(){
   card.style.display='';
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
-  // wrap 복원 불필요
+  var wrap = document.querySelector('.wrap');
+  if(wrap) wrap.style.paddingLeft = '';
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6040,7 +6041,9 @@ function renderChecklistPopup(tasks){
     +'z-index:300;display:flex;flex-direction:column;'
     +'max-height:calc(100vh - 70px);'
     +'transition:transform .25s;';
-  // 콘텐츠 레이아웃에 영향 없음 (오버레이)
+  // wrap 왼쪽 여백을 사이드바 너비만큼 추가 → 시각적 중앙 유지
+  var wrap = document.querySelector('.wrap');
+  if(wrap) wrap.style.paddingLeft = '306px';
 
   // 헤더
   var done = tasks.filter(function(t){return t.status==='완료';}).length;
