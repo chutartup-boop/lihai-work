@@ -1139,6 +1139,11 @@ function helpCardHtmlDB(hp, empMap){
   return h;
 }
 
+function setHelpTab(tab){
+  window._helpTab = tab;
+  renderMgrHelps();
+}
+
 function renderMgrHelps(){
   var box=document.getElementById('m-helps-card');
   if(!box) return;
@@ -1148,25 +1153,56 @@ function renderMgrHelps(){
     var reqs=data.reqs, empMap=data.empMap;
     var open = reqs.filter(function(r){return r.status==='open';});
     var resolved = reqs.filter(function(r){return r.status==='resolved';});
-    var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><h3 style="color:var(--red-t);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>도움 요청 — 답변 대기 ('+open.length+') <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span></h3>'+(resolved.length>0?'<span style="font-size:11px;color:var(--green-t);background:var(--green-bg);padding:3px 9px;border-radius:9px">✓ 해결 '+resolved.length+'건</span>':'')+'</div>';
-    if(open.length===0){
-      h+='<div style="background:var(--green-bg);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 모든 도움 요청이 처리되었습니다</div>';
+    // 서브탭 상태
+    var curHelpTab = (window._helpTab || 'open');
+    window._helpTab = curHelpTab;
+
+    var h='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">'
+      +'<h3 style="color:var(--red-t);display:flex;align-items:center;gap:6px">'
+      +'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>'
+      +'도움 요청 <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC;font-weight:600">🟢 DB</span>'
+      +'</h3>'
+      +'<div style="display:flex;gap:5px">'
+      +'<button onclick="setHelpTab(&quot;open&quot;)" style="font-size:11.5px;padding:4px 12px;border-radius:7px;border:1px solid '+(curHelpTab==='open'?'var(--red)':'var(--line2)')+';background:'+(curHelpTab==='open'?'var(--red-bg)':'var(--card)')+';color:'+(curHelpTab==='open'?'var(--red-t)':'var(--hint)')+';cursor:pointer;font-weight:'+(curHelpTab==='open'?'700':'400')+'">🔴 진행중 '+open.length+'</button>'
+      +'<button onclick="setHelpTab(&quot;resolved&quot;)" style="font-size:11.5px;padding:4px 12px;border-radius:7px;border:1px solid '+(curHelpTab==='resolved'?'var(--green-t)':'var(--line2)')+';background:'+(curHelpTab==='resolved'?'var(--green-bg)':'var(--card)')+';color:'+(curHelpTab==='resolved'?'var(--green-t)':'var(--hint)')+';cursor:pointer;font-weight:'+(curHelpTab==='resolved'?'700':'400')+'">✅ 완료 '+resolved.length+'</button>'
+      +'</div>'
+      +'</div>';
+
+    if(curHelpTab==='open'){
+      if(open.length===0){
+        h+='<div style="background:var(--green-bg);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--green-t)">✨ 현재 진행 중인 도움 요청이 없습니다</div>';
+      } else {
+        open.forEach(function(hp){ h+=helpCardHtmlDB(hp, empMap); });
+      }
     } else {
-      open.forEach(function(hp){ h+=helpCardHtmlDB(hp, empMap); });
-    }
-    if(resolved.length>0){
-      h+='<details style="margin-top:11px"><summary style="cursor:pointer;font-size:12px;color:var(--hint);padding:6px 0">✓ 해결된 도움 요청 '+resolved.length+'건 보기</summary>';
-      resolved.forEach(function(hp){
-        var e=empMap[hp.requester_id]||{};
-        h+='<div style="background:var(--green-bg);border-radius:7px;padding:9px 11px;margin-top:5px;opacity:.85"><div style="font-size:12px"><b>'+escH(e.name||'')+'</b> ('+escH(e.dept||'')+'): '+escH(hp.text)+'</div>';
-        if(hp.replies && hp.replies.length){
-          var last=hp.replies[hp.replies.length-1];
-          var re=empMap[last.replier_id]||{};
-          h+='<div style="font-size:11px;color:var(--green-t);margin-top:4px"><b>✓ '+escH(re.name||'')+'</b>이(가) 답변: '+escH(last.text)+'</div>';
-        }
-        h+='</div>';
-      });
-      h+='</details>';
+      // 완료 이력 탭
+      if(resolved.length===0){
+        h+='<div style="background:var(--soft);border-radius:9px;padding:14px;text-align:center;font-size:12.5px;color:var(--hint)">아직 완료된 도움 요청이 없습니다</div>';
+      } else {
+        h+='<div style="font-size:11.5px;color:var(--hint);margin-bottom:9px">총 '+resolved.length+'건의 도움 요청이 해결되었습니다</div>';
+        resolved.forEach(function(hp){
+          var e=empMap[hp.requester_id]||{};
+          var resolvedAt = hp.resolved_at ? new Date(hp.resolved_at).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}) : '';
+          var createdAt = hp.created_at ? new Date(hp.created_at).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}) : '';
+          h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px">'
+            +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">'
+            +'<span style="font-size:12px;font-weight:700">'+escH(e.name||'')+'</span>'
+            +'<span style="font-size:10.5px;color:var(--hint)">'+escH(e.dept||'')+'</span>'
+            +'<span style="margin-left:auto;font-size:10.5px;background:var(--green-bg);color:var(--green-t);padding:1.5px 7px;border-radius:5px;font-weight:600">✅ 완료</span>'
+            +'</div>'
+            +'<div style="font-size:13px;color:var(--ink);margin-bottom:7px;line-height:1.5">'+escH(hp.text)+'</div>'
+            +(hp.replies&&hp.replies.length ? (function(){
+                var last=hp.replies[hp.replies.length-1];
+                var re=empMap[last.replier_id]||{};
+                return '<div style="background:var(--green-bg);border-radius:7px;padding:8px 11px;font-size:12px;color:var(--green-t)">'
+                  +'<b>✓ '+escH(re.name||re.replier_id||'')+'</b> 답변: '+escH(last.text)+'</div>';
+              })() : '')
+            +'<div style="font-size:10.5px;color:var(--hint);margin-top:6px;text-align:right">'
+            +(createdAt?'요청: '+createdAt+' ':'')+' '+(resolvedAt?'· 완료: '+resolvedAt:'')
+            +'</div>'
+            +'</div>';
+        });
+      }
     }
     box.innerHTML=h;
   }).catch(function(e){
@@ -5641,27 +5677,52 @@ function renderWeeklyGoalsUI(locked){
   var intro = document.getElementById('goal-intro');
   if(!gl) return;
   if(locked){
-    // 고정 상태: 읽기 전용으로 표시
+    // 고정 상태: 체크리스트 형태로 표시
     if(lockedBadge) lockedBadge.classList.remove('hidden');
     if(addBtn) addBtn.style.display='none';
-    if(intro) intro.textContent='이번 주 목표가 설정되어 있습니다. 주간 목표는 한 주 동안 유지됩니다.';
-    var h='';
-    WEEKLY_GOALS_DATA.forEach(function(g){
-      var proj=(g&&typeof g==='object')?g.project||'':g||'';
+    if(intro) intro.textContent='이번 주 목표가 설정되어 있습니다. 체크하며 진행하고, 미완료 항목은 다음 주로 이월할 수 있습니다.';
+    var done = WEEKLY_GOALS_DATA.filter(function(g){return g&&g.checked;}).length;
+    var total = WEEKLY_GOALS_DATA.length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    // 진행률 바
+    var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+      +'<div style="flex:1;height:7px;background:var(--soft);border-radius:4px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:var(--green-t);border-radius:4px;transition:width .3s"></div>'
+      +'</div>'
+      +'<span style="font-size:12px;font-weight:700;color:var(--green-t);white-space:nowrap">'+done+'/'+total+' 완료</span>'
+      +'</div>';
+    WEEKLY_GOALS_DATA.forEach(function(g,i){
+      var proj=(g&&typeof g==='object')?g.project||'':'';
       var goal=(g&&typeof g==='object')?g.goal||'':g||'';
-      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--soft);border-radius:8px;margin-bottom:6px;border:1px solid var(--line)">'
-        +(proj?'<span style="font-size:10.5px;background:var(--lblue);color:var(--blue);padding:1px 7px;border-radius:5px;white-space:nowrap">'+escH(proj)+'</span>':'')
-        +'<span style="font-size:13px;color:var(--ink)">'+escH(goal)+'</span>'
+      var checked=!!(g&&g.checked);
+      var delayed=!!(g&&g.delayed);
+      var lineStyle=checked?'text-decoration:line-through;color:var(--hint)':'color:var(--ink)';
+      var itemBg=checked?'background:var(--soft)':'background:var(--card)';
+      var checkColor=checked?'var(--green-t)':(delayed?'var(--amber-t)':'var(--line2)');
+      h+='<div style="'+itemBg+';border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:6px;display:flex;align-items:center;gap:9px">'
+        // 체크박스
+        +'<div onclick="toggleGoalCheck('+i+')" style="cursor:pointer;width:20px;height:20px;border-radius:5px;border:2px solid '+checkColor+';background:'+(checked?checkColor:'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">'
+        +(checked?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>':'')
+        +'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +(proj?'<span style="font-size:10px;background:var(--lblue);color:var(--blue);padding:1px 6px;border-radius:5px;margin-right:5px">'+escH(proj)+'</span>':'')
+        +'<span style="font-size:13px;'+lineStyle+'">'+escH(goal)+'</span>'
+        +(delayed?'<span style="font-size:10px;background:var(--amber-bg);color:var(--amber-t);padding:1px 6px;border-radius:5px;margin-left:5px">↩ 이월</span>':'')
+        +'</div>'
+        // 지연 버튼 (미완료 항목만)
+        +(!checked?'<button onclick="delayGoal('+i+')" style="font-size:10.5px;color:var(--amber-t);background:var(--amber-bg);border:1px solid var(--amber-t)33;border-radius:6px;padding:2px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0">'+(delayed?'↩ 이월됨':'↩ 다음 주')+'</button>':'')
         +'</div>';
     });
     gl.innerHTML = h || '<div style="font-size:12px;color:var(--hint);padding:8px">목표 없음</div>';
-    // 수정 버튼 (한 번만 수정 가능)
+    // 이월 + 수정 버튼 영역
     var editArea = document.getElementById('goal-edit-area');
     if(!editArea){
       var ea = document.createElement('div');
       ea.id='goal-edit-area';
-      ea.style='margin-top:6px';
-      ea.innerHTML='<button class="btn" style="font-size:12px" onclick="unlockWeeklyGoals()">✏️ 이번 주 목표 수정</button>';
+      ea.style='margin-top:8px;display:flex;gap:7px;flex-wrap:wrap';
+      ea.innerHTML=''
+        +'<button class="btn" style="font-size:12px" onclick="carryOverGoals()">↩ 미완료 항목 다음 주 이월</button>'
+        +'<button class="btn" style="font-size:12px" onclick="unlockWeeklyGoals()">✏️ 목표 수정</button>';
       gl.parentNode.insertBefore(ea, gl.nextSibling);
     }
   } else {
@@ -5692,6 +5753,57 @@ function unlockWeeklyGoals(){
   renderWeeklyGoalsUI(false);
   var ea=document.getElementById('goal-edit-area');
   if(ea) ea.remove();
+}
+
+async function toggleGoalCheck(i){
+  if(!WEEKLY_GOALS_DATA[i]) return;
+  WEEKLY_GOALS_DATA[i].checked = !WEEKLY_GOALS_DATA[i].checked;
+  // 완료하면 이월 해제
+  if(WEEKLY_GOALS_DATA[i].checked) WEEKLY_GOALS_DATA[i].delayed = false;
+  renderWeeklyGoalsUI(true);
+  await updateWeeklyGoalsDB();
+}
+
+async function delayGoal(i){
+  if(!WEEKLY_GOALS_DATA[i]) return;
+  WEEKLY_GOALS_DATA[i].delayed = !WEEKLY_GOALS_DATA[i].delayed;
+  renderWeeklyGoalsUI(true);
+  await updateWeeklyGoalsDB();
+}
+
+async function carryOverGoals(){
+  if(!confirm('미완료 항목을 다음 주 목표로 이월하시겠습니까?')) return;
+  var nextWeekKey = getNextWeekKey();
+  var delayed = WEEKLY_GOALS_DATA.filter(function(g){ return !g.checked; })
+    .map(function(g){ return { project:g.project||'', goal:g.goal||'', checked:false, delayed:false }; });
+  if(!delayed.length){ toast('미완료 항목이 없습니다'); return; }
+  if(!DB_USER) return;
+  var res = await db.from('weekly_goals').upsert({
+    employee_id: DB_USER.id,
+    week_start: nextWeekKey,
+    goals: delayed,
+    updated_at: new Date().toISOString()
+  }, {onConflict:'employee_id,week_start'});
+  if(res.error){ toast('⚠ 이월 실패: '+res.error.message); return; }
+  toast('✅ '+delayed.length+'건이 다음 주('+nextWeekKey+')로 이월됐습니다');
+}
+
+function getNextWeekKey(){
+  var d = new Date(getWeekKey());
+  d.setDate(d.getDate()+7);
+  var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
+
+async function updateWeeklyGoalsDB(){
+  if(!DB_USER) return;
+  var weekKey = getWeekKey();
+  await db.from('weekly_goals').upsert({
+    employee_id: DB_USER.id,
+    week_start: weekKey,
+    goals: WEEKLY_GOALS_DATA,
+    updated_at: new Date().toISOString()
+  }, {onConflict:'employee_id,week_start'});
 }
 
 async function saveWeeklyGoalsIfNew(){
