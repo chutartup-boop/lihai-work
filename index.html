@@ -2846,6 +2846,11 @@ async function loadTodayLogIfAny(){
         }
         // 저장된 일지로 마법사 입력칸 복원 (A)
         fillWizardFromLog(result.data);
+        // 기존 제출 일지 있으면 체크리스트 사이드바도 즉시 표시
+        if(Array.isArray(result.data.today_tasks) && result.data.today_tasks.length){
+          CL_TASKS_CACHE = JSON.parse(JSON.stringify(result.data.today_tasks));
+          renderChecklistPopup(CL_TASKS_CACHE);
+        }
       }
     }
   } catch(e) {
@@ -5968,7 +5973,7 @@ function editDay(){
   card.style.display='';
   var cp=document.getElementById('checklist-popup');
   if(cp) cp.remove();
-  var wrap=document.querySelector('.wrap'); if(wrap) wrap.style.marginLeft='';
+  // wrap 복원 불필요
 }
 
 // ===== 제출 후 업무 요약 렌더 =====
@@ -6028,13 +6033,14 @@ function renderChecklistPopup(tasks){
   var panel=document.createElement('div');
   panel.id='checklist-popup';
   panel.style.cssText=
-    'position:fixed;top:60px;left:0;width:260px;'
+    'position:fixed;top:60px;left:0;width:280px;'
     +'background:var(--card);border-right:2px solid var(--blue);'
-    +'border-radius:0 14px 14px 0;'
-    +'box-shadow:4px 0 24px rgba(20,40,90,.18);'
+    +'border-radius:0 16px 16px 0;'
+    +'box-shadow:6px 0 32px rgba(20,40,90,.22);'
     +'z-index:300;display:flex;flex-direction:column;'
-    +'max-height:calc(100vh - 80px);'
+    +'max-height:calc(100vh - 70px);'
     +'transition:transform .25s;';
+  // 콘텐츠 레이아웃에 영향 없음 (오버레이)
 
   // 헤더
   var done = tasks.filter(function(t){return t.status==='완료';}).length;
@@ -6094,8 +6100,7 @@ function renderChecklistPopup(tasks){
   document.body.appendChild(panel);
 
   // 메인 콘텐츠 살짝 밀기 (선택적)
-  var wrap = document.querySelector('.wrap');
-  if(wrap) wrap.style.marginLeft = '268px';
+  // wrap 밀기 없음 — 오버레이 방식
 }
 
 function toggleChecklist(i){
