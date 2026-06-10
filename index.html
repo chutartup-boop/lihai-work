@@ -308,7 +308,7 @@
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="font-size:15px;font-weight:700">① 이번 주 목표</div><span id="goal-week-badge" style="font-size:10.5px;background:var(--lblue);color:var(--blue);padding:2px 8px;border-radius:5px;font-weight:600"></span><span id="goal-locked-badge" class="hidden" style="font-size:10.5px;background:var(--green-bg);color:var(--green-t);padding:2px 8px;border-radius:5px;font-weight:600">🔒 이번 주 고정</span></div>
           <div id="goal-intro" style="font-size:11.5px;color:var(--hint);margin-bottom:12px">내가 직접 세우는 이번 주 목표 · 월요일에 작성하고 한 주 동안 함께 채워갑니다</div>
           <div id="goal-list"></div>
-          <button class="btn" style="width:100%;font-size:13px;margin:6px 0 14px" onclick="addGoal()">+ 목표 추가</button>
+          <button id="goal-add-btn" class="btn" style="width:100%;font-size:13px;margin:6px 0 14px" onclick="addGoal()">+ 목표 추가</button>
           <div style="border-top:1px solid var(--line);padding-top:12px">
             <div style="font-size:12.5px;font-weight:600;margin-bottom:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M8 2v4M16 2v4M3 10h18M5 4h14v16H5z"/></svg> 이번 주 휴가 / 자리 비움</div>
             <div style="font-size:11.5px;color:var(--hint);margin-bottom:8px">미리 알면 동료·대표님이 일정을 맞출 수 있어요. 없으면 비워두세요.</div>
@@ -2627,15 +2627,19 @@ function collectDailyLogData(){
     flight_plan: []
   };
   
-  // 주간 목표 — goal-list 안의 각 행(프로젝트 input + 목표 input)
+  // 주간 목표 — 고정 상태면 WEEKLY_GOALS_DATA, 아니면 폼에서 읽기
   try {
-    var goalRows = document.querySelectorAll('#goal-list .flex');
-    goalRows.forEach(function(row){
-      var ins = row.querySelectorAll('input[type="text"]');
-      var proj = ins[0] ? ins[0].value.trim() : '';
-      var goal = ins[1] ? ins[1].value.trim() : '';
-      if(proj || goal) result.weekly_goals.push({project: proj, goal: goal});
-    });
+    if(WEEKLY_GOALS_LOCKED && WEEKLY_GOALS_DATA.length){
+      result.weekly_goals = WEEKLY_GOALS_DATA;
+    } else {
+      var goalRows = document.querySelectorAll('#goal-list .flex');
+      goalRows.forEach(function(row){
+        var ins = row.querySelectorAll('input[type="text"]');
+        var proj = ins[0] ? ins[0].value.trim() : '';
+        var goal = ins[1] ? ins[1].value.trim() : '';
+        if(proj || goal) result.weekly_goals.push({project: proj, goal: goal});
+      });
+    }
   } catch(e){}
   
   // 근무 상태 (선택된 chip)
@@ -2743,10 +2747,9 @@ async function loadTodayLogIfAny(){
       .eq('work_date', TODAY)
       .maybeSingle();
     if(result.data){
-      console.log('오늘 일지 이미 제출됨:', result.data.submitted_at);
-      // 제출 완료 상태면 "이미 제출됨" 안내 + 입력칸 복원
+      console.log('오늘 일지 로드:', result.data.submitted_at);
+      // 제출 완료 상태면 "이미 제출됨" 안내
       if(result.data.is_submitted){
-        // 화면 한 곳에 표시 (도배 안 되게 한 번만)
         var notice = document.getElementById('today-already-submitted');
         if(!notice){
           var wizCard = document.querySelector('#e-daily > .card');
@@ -2759,8 +2762,17 @@ async function loadTodayLogIfAny(){
             wizCard.insertBefore(n, wizCard.firstChild.nextSibling);
           }
         }
-        // 저장된 일지로 마법사 입력칸 복원 (A)
-        fillWizardFromLog(result.data);
+      }
+      // 제출 여부 무관하게 저장된 일지로 폼 복원
+      fillWizardFromLog(result.data);
+      // ④ 오늘 업무가 있으면 체크리스트 사이드바 표시 (퇴근 전 수정 지원)
+      if(Array.isArray(result.data.today_tasks) && result.data.today_tasks.length){
+        CL_TASKS_CACHE = JSON.parse(JSON.stringify(result.data.today_tasks));
+        var empView = document.getElementById('view-emp');
+        var eDailyEl = document.getElementById('e-daily');
+        var isEmpDailyTab = empView && !empView.classList.contains('hidden')
+          && eDailyEl && !eDailyEl.classList.contains('hidden');
+        if(isEmpDailyTab) renderChecklistPopup(CL_TASKS_CACHE);
       }
     }
   } catch(e) {
@@ -3862,7 +3874,12 @@ function fillEmpHints(){
 function computeWorkDate(){
   var now = new Date();
   var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // 17시 이후 → 다음 업무일
   if(now.getHours() >= 17){ d.setDate(d.getDate()+1); }
+  // 주말이면 다음 월요일로
+  var dow = d.getDay();
+  if(dow === 6) d.setDate(d.getDate()+2); // 토 → 월
+  if(dow === 0) d.setDate(d.getDate()+1); // 일 → 월
   var y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), day=('0'+d.getDate()).slice(-2);
   return y+'-'+m+'-'+day;
 }
@@ -5192,10 +5209,19 @@ function treasurePick(i){
   EVENT_STATE.picked=true;
   moveHiToHouse(i, function(){
     if(EVENT_STATE.mode==='server'){
-      db.rpc('play_event', { picked_index: i }).then(function(r){
+      db.rpc('play_event', { picked_index: i }).then(async function(r){
         if(r.error){ EVENT_STATE.picked=false; alert('처리 실패: '+(r.error.message||r.error)); return; }
         var d=r.data||{};
-        revealTreasure(d.layout||[], i, d.prize||'꽝', !!d.is_win);
+        var prizeLabel=d.prize||'꽝';
+        var isWin=!!d.is_win;
+        var layout=d.layout||[];
+        try {
+          var already=await db.from('event_plays').select('id').eq('emp_name',DB_USER.name).eq('play_date',TODAY).limit(1);
+          if(!already.data||!already.data.length){
+            await db.from('event_plays').insert({emp_name:DB_USER.name,emp_dept:DB_USER.dept||'',prize:prizeLabel,is_win:isWin,play_date:TODAY});
+          }
+        } catch(e2){ console.log('event_plays 보완 INSERT 실패:',e2); }
+        revealTreasure(layout, i, prizeLabel, isWin);
       }).catch(function(e){ EVENT_STATE.picked=false; alert('처리 실패: '+(e.message||e)); });
       return;
     }
@@ -5239,7 +5265,9 @@ function revealTreasure(layout, i, prizeLabel, isWin){
     var hs=grid.querySelectorAll('.doghouse');
     Array.prototype.forEach.call(hs, function(b){
       var idx=parseInt(b.getAttribute('data-i'),10);
-      var lab=(layout && layout[idx]!==undefined && layout[idx]!==null) ? layout[idx] : (idx===i?prizeLabel:'꽝');
+      var lab=(layout && layout.length>0 && layout[idx]!==undefined && layout[idx]!==null)
+        ? layout[idx]
+        : (idx===i ? prizeLabel : '꽝');
       var win=lab && lab!=='꽝';
       b.classList.add('revealed');
       var note=b.querySelector('.dh-note');
@@ -5316,11 +5344,20 @@ function eventPick(i){
   var res=document.getElementById('ev-result');
   if(EVENT_STATE.mode==='server'){
     if(res) res.innerHTML='<span style="color:var(--hint)">추첨 중…</span>';
-    db.rpc('play_event', { picked_index: i }).then(function(r){
+    db.rpc('play_event', { picked_index: i }).then(async function(r){
       if(r.error){ EVENT_STATE.picked=false; if(res) res.innerHTML='<span style="color:var(--red-t)">이벤트 처리 실패: '+escH(r.error.message||r.error)+'</span>'; return; }
       var d=r.data||{};
+      var prizeLabel=d.prize||'꽝';
+      var isWin=!!d.is_win;
       var layout=d.layout||[];
-      revealEvent(layout, i, d.prize||'꽝', !!d.is_win);
+      // RPC가 event_plays INSERT를 안 했을 경우 클라이언트에서 보완
+      try {
+        var already=await db.from('event_plays').select('id').eq('emp_name',DB_USER.name).eq('play_date',TODAY).limit(1);
+        if(!already.data||!already.data.length){
+          await db.from('event_plays').insert({emp_name:DB_USER.name,emp_dept:DB_USER.dept||'',prize:prizeLabel,is_win:isWin,play_date:TODAY});
+        }
+      } catch(e2){ console.log('event_plays 보완 INSERT 실패:',e2); }
+      revealEvent(layout, i, prizeLabel, isWin);
     }).catch(function(e){ EVENT_STATE.picked=false; if(res) res.innerHTML='<span style="color:var(--red-t)">이벤트 처리 실패: '+escH(e.message||e)+'</span>'; });
     return;
   }
@@ -5338,7 +5375,10 @@ function revealEvent(layout, i, prizeLabel, isWin){
     var bs=grid.querySelectorAll('.evballoon');
     Array.prototype.forEach.call(bs, function(b){
       var idx=parseInt(b.getAttribute('data-i'),10);
-      var lab = (layout && layout[idx]!==undefined && layout[idx]!==null) ? layout[idx] : (idx===i ? prizeLabel : '꽝');
+      // layout이 없거나 비어있으면 picked 위치만 실제 prize, 나머지는 꽝
+      var lab = (layout && layout.length > 0 && layout[idx]!==undefined && layout[idx]!==null)
+        ? layout[idx]
+        : (idx===i ? prizeLabel : '꽝');
       var win = lab && lab!=='꽝';
       b.style.pointerEvents='none';
       b.classList.add('revealed');
@@ -5752,9 +5792,9 @@ function loadEmpWeatherInline(){
 
 // ===== 이벤트 팝업 (제출 후 자동) =====
 async function showEventPopupIfEligible(){
-  try { var evRes=await db.from('app_settings').select('value').eq('key','event_active').maybeSingle(); if(!evRes.data||evRes.data.value!=='true') return; } catch(e){ return; }
   if(!DB_USER) return;
-  try { var chk=await db.from('event_plays').select('id').eq('emp_name',DB_USER.name).eq('play_date',TODAY).limit(1); if(chk.data&&chk.data.length>0) return; } catch(e){ return; }
+  // 오늘 이미 참여했으면 스킵
+  try { var chk=await db.from('event_plays').select('id').eq('emp_name',DB_USER.name).eq('play_date',TODAY).limit(1); if(chk.data&&chk.data.length>0) return; } catch(e){}
   var bg=document.createElement('div'); bg.id='event-nudge-bg'; bg.style.cssText='position:fixed;inset:0;background:rgba(10,22,40,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
   bg.innerHTML='<div style="background:var(--card);border-radius:20px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden"><div style="background:linear-gradient(135deg,#0A1628,#1a3a6b);padding:24px 22px 20px;text-align:center"><div style="font-size:36px;margin-bottom:8px">🎈</div><div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">오늘의 이벤트!</div><div style="font-size:13px;color:rgba(255,255,255,.7)">수고하셨어요 '+escH(DB_USER.name)+'님 · 오늘의 행운을 확인해보세요</div></div><div style="padding:18px 22px 14px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-align:center">🎁 오늘의 경품</div><div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:18px"><span style="background:var(--amber-bg);color:var(--amber-t);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">반차 🌴 × 1</span><span style="background:var(--green-bg);color:var(--green-t);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">1시간 조기퇴근 × 2</span><span style="background:var(--soft);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:12.5px;font-weight:600">30분 조기퇴근 × 2</span></div><button onclick="closeEventNudge();startEventGame();" style="width:100%;height:50px;background:linear-gradient(90deg,var(--blue),#3a7bd5);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:9px">🎰 지금 바로 참여하기</button><button onclick="closeEventNudge()" style="width:100%;height:40px;background:var(--soft);color:var(--hint);border:none;border-radius:10px;font-size:13px;cursor:pointer">오늘은 그냥 넘어갈게요</button></div></div>';
   document.body.appendChild(bg);
