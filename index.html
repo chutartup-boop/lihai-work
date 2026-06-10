@@ -2569,6 +2569,9 @@ async function submitDay(){
     
     if(saveResult.error) throw saveResult.error;
     
+    // 주간목표 weekly_goals 테이블에도 저장 (처음 제출 시 고정)
+    await saveWeeklyGoalsIfNew();
+
     var ws = getWriteWindowState();
     if(ws.late){ toast('⏰ 지각 작성으로 저장되었습니다 (권장: 전일 17시~금일 11시)'); }
     else { toast('일일업무가 저장되었습니다 🟢'); }
@@ -3874,12 +3877,12 @@ function fillEmpHints(){
 function computeWorkDate(){
   var now = new Date();
   var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  // 17시 이후 → 다음 업무일
+  // 17시 이후 → 다음 날로
   if(now.getHours() >= 17){ d.setDate(d.getDate()+1); }
-  // 주말이면 다음 월요일로
+  // d 변경 후 다시 요일 계산 → 주말이면 월요일로
   var dow = d.getDay();
   if(dow === 6) d.setDate(d.getDate()+2); // 토 → 월
-  if(dow === 0) d.setDate(d.getDate()+1); // 일 → 월
+  else if(dow === 0) d.setDate(d.getDate()+1); // 일 → 월
   var y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), day=('0'+d.getDate()).slice(-2);
   return y+'-'+m+'-'+day;
 }
