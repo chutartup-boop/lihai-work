@@ -2857,6 +2857,37 @@ function fillWizardFromLog(log){
       }
     }
   } catch(e){}
+
+  // 5) 비행 계획 복원 (새로고침/익일 초기화 방지)
+  try {
+    if(Array.isArray(log.flight_plan) && log.flight_plan.length){
+      var flySection=document.getElementById('fly-section');
+      var flyNoneMsg=document.getElementById('fly-none-msg');
+      var flightRows=document.getElementById('flight-rows');
+      var flyYes=document.getElementById('fly-yes');
+      var flyNo=document.getElementById('fly-no');
+      // "비행 있음" 모드로 전환
+      if(flySection) flySection.classList.remove('hidden');
+      if(flyNoneMsg) flyNoneMsg.classList.add('hidden');
+      if(flyYes) flyYes.style.cssText='flex:1;font-size:14px;background:var(--lblue);color:var(--ink);border-color:var(--blue)';
+      if(flyNo) flyNo.style.cssText='flex:1;font-size:14px';
+      // 기존 빈 행 제거 후 저장된 데이터로 채우기
+      if(flightRows){
+        flightRows.innerHTML='';
+        log.flight_plan.forEach(function(f){
+          if(!f || !f.purpose) return;
+          var div=document.createElement('div');
+          div.className='input-block'; div.style.cssText='margin-bottom:8px;position:relative';
+          div.innerHTML='<button onclick="this.closest(\'.input-block\').remove()" title="삭제" style="position:absolute;top:7px;right:7px;border:none;background:transparent;color:var(--hint);cursor:pointer;font-size:15px;padding:2px 5px">×</button>'
+            +'<input type="text" value="'+escH(f.purpose||'')+'" placeholder="비행 목적" style="margin-bottom:7px;padding-right:20px">'
+            +'<div class="flex" style="flex-wrap:wrap"><span style="font-size:13px;color:var(--hint)">시간</span><input type="text" value="'+escH(f.time||'')+'" placeholder="15:00~17:00" style="width:130px"><span style="font-size:13px;color:var(--hint)">장소</span><input type="text" value="'+escH(f.place||'')+'" placeholder="테스트필드" style="width:110px"></div>';
+          flightRows.appendChild(div);
+        });
+        // 빈 행이 없으면 빈 행 하나 추가
+        if(!flightRows.children.length){ addFlightRow(); }
+      }
+    }
+  } catch(e){ console.log('비행 복원 오류', e); }
 }
 
 // ============================================
@@ -5688,7 +5719,15 @@ function editDay(){
 
 // ===== 주간목표 고정 =====
 var WEEKLY_GOALS_LOCKED=false, WEEKLY_GOALS_DATA=[];
-function getWeekKey(){ var d=new Date(TODAY); var day=d.getDay(); var diff=day===0?-6:1-day; d.setDate(d.getDate()+diff); var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
+function getWeekKey(){
+  // 실제 캘린더 날짜(로컬 now) 기준 → 17시 이후 TODAY가 다음날이 되어도 이번 주 월요일은 불변
+  var now=new Date();
+  var d=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var day=d.getDay(); var diff=day===0?-6:1-day;
+  d.setDate(d.getDate()+diff);
+  var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
 function getNextWeekKey(){ var d=new Date(getWeekKey()); d.setDate(d.getDate()+7); var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
 async function initWeeklyGoals(){
   var badge=document.getElementById('goal-week-badge'); if(badge) badge.textContent=getWeekKey()+' 주';
@@ -5743,7 +5782,26 @@ async function toggleGoalCheck(i){ if(!WEEKLY_GOALS_DATA[i]) return; WEEKLY_GOAL
 async function delayGoal(i){ if(!WEEKLY_GOALS_DATA[i]) return; WEEKLY_GOALS_DATA[i].delayed=!WEEKLY_GOALS_DATA[i].delayed; renderWeeklyGoalsUI(true); await updateWeeklyGoalsDB(); }
 async function carryOverGoals(){ if(!confirm('미완료 항목을 다음 주 목표로 이월하시겠습니까?')) return; var delayed=WEEKLY_GOALS_DATA.filter(function(g){return !g.checked;}).map(function(g){return {project:g.project||'',goal:g.goal||'',checked:false,delayed:false};}); if(!delayed.length){toast('미완료 항목이 없습니다');return;} if(!DB_USER) return; var res=await db.from('weekly_goals').upsert({employee_id:DB_USER.id,week_start:getNextWeekKey(),goals:delayed,updated_at:new Date().toISOString()},{onConflict:'employee_id,week_start'}); if(res.error){toast('⚠ 이월 실패');return;} toast('✅ '+delayed.length+'건이 다음 주로 이월됐습니다'); }
 async function updateWeeklyGoalsDB(){ if(!DB_USER) return; await db.from('weekly_goals').upsert({employee_id:DB_USER.id,week_start:getWeekKey(),goals:WEEKLY_GOALS_DATA,updated_at:new Date().toISOString()},{onConflict:'employee_id,week_start'}); }
-async function saveWeeklyGoalsIfNew(){ if(!DB_USER) return; var goalRows=document.querySelectorAll('#goal-list .flex'); var goals=[]; goalRows.forEach(function(row){ var ins=row.querySelectorAll('input[type="text"]'); var proj=ins[0]?ins[0].value.trim():''; var goal=ins[1]?ins[1].value.trim():''; if(proj||goal) goals.push({project:proj,goal:goal}); }); if(!goals.length) return; await db.from('weekly_goals').upsert({employee_id:DB_USER.id,week_start:getWeekKey(),goals:goals,updated_at:new Date().toISOString()},{onConflict:'employee_id,week_start'}); WEEKLY_GOALS_DATA=goals; WEEKLY_GOALS_LOCKED=true; }
+async function saveWeeklyGoalsIfNew(){
+  if(!DB_USER) return;
+  // 이미 이번 주 목표가 DB에 있으면 덮어쓰지 않음 (월요일 1회 고정)
+  if(WEEKLY_GOALS_LOCKED && WEEKLY_GOALS_DATA.length) return;
+  try {
+    var already=await db.from('weekly_goals').select('id').eq('employee_id',DB_USER.id).eq('week_start',getWeekKey()).maybeSingle();
+    if(already.data) return; // 이미 있음 → skip
+  } catch(e){}
+  var goalRows=document.querySelectorAll('#goal-list .flex');
+  var goals=[];
+  goalRows.forEach(function(row){
+    var ins=row.querySelectorAll('input[type="text"]');
+    var proj=ins[0]?ins[0].value.trim():'';
+    var goal=ins[1]?ins[1].value.trim():'';
+    if(proj||goal) goals.push({project:proj,goal:goal});
+  });
+  if(!goals.length) return;
+  var r=await db.from('weekly_goals').insert({employee_id:DB_USER.id,week_start:getWeekKey(),goals:goals,updated_at:new Date().toISOString()});
+  if(!r.error){ WEEKLY_GOALS_DATA=goals; WEEKLY_GOALS_LOCKED=true; }
+}
 
 // ===== 제출 후 요약 =====
 var HISTORY_SUB_DIRTY=false;
