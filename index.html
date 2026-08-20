@@ -2049,12 +2049,50 @@ function renderAdmin(){
   else if(ADMIN_TAB==='log') renderAdminLog();
 }
 
-function renderAdminEmp(){
+async function renderAdminEmp(){
   var el=document.getElementById('a-emp');
+  // DB(employees)를 기준으로 명단 구성 — 신규 입사자(DB에만 있는 사람)도 표시
+  var people = ROSTER.slice();
+  if(DB_USER){
+    try {
+      var res = await db.from('employees').select('name, dept, title, mode, hire_date, grade, is_active').eq('is_active', true).order('dept');
+      if(!res.error && res.data){
+        // ROSTER에 없는 DB 직원을 추가 (이름 기준 병합)
+        res.data.forEach(function(d){
+          var inRoster = ROSTER.find(function(r){ return r.name===d.name; });
+          if(!inRoster){
+            people.push({
+              name: d.name, dept: d.dept||'', title: d.title||'',
+              mode: d.mode||'운영형',
+              hire: d.hire_date || TODAY,
+              grade: d.grade || 'emp'
+            });
+          }
+        });
+        // DB에서 비활성(퇴사)된 사람은 명단에서 제외
+        var activeNames = {};
+        res.data.forEach(function(d){ activeNames[d.name]=true; });
+        // ROSTER 사람이라도 DB에 있고 비활성이면 빼기 (DB에 아예 없으면 기존처럼 유지)
+        var dbNames = {};
+        res.data.forEach(function(d){ dbNames[d.name]=true; });
+        // is_active=false 확인용: 전체 조회
+        try {
+          var allRes = await db.from('employees').select('name, is_active');
+          if(!allRes.error && allRes.data){
+            var inactive = {};
+            allRes.data.forEach(function(a){ if(a.is_active===false) inactive[a.name]=true; });
+            people = people.filter(function(p){ return !inactive[p.name]; });
+          }
+        } catch(e){}
+      }
+    } catch(e){ /* DB 실패 시 ROSTER만 사용 */ }
+  }
   var byDept={};
-  ROSTER.forEach(function(e){ (byDept[e.dept]=byDept[e.dept]||[]).push(e); });
+  people.forEach(function(e){ (byDept[e.dept]=byDept[e.dept]||[]).push(e); });
   var deptOrder=['경영기획실','사업기획팀','SW팀','HW팀','군집드론팀','전기이륜차사업팀'];
-  var h='<div class="card"><div class="sec-h"><div><h2>직원 명단 관리</h2><div class="sub">총 '+ROSTER.length+'명 · 6개 부서 · 신규 입사·퇴사·부서 이동·직책 변경</div></div><button class="btn btn-pri" onclick="adminAddEmp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 5v14M5 12h14"/></svg> 신규 직원 등록</button></div>';
+  // deptOrder에 없는 새 부서도 뒤에 붙이기
+  Object.keys(byDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
+  var h='<div class="card"><div class="sec-h"><div><h2>직원 명단 관리</h2><div class="sub">총 '+people.length+'명 · 신규 입사·퇴사·부서 이동·직책 변경 <span style="font-size:10px;background:#E1F5EE;color:var(--green-t);padding:1.5px 6px;border-radius:8px;border:1px solid #B8DFCC">🟢 DB</span></div></div><button class="btn btn-pri" onclick="adminAddEmp()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 5v14M5 12h14"/></svg> 신규 직원 등록</button></div>';
 
   // 현재 팀장 매핑 요약
   var leadNames = Object.keys(TEAM_LEADS);
@@ -2073,7 +2111,6 @@ function renderAdminEmp(){
       var isLead = !!TEAM_LEADS[e.name];
       var leadBtnLabel = isLead ? '✕ 팀장 해제' : '🎖 팀장 지정';
       var leadBtnStyle = isLead ? 'background:var(--red-bg);color:var(--red-t);border-color:var(--red-bg)' : '';
-      // 임원·대표 등급은 팀장 토글 막기
       var canToggleLead = (g==='emp' || g==='lead');
       h+='<div style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--card);border:1px solid var(--line);border-radius:9px;margin-bottom:5px;flex-wrap:wrap">'
         +'<div style="width:32px;height:32px;border-radius:9px;background:var(--soft);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">'+e.name.substring(0,1)+'</div>'
@@ -3461,6 +3498,56 @@ function setDeptFilter(name){
 // ============================================
 // 전직원 업무 — 부서별 (daily_logs 실시간 조회)
 // ============================================
+// 대표/임원: 특정 직원의 최근 7일 업무일지 펼쳐보기
+async function toggleWeekHistory(btn, empName){
+  var box = btn.parentNode.nextElementSibling; // .week-hist
+  if(!box) return;
+  if(box.style.display!=='none'){ box.style.display='none'; btn.textContent='📅 최근 7일 보기'; return; }
+  box.style.display=''; btn.textContent='📅 접기';
+  box.innerHTML='<div style="font-size:11px;color:var(--hint);padding:6px">최근 7일 기록을 불러오는 중…</div>';
+  // 오늘 포함 최근 7일 범위
+  var end=new Date(EVENT_DATE+'T00:00:00'); // 실제 오늘
+  var start=new Date(end); start.setDate(start.getDate()-6);
+  function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  var s=ymd(start), e=ymd(end);
+  try {
+    var res = await db.from('daily_logs')
+      .select('work_date, today_tasks, help_needed, work_status, employees!inner(name)')
+      .eq('employees.name', empName)
+      .gte('work_date', s).lte('work_date', e)
+      .order('work_date', {ascending:false});
+    if(res.error) throw res.error;
+    var rows=res.data||[];
+    if(!rows.length){ box.innerHTML='<div style="font-size:11.5px;color:var(--hint);background:var(--soft);border-radius:7px;padding:9px 11px">최근 7일간 작성한 일지가 없습니다.</div>'; return; }
+    var wd=['일','월','화','수','목','금','토'];
+    var h='<div style="border-left:2px solid var(--lblue);padding-left:11px">';
+    rows.forEach(function(l){
+      var p=l.work_date.split('-');
+      var dow=wd[new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];
+      var isToday=(l.work_date===EVENT_DATE);
+      var tasks=Array.isArray(l.today_tasks)?l.today_tasks:[];
+      var done=tasks.filter(function(t){return t.status==='완료';}).length;
+      h+='<div style="margin-bottom:10px">';
+      h+='<div style="font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:4px">'+p[1]+'/'+p[2]+' ('+dow+')'+(isToday?' <span style="font-size:9px;color:var(--green-t);background:var(--green-bg);padding:1px 5px;border-radius:6px">오늘</span>':'')+' <span style="font-size:10px;color:var(--hint);font-weight:400">· 완료 '+done+'/'+tasks.length+'</span></div>';
+      if(tasks.length){
+        tasks.forEach(function(t){
+          var st=t.status||'진행중';
+          var dn=st==='완료';
+          var stColor=dn?'var(--green-t)':((st==='막힘'||st==='지연')?'var(--red-t)':'var(--amber-t)');
+          h+='<div style="font-size:11px;padding:2px 0"><span style="'+(dn?'text-decoration:line-through;color:var(--hint)':'')+'">'+escH(t.task||'')+'</span> <span style="color:'+stColor+';font-size:9.5px">'+escH(dn?'✓완료':st)+'</span></div>';
+        });
+      } else {
+        h+='<div style="font-size:11px;color:var(--hint)">업무 항목 없음</div>';
+      }
+      if(l.help_needed) h+='<div style="font-size:10.5px;color:var(--amber-t);margin-top:2px">🙋 '+escH(l.help_needed)+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    box.innerHTML=h;
+  } catch(err){
+    box.innerHTML='<div style="font-size:11px;color:var(--red-t)">불러오기 실패: '+escH(err.message||err)+'</div>';
+  }
+}
 async function renderDeptDB(el){
   if(!el) return;
   // DB 미연결(순수 시연) 상태면 기존 시연 화면
@@ -3473,10 +3560,27 @@ async function renderDeptDB(el){
   DATA.depts.forEach(function(dp){ deptMeta[dp.name]=dp.mode; });
   var deptOrder = DATA.depts.map(function(dp){ return dp.name; });
 
-  // 부서별 직원 명단 (ROSTER 기준)
+  // 부서별 직원 명단 (DB employees 우선, ROSTER 보강)
   var membersByDept = {};
-  ROSTER.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
-  // ROSTER에만 있고 deptOrder에 없는 부서도 뒤에 추가
+  var allMembers = ROSTER.slice();
+  try {
+    var empRes = await db.from('employees').select('name, dept, title, mode, is_active');
+    if(!empRes.error && empRes.data){
+      var inactive={};
+      empRes.data.forEach(function(d){ if(d.is_active===false) inactive[d.name]=true; });
+      // ROSTER에 없는 재직 직원 추가
+      empRes.data.forEach(function(d){
+        if(d.is_active===false) return;
+        if(!ROSTER.find(function(r){return r.name===d.name;})){
+          allMembers.push({ name:d.name, dept:d.dept||'', title:d.title||'', mode:d.mode||'운영형', hire:TODAY });
+        }
+      });
+      // 퇴사자 제외
+      allMembers = allMembers.filter(function(m){ return !inactive[m.name]; });
+    }
+  } catch(e){ /* 실패 시 ROSTER만 */ }
+  allMembers.forEach(function(e){ (membersByDept[e.dept]=membersByDept[e.dept]||[]).push(e); });
+  // membersByDept에 있고 deptOrder에 없는 부서도 뒤에 추가
   Object.keys(membersByDept).forEach(function(d){ if(deptOrder.indexOf(d)<0) deptOrder.push(d); });
 
   // 오늘 전직원 일지 조회 (부서 필터 없음)
@@ -3536,7 +3640,10 @@ async function renderDeptDB(el){
           ? tasks.map(function(t){
               var st=t.status||'진행중';
               var stColor = st==='완료'?'var(--green-t)':((st==='막힘'||st==='지연')?'var(--red-t)':'var(--amber-t)');
-              return '<div style="padding:5px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+escH(t.project||'')+'</span> '+escH(t.task||'')+' <span style="font-size:10px;color:'+stColor+';float:right">'+escH(st)+'</span></div>';
+              var done = st==='완료';
+              var taskStyle = done ? 'text-decoration:line-through;color:var(--hint)' : '';
+              var badge = done ? '✓ 완료' : st;
+              return '<div style="padding:5px 0;border-bottom:1px dashed var(--line)"><span class="proj" style="font-size:10.5px">'+escH(t.project||'')+'</span> <span style="'+taskStyle+'">'+escH(t.task||'')+'</span> <span style="font-size:10px;color:'+stColor+';float:right;font-weight:'+(done?'700':'400')+'">'+escH(badge)+'</span></div>';
             }).join('')
           : '<div style="font-size:11.5px;color:var(--hint);padding:4px 0">작성된 업무 항목 없음</div>';
         var helpHtml = log.help_needed
@@ -3547,11 +3654,16 @@ async function renderDeptDB(el){
           +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><b style="font-size:13px">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
           +(log.work_status?'<span style="font-size:10.5px;color:var(--hint)">· '+(statusLabel[log.work_status]||'')+'</span>':'')
           +'<span style="font-size:10px;color:var(--green-t);background:var(--green-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">✓ '+subTime+' 제출</span></div>'
-          +taskHtml+helpHtml+'</div>';
+          +taskHtml+helpHtml
+          +'<div style="margin-top:8px;text-align:right"><button class="btn" style="font-size:10.5px;padding:3px 10px" onclick="toggleWeekHistory(this,\''+escH(m.name).replace(/'/g,'')+'\')">📅 최근 7일 보기</button></div>'
+          +'<div class="week-hist" style="display:none;margin-top:8px"></div>'
+          +'</div>';
       } else {
         h+='<div style="border:1px dashed var(--line2);border-radius:9px;margin-bottom:8px;padding:11px 13px;background:var(--soft)">'
           +'<div style="display:flex;align-items:center;gap:7px"><b style="font-size:13px;color:var(--muted)">'+escH(m.name)+'</b><span style="font-size:11px;color:var(--hint)">'+escH(m.title||'')+'</span>'
-          +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">아직 미제출</span></div></div>';
+          +'<span style="font-size:10px;color:var(--amber-t);background:var(--amber-bg);padding:1.5px 7px;border-radius:8px;margin-left:auto">아직 미제출</span></div>'
+          +'<div style="margin-top:8px;text-align:right"><button class="btn" style="font-size:10.5px;padding:3px 10px" onclick="toggleWeekHistory(this,\''+escH(m.name).replace(/'/g,'')+'\')">📅 최근 7일 보기</button></div>'
+          +'<div class="week-hist" style="display:none;margin-top:8px"></div></div>';
       }
     });
     h+='</div>';
