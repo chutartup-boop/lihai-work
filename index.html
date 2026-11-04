@@ -2685,7 +2685,6 @@ function adminExportLog(){ toast('활동 로그를 엑셀로 내보냅니다'); 
 function empTab(t){
   curEmpTab=t;
   document.getElementById('e-pt-daily').classList.toggle('on', t==='daily'||t==='weekly');
-  document.getElementById('e-pt-grant').classList.toggle('on', t==='grant');
   document.getElementById('e-pt-team').classList.toggle('on', t==='team');
   document.getElementById('e-pt-history').classList.toggle('on', t==='history');
   document.getElementById('e-pt-profile').classList.toggle('on', t==='profile');
@@ -3405,7 +3404,6 @@ function cheer(btn){
 function mgrTab(t){
   curMgrTab=t;
   document.getElementById('m-pt-daily').classList.toggle('on', t==='daily');
-  document.getElementById('m-pt-grant').classList.toggle('on', t==='grant');
   document.getElementById('m-pt-exec').classList.toggle('on', t==='exec');
   document.getElementById('m-daily').classList.toggle('hidden', t!=='daily');
   document.getElementById('m-grant').classList.toggle('hidden', t!=='grant');
